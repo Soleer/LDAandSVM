@@ -1,4 +1,6 @@
 library(rlang)
+
+
 projects <- c(
   "The set cover problem",
   "Scheduling jobs with deadlines",
@@ -40,8 +42,6 @@ daniel <- c()
 
 # - -----------------------------------------------------------------------
 
-
-
 getselection <- function(name) {
   var <- eval(parse_expr(name))
   if (is.null(var)) {
@@ -69,6 +69,7 @@ evaluation <- function() {
   rownames(results) <- projects[liste]
   results
 }
+
 ergebnis <- function() {
   data <- evaluation()
   print("Überblick")
