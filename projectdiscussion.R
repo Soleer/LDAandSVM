@@ -1,25 +1,63 @@
-projekte <- c()
+library(rlang)
+projects <- c(
+"The set cover problem",
+"Scheduling jobs with deadlines",
+"Scheduling jobs on parallel machines",
+"The traveling salesman problem",
+"Uncapacitated facility location problem",
+"Hidden Markov Models",
+"Image de-noising",
+"Clustering",
+"Kernel smoother",
+"Kernel density estimation",
+"Kernel regression",
+"LASSO, Ridge and friends",
+"Linear regression",
+"Logistic regression",
+"Network",
+"Neural networks and Stochastic Gradient Descent",
+"Kalman and Particle Filters",
+"Time series",
+"Gaussian Process Regression",
+"OSE",
+"LDA and SVM",
+"Sampling Methods",
+"Image Segmentation"
+)
+#Beispiel:
+niklas <- c(13,14,16,18,21)
 
-Thesetcoverproblem
-Schedulingjobswithdeadlines
-Schedulingjobsonparallelmachines
-Thetravelingsalesmanproblem
-Uncapacitatedfacilitylocationproblem
-Hidden Markov Models
-Image de-noising
-Clustering
-Kernel smoother
-Kerneldensityestimation
-Kernelregression
-LASSO, Ridge and friends
-Linear regression
-Logistic regression
-Network
-Neural networks and Stochastic Gradient Descent
-Kalman and Particle Filters
-Time series
-Gaussian Process Regression
-OSE
-LDA and SVM
-Sampling Methods
-Image Segmentation
+benni <- c()
+henning <- c()
+daniel <- c()
+
+wixxer <- list("benni","daniel","henning","niklas")
+
+getselection <- function(name){
+  var <- eval(parse_expr(name))
+  if( is.null(var) ){
+    return(sample(1:length(projects),5))
+  }
+  return(var)
+}
+
+val <- function(selec, vec) {
+  sapply(vec, function(x) {
+    if (x %in% selec) {
+      return("ja")
+    }
+    return("nein")
+  })
+}
+
+evaluation <- function(){
+  selection <- lapply(wixxer, getselection)
+  liste <- unique(unlist(selection))
+  results <- as.data.frame(sapply(selection, function(selec) val(selec,liste)))
+  colnames(results) <- wixxer
+  rownames(results) <- projects[liste]
+  results
+}
+
+data <- evaluation()
+
