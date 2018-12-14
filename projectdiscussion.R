@@ -1,42 +1,42 @@
 library(rlang)
 projects <- c(
-"The set cover problem",
-"Scheduling jobs with deadlines",
-"Scheduling jobs on parallel machines",
-"The traveling salesman problem",
-"Uncapacitated facility location problem",
-"Hidden Markov Models",
-"Image de-noising",
-"Clustering",
-"Kernel smoother",
-"Kernel density estimation",
-"Kernel regression",
-"LASSO, Ridge and friends",
-"Linear regression",
-"Logistic regression",
-"Network",
-"Neural networks and Stochastic Gradient Descent",
-"Kalman and Particle Filters",
-"Time series",
-"Gaussian Process Regression",
-"OSE",
-"LDA and SVM",
-"Sampling Methods",
-"Image Segmentation"
+  "The set cover problem",
+  "Scheduling jobs with deadlines",
+  "Scheduling jobs on parallel machines",
+  "The traveling salesman problem",
+  "Uncapacitated facility location problem",
+  "Hidden Markov Models",
+  "Image de-noising",
+  "Clustering",
+  "Kernel smoother",
+  "Kernel density estimation",
+  "Kernel regression",
+  "LASSO, Ridge and friends",
+  "Linear regression",
+  "Logistic regression",
+  "Network",
+  "Neural networks and Stochastic Gradient Descent",
+  "Kalman and Particle Filters",
+  "Time series",
+  "Gaussian Process Regression",
+  "OSE",
+  "LDA and SVM",
+  "Sampling Methods",
+  "Image Segmentation"
 )
 #Beispiel:
-niklas <- c(13,14,16,18,21)
+niklas <- c(13, 14, 16, 18, 21)
 
 benni <- c()
 henning <- c()
 daniel <- c()
 
-wixxer <- list("benni","daniel","henning","niklas")
+wixxer <- list("benni", "daniel", "henning", "niklas")
 
-getselection <- function(name){
+getselection <- function(name) {
   var <- eval(parse_expr(name))
-  if( is.null(var) ){
-    return(sample(1:length(projects),5))
+  if (is.null(var)) {
+    return(sample(1:length(projects), 5))
   }
   return(var)
 }
@@ -44,20 +44,31 @@ getselection <- function(name){
 val <- function(selec, vec) {
   sapply(vec, function(x) {
     if (x %in% selec) {
-      return("ja")
+      return(TRUE)
     }
-    return("nein")
+    return(FALSE)
   })
 }
 
-evaluation <- function(){
+evaluation <- function() {
   selection <- lapply(wixxer, getselection)
   liste <- unique(unlist(selection))
-  results <- as.data.frame(sapply(selection, function(selec) val(selec,liste)))
+  results <-
+    as.data.frame(sapply(selection, function(selec)
+      val(selec, liste)))
   colnames(results) <- wixxer
   rownames(results) <- projects[liste]
   results
 }
+ergebnis <- function(){
+  data <- evaluation()
+  print("Überblick")
+  print(data)
+  bests <- as.data.frame(sort(rowSums(data), decreasing = TRUE))
+  colnames(bests) <- c("Stimmen")
+  print("Zusammenfassung")
+  print(bests[bests[,1]>1,,drop=FALSE])
+}
 
-data <- evaluation()
+ergebnis()
 
