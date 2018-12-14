@@ -24,14 +24,23 @@ projects <- c(
   "Sampling Methods",
   "Image Segmentation"
 )
+wixxer <- list("benni", "daniel", "henning", "niklas")
+
 #Beispiel:
 niklas <- c(13, 14, 16, 18, 21)
+
+# Eintragen ---------------------------------------------------------------
+
+print(projects)
 
 benni <- c()
 henning <- c()
 daniel <- c()
 
-wixxer <- list("benni", "daniel", "henning", "niklas")
+
+# - -----------------------------------------------------------------------
+
+
 
 getselection <- function(name) {
   var <- eval(parse_expr(name))
@@ -60,15 +69,14 @@ evaluation <- function() {
   rownames(results) <- projects[liste]
   results
 }
-ergebnis <- function(){
+ergebnis <- function() {
   data <- evaluation()
   print("Überblick")
   print(data)
   bests <- as.data.frame(sort(rowSums(data), decreasing = TRUE))
   colnames(bests) <- c("Stimmen")
   print("Zusammenfassung")
-  print(bests[bests[,1]>1,,drop=FALSE])
+  print(bests[bests[, 1] > 1, , drop = FALSE])
 }
 
 ergebnis()
-
