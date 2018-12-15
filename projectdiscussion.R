@@ -30,6 +30,7 @@ wixxer <- list("benni", "daniel", "henning", "niklas")
 
 #Beispiel:
 niklas <- c(13, 14, 16, 18, 21)
+henning <- c(16, 15, 8, 13, 22) #Test
 
 # Eintragen ---------------------------------------------------------------
 
