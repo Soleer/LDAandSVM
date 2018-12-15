@@ -37,7 +37,6 @@ henning <- c(16, 15, 8, 13, 22) #Test
 print(projects)
 
 benni <- c()
-henning <- c()
 daniel <- c()
 
 
@@ -82,4 +81,3 @@ ergebnis <- function() {
 }
 
 ergebnis()
-
