@@ -1,6 +1,6 @@
 #(i)
 #' lambda_plus
-#' 
+#'
 #' @param vec A Vector
 #' @return the Lambda-Plus vector of the given Vector
 #' @examples

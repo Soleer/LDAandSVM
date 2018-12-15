@@ -11,5 +11,6 @@ test_that("emp_cov", {
       c(4, 2, 1, 1),
       rep(0, 100)
     )
-  lapply(test, function(x) expect_equal(emp_cov(x), emp_cov(x)))
+  lapply(test, function(x)
+    expect_equal(emp_cov(x), emp_cov(x)))
 })
