@@ -1,12 +1,19 @@
 Package: sheet9
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Sheet9
+Version: 1.0
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Niklas",
+           family = "Wünstel",
+           role = c("aut", "cre","main"),
+           email = "niklas@soleer.de")
+    person(given = "Henning",
+           family = "Stein",
            role = c("aut", "cre"),
-           email = "first.last@example.com")
-Description: What the package does (one paragraph).
-License: What license it uses
+           email = "stein.henning74@gmail.com")
+Description: This package fullfills all tasks needed for sheet 9. 
+License: Best License In History, Maybe Ever
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.1
+Suggests: 
+    testthat
