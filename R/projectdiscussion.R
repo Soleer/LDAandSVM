@@ -41,7 +41,7 @@ projects <- c(
 wixxer <- list("benni", "daniel", "henning", "niklas")
 
 #Beispiel:
-niklas <- c(13, 14, 16, 18, 21)
+niklas <- c(13, 14, 16, 18, 9)
 henning <- c(16, 15, 8, 13, 22) #Test
 benni <- c(3, 8, 15, 19, 21)
 
@@ -56,9 +56,7 @@ daniel <- c()
 
 getselection <- function(name) {
   var <- eval(parse_expr(name))
-  if (is.null(var)) {
-    return(sample(1:length(projects), 5))
-  }
+  
   return(var)
 }
 
@@ -90,6 +88,10 @@ ergebnis <- function() {
   colnames(bests) <- c("Stimmen")
   print("Zusammenfassung")
   print(bests[bests[, 1] > 1, , drop = FALSE])
+  return(bests[bests[, 1] > 1, , drop = FALSE])
 }
 
-ergebnis()
+bests <- ergebnis()
+bests
+sample(1:5,5)
+c(2,1,4,3,5)
