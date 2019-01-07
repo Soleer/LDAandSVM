@@ -90,4 +90,15 @@ classfunc <- function(data, results) {
 }
 #test
 f <- classfunc(test[c('x', 'y')], test$class)
+f(c(2,2))
 
+targetfunc <- function(data, results) {
+  f <- linearmodel(data, results)
+  tf <- function(x) {
+    return(targets(f(x)))
+  }
+  return(tf)
+}
+
+tf <- targetfunc(test[c('x', 'y')], test$class)
+tf(c(2,2))
