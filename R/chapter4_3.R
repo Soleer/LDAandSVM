@@ -3,13 +3,12 @@ set.seed(0)
 
 #Chapter 4.3
 
-
 # Gauß test data n classes same sigma:
 make_test <- function(ninputs = 100,
                       nclasses = 2,
                       sigma = 0.6) {
-  xcoord <- sample(-3:3, nclasses)
-  ycoord <- sample(-3:3, nclasses)
+  xcoord <- sample(-4:4, nclasses, replace = TRUE)
+  ycoord <- sample(-4:4, nclasses, replace = TRUE)
   test <-
     data.frame(
       x = rnorm(ninputs, xcoord[1], sigma),
@@ -148,7 +147,7 @@ make_seperator <- function(classf,
                           nclass,
                           min = -5,
                           max = 5,
-                          acc = 30) {
+                          acc = 100) {
   sepdata <- data.frame(xval = seq(min, max, length.out = acc))
   iT <- integer(0)
   k <- 1
@@ -190,8 +189,8 @@ make_plot <- function(data, results) {
     )
   #background
   background <-
-    data.frame(x = rep(seq(-5, 5, length.out = 100), time = 100), y = c(sapply(seq(-5, 5, length.out = 100), function(x)
-      rep(x, times = 100))))
+    data.frame(x = rep(seq(-5, 5, length.out = 50), time = 50), y = c(sapply(seq(-5, 5, length.out = 50), function(x)
+      rep(x, times = 50))))
   background$class <- apply(background, 1, classfun)
   mainplot <- mainplot + geom_jitter(
       data = background,
@@ -224,7 +223,7 @@ make_plot <- function(data, results) {
   })
   return(mainplot)
 }
-test <- make_test(nclasses = 6)
+test <- make_test(nclasses = 7,sigma = 0.6)
 testplot <- make_plot(test[c('x', 'y')], test$class)
 testplot
 
