@@ -11,6 +11,7 @@ make_test <- function(ninputs = 100,
   nsigma <- length(sigma)
   xcoord <- sample(x[1]:x[2], nclasses, replace = TRUE)
   ycoord <- sample(y[1]:y[2], nclasses, replace = TRUE)
+  print(1)
   test <-
     data.frame(
       x = rnorm(ninputs, xcoord[1], sigma[1]),
@@ -21,8 +22,8 @@ make_test <- function(ninputs = 100,
     class <- LETTERS[i]
     test <<-
       rbind(test, data.frame(
-        x = rnorm(ninputs, xcoord[i], sigma[i %% nsigma + 1]),
-        y = rnorm(ninputs, ycoord[i], sigma[i %% nsigma + 1]),
+        x = rnorm(ninputs, xcoord[i], sigma[i]),
+        y = rnorm(ninputs, ycoord[i], sigma[i]),
         class = rep(class, times = ninputs)
       ))
   })
@@ -45,11 +46,12 @@ mu_est <- function(data, results) {
   mu <- sapply(classes, function(class) {
     colMeans(data[results == class,])
   })
+  print(mu)
   mu <- t(mu)
   rownames(mu) <- as.character(classes)
   return(mu)
 }
-
+mu_est(test[c('x','y')],test$class)
 sigma_class <- function(data, mu= colMeans(data)){
   
   n <- dim(data)[2]
@@ -57,7 +59,7 @@ sigma_class <- function(data, mu= colMeans(data)){
   apply(data, 1, function(x) {
     Bn <<- Bn + ((x - mu) %*% t(x - mu))
   })
-  return(Bn/dim(data)[1])
+  return(Bn/(dim(data)[1]-1))
 }
 
 sigma_est <- function(data, results) {
@@ -91,13 +93,33 @@ LDA <- function(data, results) {
 }
 
 #LDA classification function -> G
+targets <- function(vector) {
+  n <- length(vector)
+  En <- diag(1, n, n)
+  V <- matrix(vector,
+              nrow = n,
+              ncol = n,
+              byrow = TRUE)
+  D <- En - V
+  results <- sapply(1:n, function(i) {
+    D[i,] %*% D[i,]
+  })
+  return(results)
+}
+
 classify <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.min(targets(f(x)))])
+  }
+  return(classfunction)
+}
+
+classifyTargets <- function(uresults, f) {
   classfunction <- function(x) {
     return(uresults[which.max(f(x))])
   }
   return(classfunction)
 }
-
 #seperating lines
 
 create_id <- function(a, b, rf) {
@@ -158,29 +180,23 @@ make_seperator <- function(classf,
                            nclass,
                            x = c(-5, 5),
                            y = c(-5, 5),
-                           nx = 100) {
-  sepdata <- data.frame(xval = seq(x[1], x[2], length.out = nx))
-  iT <- integer(0)
-  k <- 1
+                           ppu = 10) {
+  xval <-  seq(x[1], x[2], length.out = (x[2]-x[1])*ppu)
+  yval <- seq(y[1],y[2], length.out = (y[2]-y[1])*ppu)
+  lines <- data.frame()
   sapply(1:(nclass - 1), function(i) {
     sapply((i + 1):nclass, function(j) {
-      k <<- k + 1
+      
       s <- getseperatorfun(i, j, classf, y = y)
-      sepdata[k] <<- sapply(sepdata$xval, s)
-      iT[k] <<- FALSE
-      if (length(sepdata[!is.na(sepdata[k]), k]) <= 1) {
-        s <- getseperatorfun(i,
-                             j,
-                             classf,
-                             y = x,
-                             inv = TRUE)
-        sepdata[k] <<- sapply(sepdata$xval, s)
-        iT[k] <<- TRUE
-      }
+      sinv <- getseperatorfun(i, j, classf, y = x, inv=TRUE)
+      ony <- FALSE
+      lines[] <<- sapply(sepdata$xval, function(x){
+        
+      })
+      })
     })
-  })
-  return(list(sepdata, iT))
-}
+  return(sepdata)
+  }
 
 make_plot <- function(data,
                       results,
@@ -195,16 +211,13 @@ make_plot <- function(data,
   n <- length(uresults)
   xtimes <- (x[2] - x[1]) * ppu
   ytimes <- (y[2] - y[1]) * ppu
-  #
   mainplotdata <- cbind(data, results)
-  mainplot <- ggplot()
+  mainplot <- ggplot() + xlim(x[1],x[2])+ylim(y[1],y[2])
   mainplot <-
     mainplot + geom_jitter(
       data = mainplotdata,
       aes(x, y, color = results),
-      shape = 20,
-      height = 0 ,
-      width = 0
+      shape = 20,height = 0,width = 0
     )
   #background
   background <-
@@ -216,31 +229,12 @@ make_plot <- function(data,
     data = background,
     aes(x, y, color = class),
     shape = 3,
-    height = 0 ,
-    width = 0
+    height = 0,width = 0
   )
-  #lines
-  seps <- make_seperator(f, n, x, y, xtimes)
-  sepdata <- seps[[1]]
-  iT <- seps[[2]]
-  #addlines
+  #Lines???
   
-  sapply(1:choose(n, 2) + 1, function(i) {
-    if (any(!is.na(sepdata[paste0('V', i)]))) {
-      if (!iT[i]) {
-        mainplot <<-
-          mainplot + geom_path(data = sepdata,
-                               aes_string(x = 'xval', y = paste0('V', i)),
-                               na.rm = TRUE)
-      }
-      else{
-        mainplot <<-
-          mainplot + geom_path(data = sepdata,
-                               aes_string(x = paste0('V', i), y = 'xval'),
-                               na.rm = TRUE)
-      }
-    }
-  })
+  
+  
   return(mainplot)
 }
 #QDA
@@ -251,24 +245,26 @@ QDA <- function(data, results) {
   p <- log(pi_est(results))
   mu <- mu_est(data, results)
   sigma_list <- lapply(1:K, function(k) {
-    solve(sigma_class(data[results==G[k],],mu[k]))
+    sigma_class(data[results==G[k],],mu[k])
     })
+  sigma_inv <- lapply(sigma_list,solve)
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      -1 / 2 * log(det(sigma_list[[k]])) - 1 / 2 * t(x - mu[k, ]) %*% sigma_list[[k]] %*% (x - mu[k, ])
+      -1 / 2 * log(det(sigma_list[[k]])) - 1 / 2 * t(x - mu[k, ]) %*% sigma_inv[[k]] %*% (x - mu[k, ])
     }) + p
     return(result)
   }
   return(delta)
 }
 
-f <- QDA(test[c('x','y')],test$class)
-f(c(1,2))
 
-x <- c(-5, 5)
-y <- c(-5, 5)
-sig <- c(0.5, 0.7, 0.9, 0.6)
-test <- make_test(100, nclasses = 4, sigma = sig , x, y)
+x <- c(-10, 10)
+y <- c(-10, 10)
+sig <- c(1, 1.5, 2,0.5)
+test <- make_test(100, nclasses = 4, sigma = sig )
 testplot <-
   make_plot(test[c('x', 'y')], test$class, type =  QDA, x, y, ppu = 5)
-testplot
+testplot1 <-
+  make_plot(test[c('x', 'y')], test$class, type =  LDA, x, y, ppu = 5)
+
+grid.arrange(testplot,testplot1,nrow=1)
