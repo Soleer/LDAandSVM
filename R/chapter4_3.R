@@ -31,10 +31,11 @@ make_test <- function(ninputs = 100,
 #estimators of chapter 4.3
 
 pi_est <- function(results) {
+  vec <- unique(results)
   n <- length(results)
-  vec <- table(results)
+  t <- table(results)
   return(sapply(vec, function(x)
-    x / n))
+    t[x] / n))
 }
 
 mu_est <- function(data, results) {
