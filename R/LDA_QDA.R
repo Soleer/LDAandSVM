@@ -3,11 +3,27 @@ set.seed(0)
 rep('A', 10)
 #Chapter 4.3
 # Gauß test data n classes same sigma:
+
+#' make_test
+#' 
+#' Generates a Dataframe with three cloumns 'x','y','class'.
+#' Every Class has a normal distribution around a random centers between the given x and y Boundaries.
+#' The Result can be used to train classification methods to sort a 2D Vectors to Class of 'class'. 
+#' @param ninputs Number of generated Observations per Class
+#' @param nclasses Number of Classes.
+#' @param simga Numeric Vector of sigma Values for the gaussian Distribution to generate the Observations. Will be recycled if shorter than nclass.
+#' @param x Vector of length 2 with Boundaries for x
+#' @param y Vector of length 2 with Boundaries for y
+#' @return A Dataframe 
+#' @examples
+#' make_test(10)
+#' make_test(80,5,sigma=c(1,2,0.8,1.5),x=c(-10,10),y=c(-10,10)))
 make_test <- function(ninputs = 100,
                       nclasses = 2,
-                      sigma = 0.6,
+                      sigma = 0.8,
                       x = c(-5, 5),
-                      y = c(-5, 5)) {
+                      y = c(-5, 5)
+                      ) {
   nsigma <- length(sigma)
   xcoord <- sample(x[1]:x[2], nclasses, replace = TRUE)
   ycoord <- sample(y[1]:y[2], nclasses, replace = TRUE)
@@ -18,12 +34,12 @@ make_test <- function(ninputs = 100,
       y = rnorm(ninputs, ycoord[1], sigma[1]),
       class = rep('A', times = ninputs)
     )
-  sapply(2:nclasses, function(i) {
+  sapply(1:(nclasses-1), function(i) {
     class <- LETTERS[i]
     test <<-
       rbind(test, data.frame(
-        x = rnorm(ninputs, xcoord[i], sigma[i]),
-        y = rnorm(ninputs, ycoord[i], sigma[i]),
+        x = rnorm(ninputs, xcoord[i], sigma[i%%nsigma+1]),
+        y = rnorm(ninputs, ycoord[i], sigma[i%%nsigma+1]),
         class = rep(class, times = ninputs)
       ))
   })
@@ -32,13 +48,21 @@ make_test <- function(ninputs = 100,
 #estimators of chapter 4.3
 
 pi_est <- function(results) {
-  vec <- unique(results)
-  n <- length(results)
-  t <- table(results)
-  return(sapply(vec, function(x)
-    t[as.character(x)] / n))
+  classes <- unique(results)
+  K <- length(results)
+  obs <- table(results)
+  #return possibilitys in order of classes
+  return(sapply(classes, function(class)
+    obs[as.character(x)] / K))
 }
-
+#'mue_est
+#'
+#'given a dataframe with Parameters of Observations and a second dataframe with the corresponding Classes 
+#'mu_es returns a Matrix with the mean vectors of the classes as rows.
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@param results Vector of corresponding Classes to the Data
+#'@return A Matrix with the mean vectors of the classes as rows
 mu_est <- function(data, results) {
   data <- as.data.frame(data)
   classes <- unique(results)
@@ -46,14 +70,17 @@ mu_est <- function(data, results) {
   mu <- sapply(classes, function(class) {
     colMeans(data[results == class,])
   })
-  print(mu)
   mu <- t(mu)
-  rownames(mu) <- as.character(classes)
   return(mu)
 }
-mu_est(test[c('x','y')],test$class)
+#'sigma_class
+#'
+#'given a dataframe with parameters of Observations of one Class sigma_class returns the
+#'covariance matrix of the Data.
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@return The covariance matrix of the Data 
 sigma_class <- function(data, mu= colMeans(data)){
-  
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   apply(data, 1, function(x) {
@@ -155,7 +182,6 @@ getseperatorfun <- function(a,
       else{
         getzero(c(y, x))
       }
-      
     }
     y <- get_Y_Value(z, y)
     if (inverse == FALSE) {
@@ -175,7 +201,7 @@ getseperatorfun <- function(a,
   }
   return(sep)
 }
-
+#Not finished yet
 make_seperator <- function(classf,
                            nclass,
                            x = c(-5, 5),
@@ -196,7 +222,10 @@ make_seperator <- function(classf,
       })
     })
   return(sepdata)
-  }
+}
+
+
+###
 
 make_plot <- function(data,
                       results,
@@ -256,6 +285,9 @@ QDA <- function(data, results) {
   }
   return(delta)
 }
+
+#################
+#Test
 
 
 x <- c(-10, 10)
