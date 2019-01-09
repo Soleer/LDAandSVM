@@ -35,8 +35,10 @@ pi_est <- function(results) {
   n <- length(results)
   t <- table(results)
   return(sapply(vec, function(x)
-    t[x] / n))
+    t[as.character(x)] / n))
 }
+x <- c(1,4,5,2,3.5,6,7,1)
+pi_est(x)
 
 mu_est <- function(data, results) {
   data <- as.data.frame(data)
