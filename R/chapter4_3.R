@@ -1,47 +1,42 @@
 library(ggplot2)
 set.seed(0)
-
+rep('A', 10)
 #Chapter 4.3
-
-
-# Gauß test data 4 classes same sigma:
-test <-
-  data.frame(
-    x = rnorm(100, 0, 0.6),
-    y = rnorm(100, 0, 0.6),
-    class = rep('A', 100)
-  )
-test1 <- data.frame(
-  x = rnorm(100, 0, 0.6),
-  y = rnorm(100,-2, 0.6),
-  class = rep('B', 100)
-)
-test2 <-
-  data.frame(
-    x = rnorm(100, 0, 0.6),
-    y = rnorm(100, 2, 0.6),
-    class = rep('C', 100)
-  )
-test3 <-
-  data.frame(
-    x = rnorm(100, 2, 0.6),
-    y = rnorm(100, 2, 0.6),
-    class = rep('D', 100)
-  )
-test <- rbind(test, test1, test2,test3)
-#Plot it
-testplot <- ggplot()
-testplot <-
-  testplot + geom_jitter(data = test, aes(x, y, color = class), shape=24,height=0 , width=0)
-testplot
-
+# Gauß test data n classes same sigma:
+make_test <- function(ninputs = 100,
+                      nclasses = 2,
+                      sigma = 0.6,
+                      x = c(-5, 5),
+                      y = c(-5, 5)) {
+  nsigma <- length(sigma)
+  xcoord <- sample(x[1]:x[2], nclasses, replace = TRUE)
+  ycoord <- sample(y[1]:y[2], nclasses, replace = TRUE)
+  print(1)
+  test <-
+    data.frame(
+      x = rnorm(ninputs, xcoord[1], sigma[1]),
+      y = rnorm(ninputs, ycoord[1], sigma[1]),
+      class = rep('A', times = ninputs)
+    )
+  sapply(2:nclasses, function(i) {
+    class <- LETTERS[i]
+    test <<-
+      rbind(test, data.frame(
+        x = rnorm(ninputs, xcoord[i], sigma[i]),
+        y = rnorm(ninputs, ycoord[i], sigma[i]),
+        class = rep(class, times = ninputs)
+      ))
+  })
+  return(test)
+}
 #estimators of chapter 4.3
 
 pi_est <- function(results) {
+  vec <- unique(results)
   n <- length(results)
-  vec <- table(results)
+  t <- table(results)
   return(sapply(vec, function(x)
-    x / n))
+    t[as.character(x)] / n))
 }
 
 mu_est <- function(data, results) {
@@ -51,9 +46,20 @@ mu_est <- function(data, results) {
   mu <- sapply(classes, function(class) {
     colMeans(data[results == class,])
   })
+  print(mu)
   mu <- t(mu)
   rownames(mu) <- as.character(classes)
   return(mu)
+}
+mu_est(test[c('x','y')],test$class)
+sigma_class <- function(data, mu= colMeans(data)){
+  
+  n <- dim(data)[2]
+  Bn <- diag(0, ncol = n, nrow = n)
+  apply(data, 1, function(x) {
+    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+  })
+  return(Bn/(dim(data)[1]-1))
 }
 
 sigma_est <- function(data, results) {
@@ -62,15 +68,14 @@ sigma_est <- function(data, results) {
   N <- length(results)
   mu <- mu_est(data, results)
   n <- dim(data)[2]
-  Bn <- diag(0,ncol=n,nrow=n)
+  Bn <- diag(0, ncol = n, nrow = n)
   sapply(1:K, function(k) {
     apply(data[results == G[k], ], 1, function(x) {
       Bn <<- Bn + ((x - mu[k, ]) %*% t(x - mu[k, ]))
     })
   })
-  return(Bn/(N-K))
+  return(Bn / (N - K))
 }
-sigma_est(test[c(1,2)],test$class)
 #LDA formular in one vector
 LDA <- function(data, results) {
   G <- unique(results)
@@ -78,74 +83,188 @@ LDA <- function(data, results) {
   p <- log(pi_est(results))
   mu <- mu_est(data, results)
   sigma <- solve(sigma_est(data, results))
-  print('SIGMA')
-  print(sigma)
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      (x%*% sigma %*% mu[k, ] - 1 / 2 * mu[k, ]%*% sigma %*% mu[k, ])
+      (x %*% sigma %*% mu[k, ] - 1 / 2 * mu[k, ] %*% sigma %*% mu[k, ])
     }) + p
     return(result)
   }
   return(delta)
 }
-#test
-f <- LDA(test[c('x', 'y')], test$class)
-f(c(2, 2))
 
 #LDA classification function -> G
-LDAclass <- function(data, results) {
-  classes <- unique(results)
-  f <- LDA(data, results)
+targets <- function(vector) {
+  n <- length(vector)
+  En <- diag(1, n, n)
+  V <- matrix(vector,
+              nrow = n,
+              ncol = n,
+              byrow = TRUE)
+  D <- En - V
+  results <- sapply(1:n, function(i) {
+    D[i,] %*% D[i,]
+  })
+  return(results)
+}
+
+classify <- function(uresults, f) {
   classfunction <- function(x) {
-    return(classes[which.max(f(x))])
+    return(uresults[which.min(targets(f(x)))])
   }
   return(classfunction)
 }
-f <- LDAclass(test[c('x', 'y')], test$class)
 
-#plot background
-plot <- data.frame(x=rep(seq(-5,5,length.out = 30),time=30),y=c(sapply(seq(-5,5,length.out = 30),function(x) rep(x,times=30))))
-plot$class <- apply(plot,1,f)
-testplot <- testplot+geom_jitter(data = plot, aes(x, y, color = class),shape=3, height=0 , width=0) 
-testplot
-
-
-
+classifyTargets <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.max(f(x))])
+  }
+  return(classfunction)
+}
 #seperating lines
-f <- LDA(test[c('x', 'y')], test$class)
-#getting the numbers
-create_id <- function(a,b,rf){
+
+create_id <- function(a, b, rf) {
   getzero <- function(x) {
     rf(x)[a] - rf(x)[b]
   }
   return(getzero)
 }
 
-get_Y_Value <- function(z,ploty){
-  upper=max(ploty)
-  lower=min(ploty)
-  if(z(lower) * z(upper) <= 0){
-    return(uniroot(z,ploty)$root)
+get_Y_Value <- function(z, ploty) {
+  upper = max(ploty)
+  lower = min(ploty)
+  if (z(lower) * z(upper) <= 0) {
+    return(uniroot(z, ploty)$root)
   }
   else{
     return(NA)
   }
-  
 }
-getseperatorfun <- function(a, b, rf, ploty = c(-5, 5)) {
+
+getseperatorfun <- function(a,
+                            b,
+                            rf,
+                            y = c(-5, 5),
+                            inv = FALSE) {
   getzero <- create_id(a, b, rf)
   sep <- function(x) {
+    inverse <- inv
     z <- function(y) {
-      getzero(c(x, y))
+      if (inverse == FALSE) {
+        getzero(c(x, y))
+      }
+      else{
+        getzero(c(y, x))
+      }
+      
     }
-    result <-get_Y_Value(z,ploty)
-    return(result)
+    y <- get_Y_Value(z, y)
+    if (inverse == FALSE) {
+      if (is.na(y) || which.max(rf(c(x, y))) == a ||
+          which.max(rf(c(x, y))) == b) {
+        return(y)
+      }
+      return(NA)
+    }
+    else{
+      if (is.na(y) || which.max(rf(c(y, x))) == a ||
+          which.max(rf(c(y, x))) == b) {
+        return(y)
+      }
+      return(NA)
+    }
   }
   return(sep)
 }
-h <- getseperatorfun(3,4,f)
-h_test <- h(1)
-test <- getseperatorfun(1,2,f)
-sepdata <- data.frame(x=c(seq(-5,0,length.out = 30),seq(0,5,length.out = 30)))
-sepdata$y <- apply(sepdata,1,test)
-testplot+ geom_path(data = sepdata, aes(x = x, y = y)) 
+
+make_seperator <- function(classf,
+                           nclass,
+                           x = c(-5, 5),
+                           y = c(-5, 5),
+                           ppu = 10) {
+  xval <-  seq(x[1], x[2], length.out = (x[2]-x[1])*ppu)
+  yval <- seq(y[1],y[2], length.out = (y[2]-y[1])*ppu)
+  lines <- data.frame()
+  sapply(1:(nclass - 1), function(i) {
+    sapply((i + 1):nclass, function(j) {
+      
+      s <- getseperatorfun(i, j, classf, y = y)
+      sinv <- getseperatorfun(i, j, classf, y = x, inv=TRUE)
+      ony <- FALSE
+      lines[] <<- sapply(sepdata$xval, function(x){
+        
+      })
+      })
+    })
+  return(sepdata)
+  }
+
+make_plot <- function(data,
+                      results,
+                      type = LDA,
+                      y = c(-5, 5),
+                      x = c(-5, 5),
+                      ppu = 10) {
+  #prama
+  f <- type(data, results)
+  uresults <- unique(results)
+  classfun <- classify(uresults, f)
+  n <- length(uresults)
+  xtimes <- (x[2] - x[1]) * ppu
+  ytimes <- (y[2] - y[1]) * ppu
+  mainplotdata <- cbind(data, results)
+  mainplot <- ggplot() + xlim(x[1],x[2])+ylim(y[1],y[2])
+  mainplot <-
+    mainplot + geom_jitter(
+      data = mainplotdata,
+      aes(x, y, color = results),
+      shape = 20,height = 0,width = 0
+    )
+  #background
+  background <-
+    data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
+               y = c(sapply(seq(y[1], y[2], length.out = ytimes), function(x)
+                 rep(x, times = xtimes))))
+  background$class <- apply(background, 1, classfun)
+  mainplot <- mainplot + geom_jitter(
+    data = background,
+    aes(x, y, color = class),
+    shape = 3,
+    height = 0,width = 0
+  )
+  #Lines???
+  
+  
+  
+  return(mainplot)
+}
+#QDA
+
+QDA <- function(data, results) {
+  G <- unique(results)
+  K <- length(G)
+  p <- log(pi_est(results))
+  mu <- mu_est(data, results)
+  sigma_list <- lapply(1:K, function(k) {
+    sigma_class(data[results==G[k],],mu[k])
+    })
+  sigma_inv <- lapply(sigma_list,solve)
+  delta <- function(x) {
+    result <- sapply(1:K, function(k) {
+      -1 / 2 * log(det(sigma_list[[k]])) - 1 / 2 * t(x - mu[k, ]) %*% sigma_inv[[k]] %*% (x - mu[k, ])
+    }) + p
+    return(result)
+  }
+  return(delta)
+}
+
+
+x <- c(-10, 10)
+y <- c(-10, 10)
+sig <- c(1, 1.5, 2,0.5)
+test <- make_test(100, nclasses = 4, sigma = sig )
+testplot <-
+  make_plot(test[c('x', 'y')], test$class, type =  QDA, x, y, ppu = 5)
+testplot1 <-
+  make_plot(test[c('x', 'y')], test$class, type =  LDA, x, y, ppu = 5)
+
+grid.arrange(testplot,testplot1,nrow=1)
