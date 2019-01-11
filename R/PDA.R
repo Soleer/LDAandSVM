@@ -53,7 +53,7 @@ sigma_est(test[c(1,2)], test$class)
 
 Omega <- diag(3, nrow(sigma_est(test[c(1,2)], test$class)))
 
-h_q <- function(x){
+h <- function(x){
   x
 }
 
@@ -134,7 +134,6 @@ PDA <- function(data, results) {
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
       t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% h(x) - h(mu[k, ])
-      #-1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% (h(x) - h(mu[k, ]))
     }) 
     return(result)
   }
