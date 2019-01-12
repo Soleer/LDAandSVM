@@ -1,5 +1,5 @@
 library(ggplot2)
-
+library(gridExtra)
 #testdatensatz Gauß 2D
 set.seed(0)
 test <-
@@ -193,7 +193,7 @@ PDA <- function(data, results) {
   sigma_list <- lapply(1:K, function(k) {
     sigma_class(data_exp[results==G[k],],mu[k])
   })
-  Matrix <- lapply(sigma_list, function(x) solve(x))
+  Matrix <- lapply(sigma_list, function(x) solve(x + diag(0, nrow=nrow(x), ncol=ncol(x))))
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
@@ -282,7 +282,7 @@ make_test <- function(ninputs = 100,
 
 x <- c(-10, 10)
 y <- c(-10, 10)
-sig <- c(1, 1.5, 2,0.5)
+sig <- c(1, 1, 1, 1)
 test <- make_test(100, nclasses = 4, sigma = sig )
 testplot <-
   make_plot(test[c('x', 'y')], test$class, type =  LDA, x, y, ppu = 5, owntitle = "LDA")
@@ -296,7 +296,10 @@ testplot2 <-
 testplot3 <-
   make_plot(test[c('x', 'y')], test$class, type =  QDA_exp, x, y, ppu = 5, owntitle = "QDA_exp")
 
-grid.arrange(testplot,testplot1,testplot2,testplot3, nrow=2, ncol=2)
+testplot4 <-
+  make_plot(test[c('x', 'y')], test$class, type =  PDA, x, y, ppu = 5, owntitle = "PDA")
+
+grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 
 ########################################################################################
 # 
