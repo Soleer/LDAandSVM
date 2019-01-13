@@ -47,9 +47,7 @@ sigma_est <- function(data, results) {
   })
   return(Bn/(N-K))
 }
-  
-mu <- mu_est(test[c(1,2)], test$class)
-sigma_est(test[c(1,2)], test$class)
+
 
 Omega <- diag(3, nrow(sigma_est(test[c(1,2)], test$class)))
 
@@ -134,17 +132,12 @@ PDA <- function(data, results) {
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
       t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% h(x) - h(mu[k, ])
-    }) 
+    }) + p
     return(result)
   }
   return(delta)
 }
 
-test <- make_test(100, nclasses = 4, sigma = sig )
-testplot <-
-  make_plot(test[c('x', 'y')], test$class, type =  QDA, x, y, ppu = 5)
-
-testplot
 
 classify <- function(uresults, f) {
   classfunction <- function(x) {
@@ -236,50 +229,3 @@ testplot
 ########################################################################################
 
 
-y <- Dist_to_class(c(1,2), test[c(1,2)], test$class, "red")
-
-class_distances <- function(x, data, results){
-  classes <- as.vector(unique(results))
-  M <- matrix(NA, ncol = length(classes), nrow = 1)
-  colnames(M) <- classes
-  for(i in seq_along(classes)){
-    M[1, i] <- Dist_to_class(x, data, results, classes[i])
-  }
-  return(M)
-}
-
-Class_distances(c(1,2), test[c(1, 2)], test$class)
-
-closest_class <- function(x, data, results){
-  M <- class_distances(x, data, results)
-  class_index <- which.min(M[1, ])
-  colnames(M)[class_index]
-}
-
-closest_class(c(1,2), test[c(1, 2)], test$class)
-
-
-generate_grid <- function(x_min = 0, x_max = 0, length = 0){
-  if(length < 0){
-    stop("length must be positive or zero")
-  }
-  if(x_max < x_min){
-    stop("Upper limit must be larger than lower limit")
-  }
-  
-  x_rep = numeric(0)
-  y_rep = numeric(0)
-  
-  
-  for(i in 0:length){
-    x <- x_min + (x_max - x_min)/length * i
-    x_rep <- c(x_rep, rep(x, times = (length+1)))
-  }
-  
-  y <- seq(x_min, x_max, length.out = (length+1))
-  y_rep <- rep(y, times = (length+1))
-  
-  Grid <- matrix(c(x_rep, y_rep), nrow = ((length+1)^2), ncol = 2)
-  Grid <- as.data.frame(Grid)
-  
-}
