@@ -67,7 +67,7 @@ mu_est <- function(data, results) {
   data <- as.data.frame(data)
   classes <- unique(results)
   mu <- sapply(classes, function(class) {
-    colMeans(data[results == class,])
+    colMeans(data[results == class, ])
   })
   mu <- t(mu)
   return(mu)
@@ -96,8 +96,8 @@ sigma_est <- function(data, results) {
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   sapply(1:K, function(k) {
-    apply(data[results == G[k], ], 1, function(x) {
-      Bn <<- Bn + ((x - mu[k, ]) %*% t(x - mu[k, ]))
+    apply(data[results == G[k],], 1, function(x) {
+      Bn <<- Bn + ((x - mu[k,]) %*% t(x - mu[k,]))
     })
   })
   return(Bn / (N - K))
@@ -136,7 +136,7 @@ targets <- function(vector) {
               byrow = TRUE)
   D <- En - V
   results <- sapply(1:n, function(i) {
-    D[i,] %*% D[i,]
+    D[i, ] %*% D[i, ]
   })
   return(results)
 }
@@ -245,7 +245,7 @@ LDA <- function(data, results) {
   sigma <- solve(sigma_est(data, results))
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      (x %*% sigma %*% mu[k, ] - 1 / 2 * mu[k, ] %*% sigma %*% mu[k, ])
+      (x %*% sigma %*% mu[k,] - 1 / 2 * mu[k,] %*% sigma %*% mu[k,])
     }) + p
     return(result)
   }
@@ -259,7 +259,7 @@ QDA <- function(data, results) {
   p <- log(pi_est(results))
   mu <- mu_est(data, results)
   sigma_list <- lapply(1:K, function(k) {
-    sigma_class(data[results == G[k],], mu[k])
+    sigma_class(data[results == G[k], ], mu[k])
   })
   sigma_inv <- lapply(sigma_list, solve)
   sigma_log_det <- lapply(sigma_list, function(x) {
@@ -267,7 +267,7 @@ QDA <- function(data, results) {
   })
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      -1 / 2 * sigma_log_det[[k]] - 1 / 2 * t(x - mu[k, ]) %*% sigma_inv[[k]] %*% (x - mu[k, ])
+      -1 / 2 * sigma_log_det[[k]] - 1 / 2 * t(x - mu[k,]) %*% sigma_inv[[k]] %*% (x - mu[k,])
     }) + p
     return(result)
   }
@@ -376,31 +376,49 @@ plot_error <- function(data, results, f) {
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
   charts <- lapply(G, function(class) {
-    probs_Data[paste0(class,'l')] <- scales::percent(probs_Data[,class])
+    probs_Data[paste0(class, 'l')] <-
+      scales::percent(probs_Data[, class])
     colsum <- 0
-    probs_Data[paste0(class,'yl')] <- sapply(probs_Data[,class], function(x){
-      colsum<<-colsum+x
-      colsum-x/2
-    })
+    probs_Data[paste0(class, 'yl')] <-
+      sapply(probs_Data[, class], function(x) {
+        colsum <<- colsum + x
+        colsum - x / 2
+      })
     
-    left <- ggplot(data = probs_Data[1:n,]) +
-      geom_bar(aes_string(x = '""', y = class, fill = 'class'), stat = "identity", width = 1) +
+    left <- ggplot(data = probs_Data[1:n, ]) +
+      geom_bar(aes_string(x = '""', y = class, fill = 'class'),
+               stat = "identity",
+               width = 1) +
       coord_polar("y", start = 0) +
-      theme_void() +geom_text(aes_string(x='1', y = paste0(class,'yl'), label=paste0(class,'l')))+
-      labs(caption=paste0('f(x=',class,')'))+theme(legend.position="none")
+      theme_void() + geom_text(aes_string(
+        x = '1',
+        y = paste0(class, 'yl'),
+        label = paste0(class, 'l')
+      )) +
+      labs(caption = paste0('f(x=', class, ')')) + theme(legend.position =
+                                                           "none")
     
-    probs_Results[paste0(class,'l')] <- scales::percent(probs_Results[,class])
+    probs_Results[paste0(class, 'l')] <-
+      scales::percent(probs_Results[, class])
     colsum <- 0
-    probs_Results[paste0(class,'yl')] <- sapply(probs_Results[,class], function(x){
-      colsum<<-colsum+x
-      colsum-x/2
-    })
-    right <- ggplot(data = probs_Results[1:n,]) +
-      geom_bar(aes_string(x = '""', y = class, fill = 'class'), stat = "identity", width = 1) +
+    probs_Results[paste0(class, 'yl')] <-
+      sapply(probs_Results[, class], function(x) {
+        colsum <<- colsum + x
+        colsum - x / 2
+      })
+    right <- ggplot(data = probs_Results[1:n, ]) +
+      geom_bar(aes_string(x = '""', y = class, fill = 'class'),
+               stat = "identity",
+               width = 1) +
       coord_polar("y", start = 0) +
-      theme_void() +geom_text(aes_string(x='1', y = paste0(class,'yl'), label=paste0(class,'l')))+
-      labs(caption=paste0('Alpha-Fehler von ',class))+theme(legend.position="none")
-    return(grid.arrange(left,right,nrow=1))
+      theme_void() + geom_text(aes_string(
+        x = '1',
+        y = paste0(class, 'yl'),
+        label = paste0(class, 'l')
+      )) +
+      labs(caption = paste0('Alpha-Fehler von ', class)) + theme(legend.position =
+                                                                   "none")
+    return(grid.arrange(left, right, nrow = 1))
   })
   return(charts)
 }
@@ -412,18 +430,23 @@ test <- make_test(100,
                   sigma = sig)
 f <- classify(unique(test$class), LDA(test[1:2], test$class))
 liste <- plot_error(test[1:2], test$class, f)
-p1 <- do.call(grid.arrange,liste)
+p1 <- do.call(grid.arrange, liste)
 testplot <-
   make_2D_plot(test[1:2], test$class, type = LDA, ppu = 5)
 f2 <- classify(unique(test$class), QDA(test[1:2], test$class))
 liste1 <- plot_error(test[1:2], test$class, f2)
-p2 <- do.call(grid.arrange,liste1)
+p2 <- do.call(grid.arrange, liste1)
 testplot1 <-
   make_2D_plot(test[1:2], test$class, type = QDA, ppu = 5)
-plotlist <- list(p1,testplot)
-plotlist2 <- list(p2,testplot1)
-do.call("grid.arrange", c(plotlist, ncol=2,top="LDA"))
-ggsave('LDA.png',device='png',dpi=400)
-do.call("grid.arrange", c(plotlist2, ncol=2,top="QDA"))
-ggsave('QDA.png',device='png',dpi=400)
-
+plotlist <- list(p1, testplot)
+plotlist2 <- list(p2, testplot1)
+nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "LDA"))
+ggsave('LDA.png',
+       plot = nice,
+       device = 'png',
+       dpi = 400)
+nice2 <- do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
+ggsave('QDA.png',
+       plot = nice2,
+       device = 'png',
+       dpi = 400)
