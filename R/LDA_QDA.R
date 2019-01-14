@@ -280,13 +280,11 @@ QDA <- function(data, results) {
 #killr 2D plot
 make_2D_plot <- function(data,
                          results,
-                         type = LDA,
+                         classfun,
                          ppu = 10,
                          bg = TRUE) {
   #prama
-  f <- type(data, results)
   uresults <- unique(results)
-  classfun <- classify(uresults, f)
   n <- length(uresults)
   xtimes <- (x[2] - x[1]) * ppu
   ytimes <- (y[2] - y[1]) * ppu
@@ -467,7 +465,7 @@ p1 <- do.call(grid.arrange, liste)
 testplot <-
   make_2D_plot(test[1:4],
                test$class,
-               type = LDA,
+               f,
                ppu = 5)
 f2 <- classify(unique(test$class), QDA(test[1:4], test$class))
 liste1 <- plot_error(test[1:4], test$class, f2)
@@ -475,7 +473,7 @@ p2 <- do.call(grid.arrange, liste1)
 testplot1 <-
   make_2D_plot(test[1:4],
                test$class,
-               type = QDA,
+               f2,
                ppu = 5)
 plotlist <- list(p1, testplot)
 plotlist2 <- list(p2, testplot1)
