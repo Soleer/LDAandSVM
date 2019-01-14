@@ -454,6 +454,7 @@ plot_error <- function(data, results, f) {
   return(charts)
 }
 
+##Analyse
 sig <- c(1,1.5,2,2.5,1.3,1.1,2.1,1.8)
 test <- make_test(100,
                   nparam = 4,
