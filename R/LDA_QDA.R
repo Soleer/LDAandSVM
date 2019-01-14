@@ -295,7 +295,6 @@ make_2D_plot <- function(data,
   proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
   x <- c(min(proj_data[, 1]), max(proj_data[, 1]))
   y <- c(min(proj_data[, 2]), max(proj_data[, 2]))
-  print(proj_data)
   d <- dim(data)[2]
   #prepare plot data
   #input
@@ -388,7 +387,7 @@ plot_error <- function(data, results, f) {
       geom_bar(aes_string(x = '""', y = class, fill = 'class'), stat = "identity", width = 1) +
       coord_polar("y", start = 0) +
       theme_void() +geom_text(aes_string(x='1', y = paste0(class,'yl'), label=paste0(class,'l')))+
-      ggtitle(paste('x=',class,'is sorted to:'))
+      labs(caption=paste0('f(x=',class,')'))+theme(legend.position="none")
     
     probs_Results[paste0(class,'l')] <- scales::percent(probs_Results[,class])
     colsum <- 0
@@ -400,13 +399,11 @@ plot_error <- function(data, results, f) {
       geom_bar(aes_string(x = '""', y = class, fill = 'class'), stat = "identity", width = 1) +
       coord_polar("y", start = 0) +
       theme_void() +geom_text(aes_string(x='1', y = paste0(class,'yl'), label=paste0(class,'l')))+
-      ggtitle(paste('f(x)=',class,'actually is:'))
-    return(list(left,right))
+      labs(caption=paste0('Alpha-Fehler von ',class))+theme(legend.position="none")
+    return(grid.arrange(left,right,nrow=1))
   })
   return(charts)
 }
-a <- 'b'
-
 
 sig <- c(1, 1.5, 2, 0.5)
 test <- make_test(100,
@@ -414,46 +411,19 @@ test <- make_test(100,
                   nclasses = 4,
                   sigma = sig)
 f <- classify(unique(test$class), LDA(test[1:2], test$class))
-calc_error(test[1:2], test$class, f)
 liste <- plot_error(test[1:2], test$class, f)
-liste[[1]]
+p1 <- do.call(grid.arrange,liste)
 testplot <-
   make_2D_plot(test[1:2], test$class, type = LDA, ppu = 5)
+f2 <- classify(unique(test$class), QDA(test[1:2], test$class))
+liste1 <- plot_error(test[1:2], test$class, f2)
+p2 <- do.call(grid.arrange,liste1)
 testplot1 <-
   make_2D_plot(test[1:2], test$class, type = QDA, ppu = 5)
-grid.arrange(testplot, testplot1, nrow = 1)
+plotlist <- list(p1,testplot)
+plotlist2 <- list(p2,testplot1)
+do.call("grid.arrange", c(plotlist, ncol=2,top="LDA"))
+ggsave('LDA',device='png',dpi=400)
+do.call("grid.arrange", c(plotlist2, ncol=2,top="QDA"))
+ggsave('QDA',device='png',dpi=400)
 
-
-library(dplyr)
-library(ggplot2)
-data <-
-  data.frame(
-    a = c(
-      "a1",
-      "a1",
-      "a2",
-      "a3",
-      "a1",
-      "a2",
-      "a3",
-      "a4",
-      "a2",
-      "a1",
-      "a5",
-      "a4",
-      "a3"
-    ),
-    b = 1:13
-  )
-data <- data %>%
-  group_by(a) %>%
-  count() %>%
-  ungroup() %>%
-  mutate(per = `n` / sum(`n`)) %>%
-  arrange(desc(a))
-data$label <- scales::percent(data$per)
-data
-ggplot(data = data) +
-  geom_bar(aes_string(x = '""', y = 'per', fill = 'a'), stat = "identity", width = 1) +
-  coord_polar("y", start = 0) +
-  theme_void()
