@@ -21,30 +21,74 @@ testplot <-
 testplot
 
 
-h <- function(x){
-  if(is.vector(x)){
-    len <- length(x)
-    for(i in 1:len){
-      for(j in i:len){
-        y <- x[i] * x[j]
-        x <- c(x, y)
-      }
-    }
+
+basis_exp <- function(type){
+  if(type == "quad"){
+    return(quad <- function(x){
+              if(is.vector(x)){
+                len <- length(x)
+                for(i in 1:len){
+                  for(j in i:len){
+                    y <- x[i] * x[j]
+                    x <- c(x, y)
+                  }
+                }
+              }
+              if(is.data.frame(x)){
+                cols <- ncol(x)
+                name <- names(x)
+                for(i in 1:cols){
+                  for(j in i:cols){
+                    y <- x[, i] * x[, j]
+                    name <- c(name, paste(name[i], "*" , name[j]))
+                    x <- cbind(x, y)
+                    colnames(x) <- name
+                  }
+                }
+              }
+              return(x)
+            })
   }
-  if(is.data.frame(x)){
-    cols <- ncol(x)
-    name <- names(x)
-    for(i in 1:cols){
-      for(j in i:cols){
-        y <- x[, i] * x[, j]
-        name <- c(name, paste(name[i], "*" , name[j]))
-        x <- cbind(x, y)
-        colnames(x) <- name
-      }
-    }
+  if(type == "cube"){
+    return(cube <- function(x) {
+              quad <- basis_exp("quad")
+              quad_x <- quad(x)
+              if (is.vector(x)) {
+                len <- length(x)
+                for (i in 1:len) {
+                  for (j in i:len) {
+                    for (k in j:len) {
+                      y <- x[i] * x[j] * x[k]
+                      x <- c(x, y)
+                    }
+                  }
+                }
+                x <- c(quad_x, x[(len+1) : length(x)])
+              }
+              if (is.data.frame(x)) {
+                len <- ncol(x)
+                name <- names(x)
+                for (i in 1:len) {
+                  for (j in i:len) {
+                    for (k in j:len) {
+                      y <- x[, i] * x[, j] * x[, k]
+                      name <-
+                        c(name, paste(name[i], "*" , name[j], "*", name[k]))
+                      x <- cbind(x, y)
+                      colnames(x) <- name
+                    }
+                  }
+                }
+                x <- cbind(quad_x, x[, (len+1) : ncol(x)])
+              }
+              return(x)
+            })
   }
-  return(x)
 }
+
+h <- basis_exp("cube")
+h(c(1,2))
+h(test[1:10, c(1,2)])
 
 test_expanded <- cbind(h(test[c(1, 2)]), test$class)
 names(test_expanded)[ncol(test_expanded)] <- "class"
@@ -114,7 +158,7 @@ pi_est <- function(results) {
     t[as.character(x)] / n))
 }
 
-LDA <- function(data, results) {
+LDA <- function(data, results, ...) {
   G <- unique(results)
   K <- length(G)
   p <- log(pi_est(results))
@@ -129,7 +173,7 @@ LDA <- function(data, results) {
   return(delta)
 }
 
-QDA <- function(data, results) {
+QDA <- function(data, results, ...) {
   G <- unique(results)
   K <- length(G)
   p <- log(pi_est(results))
@@ -148,7 +192,8 @@ QDA <- function(data, results) {
   return(delta)
 }
 
-LDA_exp <- function(data, results){
+LDA_exp <- function(data, results, base){
+  h <- basis_exp(base)
   data_exp <- h(data)
   G <- unique(results)
   K <- length(G)
@@ -164,7 +209,8 @@ LDA_exp <- function(data, results){
   return(delta)
 }
 
-QDA_exp <- function(data, results) {
+QDA_exp <- function(data, results, base) {
+  h <- basis_exp(base)
   data_exp <- h(data)
   G <- unique(results)
   K <- length(G)
@@ -184,7 +230,8 @@ QDA_exp <- function(data, results) {
   return(delta)
 }
 
-PDA <- function(data, results) {
+PDA <- function(data, results, base) {
+  h <- basis_exp(base)
   data_exp <- h(data)
   G <- unique(results)
   K <- length(G)
@@ -217,9 +264,10 @@ make_plot <- function(data,
                       y = c(-5, 5),
                       x = c(-5, 5),
                       ppu = 10,
-                      owntitle) {
+                      owntitle, 
+                      base = NA) {
   #prama
-  f <- type(data, results)
+  f <- type(data, results, base)
   uresults <- unique(results)
   classfun <- classify(uresults, f)
   n <- length(uresults)
@@ -291,13 +339,13 @@ testplot1 <-
   make_plot(test[c('x', 'y')], test$class, type =  QDA, x, y, ppu = 5, owntitle = "QDA")
 
 testplot2 <-
-  make_plot(test[c('x', 'y')], test$class, type =  LDA_exp, x, y, ppu = 5, owntitle = "LDA_exp")
+  make_plot(test[c('x', 'y')], test$class, type =  LDA_exp, base = "cube", x, y, ppu = 5, owntitle = "LDA_exp")
 
 testplot3 <-
-  make_plot(test[c('x', 'y')], test$class, type =  QDA_exp, x, y, ppu = 5, owntitle = "QDA_exp")
+  make_plot(test[c('x', 'y')], test$class, type =  QDA_exp, base = "cube", x, y, ppu = 5, owntitle = "QDA_exp")
 
 testplot4 <-
-  make_plot(test[c('x', 'y')], test$class, type =  PDA, x, y, ppu = 5, owntitle = "PDA")
+  make_plot(test[c('x', 'y')], test$class, type =  PDA, base = "cube", x, y, ppu = 5, owntitle = "PDA")
 
 grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 
@@ -350,3 +398,109 @@ grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 #   Grid <- as.data.frame(Grid)
 #   
 # }
+
+
+## falsche Basiserweiterungen
+
+# # basis_pol <- function(x){
+# #   if(is.vector(x)){
+# #     len <- length(x)
+# #     for(i in 1:len){
+# #       for(j in i:len){
+# #         for(k in j:len){
+# #           y <- x[i] * x[j] * x[k]
+# #           x <- c(x, y) 
+# #         }
+# #       }
+# #     }
+# #   }
+# #   if(is.data.frame(x)){
+# #     cols <- ncol(x)
+# #     name <- names(x)
+# #     for(i in 1:cols){
+# #       for(j in i:cols){
+# #         for(k in j:cols){
+# #           y <- x[, i] * x[, j] * x[, k]
+# #           name <- c(name, paste(name[i], "*" , name[j], "*", name[k]))
+# #           x <- cbind(x, y)
+# #           colnames(x) <- name 
+# #         }
+# #       }
+# #     }
+# #   }
+# #   return(x)
+# # }
+# 
+# mult_bases <- function(base, exp){
+#   if(is.vector(base) && is.vector(exp)){
+#     base_len <- length(base)
+#     exp_len <- length(exp)
+#     x <- numeric(0)
+#     doubles <- t(as.matrix(c(0, 0)))
+#     for(i in 1:base_len){
+#       for(j in 1:exp_len){
+#         if(matrix_row(doubles, c(i, j)) == TRUE || matrix_row(doubles, c(j, i)) == TRUE){
+#           ## Doppelnennungen ueberspringen
+#         }
+#         else{
+#           doubles <- rbind(doubles, c(i, j))
+#           y <- base[i] * exp[j]
+#           x <- c(x, y)
+#         }
+#       }
+#     }
+#     return(x)
+#   }
+#   if(is.data.frame(base) && is.data.frame(exp)){
+#     base_names <- names(base)
+#     exp_names <- names(exp)
+#     name <- character(0)
+#     doubles <- t(as.matrix(c(0, 0)))
+#     x <- numeric(length(base))
+#     for(i in 1:length(base)){
+#       for(j in 1:length(exp)){
+#         if(matrix_row(doubles, c(i, j)) == TRUE || matrix_row(doubles, c(j, i)) == TRUE){
+#           #Doppelnennungen ueberspringen
+#         }
+#         else{
+#           doubles <- rbind(doubles, c(i, j))
+#           name <- c(name, paste(base_names[i], "*", exp_names[j]))
+#           y <- base[i] * exp[j]
+#           x <- cbind(x, y)
+#         }
+#       }
+#     }
+#     as.data.frame(x)
+#     print(doubles)
+#     x <- x[, -1]
+#     colnames(x) <- name
+#     return(x)
+#   }
+# }
+# 
+# 
+# matrix_row<- function(mat, vec){
+#   for(n in 1:nrow(mat)){
+#     if(sum(as.vector(mat[n, ]) == vec) == length(vec)){
+#       return(TRUE)
+#     }
+#   }
+#   return(FALSE)
+# }
+# 
+# basis_pol <- function(base, d = 3){
+#   y <- base
+#   if(d <= 1){
+#     stop("Polynomial basis expansion must of degree >= 2")
+#   }
+#   if(d >=2){
+#     exp <- mult_bases(base, base)
+#     for(i in 2:d){
+#       y <- cbind(y, exp)
+#       exp <- mult_bases(base, exp)
+#     }
+#     return(y)
+#   }
+# }
+# 
+# basis_pol(test[1:10, c(1, 2)], d = 2)
