@@ -296,8 +296,80 @@ basis_exp <- function(type){
               return(x)
             })
   }
+  if(type == "log"){
+            return(function(x){
+              if(min(x) < 0){
+                stop("All values of x must larger than zero for sqrt expansion")
+              }
+              if(is.vector(x)){
+                expa <- sapply(x, sqrt)
+                return(c(x, expa))
+              }
+              if(is.data.frame(x)){
+                expa <- lapply(x, sqrt)
+                return(cbind(x, expa))
+              }
+              })
+  }
+  if(type == "sqrt"){
+              return(function(x){
+                if(min(x) < 0){
+                  stop("All values of x must larger than zero for sqrt expansion")
+                }
+                if(is.vector(x)){
+                  expa <- sapply(x, sqrt)
+                  return(c(x, expa))
+                }
+                if(is.data.frame(x)){
+                  expa <- lapply(x, sqrt)
+                  return(cbind(x, expa))
+                }
+              })
+  }
+  if(type == "abs"){
+    return(function(x){
+      if(is.vector(x)){
+        expa <- sapply(x, abs)
+        return(c(x, expa))
+      }
+      if(is.data.frame(x)){
+        expa <- lapply(x, abs)
+        return(cbind(x, expa))
+      }
+    })
+  }
+}
+?stopifnot
+?lapply
+base_abs <- function(x){
+  if(is.vector(x)){
+    expa <- sapply(x, abs)
+    return(c(x, expa))
+  }
+  if(is.data.frame(x)){
+    expa <- lapply(x, sqrt)
+    return(cbind(x, e))
+  }
 }
 
+base_log <- function(x){
+  if(min(x) < 0){
+    stop("All values of x must larger than zero for sqrt expansion")
+  }
+  if(is.vector(x)){
+    expa <- sapply(x, sqrt)
+    return(c(x, expa))
+  }
+  if(is.data.frame(x)){
+    expa <- lapply(x, sqrt)
+    return(cbind(x, expa))
+  }
+}
+
+min(test[, 1:4])
+base_sqrt(c(-1, 2))
+base_sqrt(test[1:10, c(1,2)])
+base_sqrt(c(1, 2))
 
 ## LDA, QDA, LDA_exp, QDA_exp, PDA
 
@@ -394,17 +466,12 @@ PDA <- function(data, results, base) {
   return(delta)
 }
 
-
-#################
-#Test
-
 #killr 2D plot
 make_2D_plot <- function(data,
                          results,
                          classfun,
                          ppu = 10,
-                         bg = TRUE
-                         ) {
+                         bg = TRUE) {
   #prama
   uresults <- unique(results)
   n <- length(uresults)
@@ -429,9 +496,9 @@ make_2D_plot <- function(data,
     mainplot + geom_jitter(
       data = input_data,
       aes(x = x, y = y, color = Legend),
-      shape = 20,
+      shape = 16,
       height = 0,
-      width = 0,
+      width = 0
     )
   #3. colored background
   if (bg == TRUE) {
@@ -576,34 +643,41 @@ plot_error <- function(data, results, f) {
   return(charts)
 }
 
+##Analyse
 sig <- c(1,1.5,2,2.5,1.3,1.1,2.1,1.8)
 test <- make_test(100,
-                  nparam = 4,
-                  nclasses = 8,
+                  nparam = 2,
+                  nclasses = 4,
                   sigma = sig)
-f <- classify(unique(test$class), PDA(test[1:4], test$class, base = "quad"))
-liste <- plot_error(test[1:4], test$class, f)
+f <- classify(unique(test$class), LDA(test[1:2], test$class))
+liste <- plot_error(test[1:2], test$class, f)
 p1 <- do.call(grid.arrange, liste)
 testplot <-
-  make_2D_plot(test[1:4],
+  make_2D_plot(test[1:2],
                test$class,
-               classfun = f,
-               ppu = 5)
-f2 <- classify(unique(test$class), QDA(test[1:4], test$class))
-liste1 <- plot_error(test[1:4], test$class, f2)
-p2 <- do.call(grid.arrange, liste1)
-testplot1 <-
-  make_2D_plot(test[1:4],
-               test$class,
-               type = QDA,
+               f,
                ppu = 5)
 plotlist <- list(p1, testplot)
-plotlist2 <- list(p2, testplot1)
 nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "LDA"))
+
+f2 <- classify(unique(test$class), PDA(test[1:2], test$class, base = "cube"))
+liste1 <- plot_error(test[1:2], test$class, f2)
+p2 <- do.call(grid.arrange, liste1)
+testplot1 <-
+  make_2D_plot(test[1:2],
+               test$class,
+               f2,
+               ppu = 5,
+               bg = TRUE)
+plotlist2 <- list(p2, testplot1)
+nice <- do.call("grid.arrange", c(plotlist2, ncol = 2, top = "PDA"))
+
+
 ggsave('LDA.png',
        plot = nice,
        device = 'png',
        dpi = 400)
+
 nice2 <-
   do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
 ggsave('QDA.png',
