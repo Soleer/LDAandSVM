@@ -149,6 +149,38 @@ sigma_est <- function(data, results) {
   })
   return(Bn/(N-K))
 }
+<<<<<<< HEAD
+
+
+Omega <- diag(3, nrow(sigma_est(test[c(1,2)], test$class)))
+
+h <- function(x){
+  x
+}
+
+dist_to_class <- function(x, data, results, class) {
+  class_index <- which(as.character(results) == class)
+  Mu_class <- mu_est(data[class_index, ], results[class_index])
+  Sigma_class <- sigma_est(data[class_index, ], result[class_index])
+  Matrix <- Sigma_class + Omega
+  
+  x_mu <- as.vector(h(x) - h(Mu_class))
+
+  Dist <- t(x_mu) %*% solve(Matrix) %*% x_mu
+  Dist[1,1]
+}
+
+sigma_class <- function(data, mu= colMeans(data)){
+  
+  n <- dim(data)[2]
+  Bn <- diag(0, ncol = n, nrow = n)
+  apply(data, 1, function(x) {
+    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+  })
+  return(Bn/(dim(data)[1]-1))
+}
+=======
+>>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
 
 pi_est <- function(results) {
   vec <- unique(results)
@@ -244,13 +276,22 @@ PDA <- function(data, results, base) {
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
+<<<<<<< HEAD
+      t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% h(x) - h(mu[k, ])
+    }) + p
+=======
       - (t(as.vector(h(x) - h(mu[k, ]))) %*% Matrix[[k]] %*% (as.vector(h(x) - h(mu[k, ])))) # Minus the function so that max is the searched value
     }) 
+>>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
     return(result)
   }
   return(delta)
 }
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
 classify <- function(uresults, f) {
   classfunction <- function(x) {
     return(uresults[which.max(f(x))])
@@ -347,6 +388,8 @@ testplot3 <-
 testplot4 <-
   make_plot(test[c('x', 'y')], test$class, type =  PDA, base = "cube", x, y, ppu = 5, owntitle = "PDA")
 
+<<<<<<< HEAD
+=======
 grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 
 ########################################################################################
@@ -398,6 +441,7 @@ grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 #   Grid <- as.data.frame(Grid)
 #   
 # }
+<<<<<<< HEAD
 
 
 ## falsche Basiserweiterungen
@@ -504,3 +548,6 @@ grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 # }
 # 
 # basis_pol(test[1:10, c(1, 2)], d = 2)
+=======
+>>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
+>>>>>>> 5600cc1a6e0b06c630ba64f34f382bea57b2f3e3
