@@ -423,7 +423,7 @@ testplot1 <-
 plotlist <- list(p1,testplot)
 plotlist2 <- list(p2,testplot1)
 do.call("grid.arrange", c(plotlist, ncol=2,top="LDA"))
-ggsave('LDA',device='png',dpi=400)
+ggsave('LDA.png',device='png',dpi=400)
 do.call("grid.arrange", c(plotlist2, ncol=2,top="QDA"))
-ggsave('QDA',device='png',dpi=400)
+ggsave('QDA.png',device='png',dpi=400)
 
