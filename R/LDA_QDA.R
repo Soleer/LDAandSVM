@@ -281,7 +281,8 @@ QDA <- function(data, results) {
 make_2D_plot <- function(data,
                          results,
                          type = LDA,
-                         ppu = 10) {
+                         ppu = 10,
+                         bg = TRUE) {
   #prama
   f <- type(data, results)
   uresults <- unique(results)
@@ -299,15 +300,7 @@ make_2D_plot <- function(data,
   #prepare plot data
   #input
   input_data <-
-    data.frame(x = proj_data[, 1], y = proj_data[, 2], z = results)
-  #background
-  background <-
-    data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-               y = c(sapply(
-                 seq(y[1], y[2], length.out = ytimes), rep, times = xtimes
-               )))
-  proj_background <- as.data.frame(t(apply(background, 1, proj_in)))
-  background$class <- apply(proj_background, 1, classfun)
+    data.frame(x = proj_data[, 1], y = proj_data[, 2], Legend = results)
   #make mainplot
   #1. limit
   mainplot <- ggplot() + xlim(x[1], x[2]) + ylim(y[1], y[2])
@@ -315,19 +308,29 @@ make_2D_plot <- function(data,
   mainplot <-
     mainplot + geom_jitter(
       data = input_data,
-      aes(x = x, y = y, color = z),
+      aes(x = x, y = y, color = Legend),
       shape = 20,
       height = 0,
       width = 0
     )
   #3. colored background
-  mainplot <- mainplot + geom_jitter(
-    data = background,
-    aes(x, y, color = class),
-    shape = 3,
-    height = 0,
-    width = 0
-  )
+  if (bg == TRUE) {
+    background <-
+      data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
+                 y = c(sapply(
+                   seq(y[1], y[2], length.out = ytimes), rep, times = xtimes
+                 )))
+    proj_background <-
+      as.data.frame(t(apply(background, 1, proj_in)))
+    background$class <- apply(proj_background, 1, classfun)
+    mainplot <- mainplot + geom_jitter(
+      data = background,
+      aes(x, y, color = class),
+      shape = 3,
+      height = 0,
+      width = 0
+    )
+  }
   #4.Lines???
   
   return(mainplot)
@@ -376,6 +379,7 @@ plot_error <- function(data, results, f) {
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
   charts <- lapply(G, function(class) {
+    
     probs_Data[paste0(class, 'l')] <-
       scales::percent(probs_Data[, class])
     colsum <- 0
@@ -384,19 +388,23 @@ plot_error <- function(data, results, f) {
         colsum <<- colsum + x
         colsum - x / 2
       })
-    
     left <- ggplot(data = probs_Data[1:n, ]) +
-      geom_bar(aes_string(x = '""', y = class, fill = 'class'),
-               stat = "identity",
-               width = 1) +
-      coord_polar("y", start = 0) +
-      theme_void() + geom_text(aes_string(
-        x = '1',
-        y = paste0(class, 'yl'),
-        label = paste0(class, 'l')
-      )) +
-      labs(caption = paste0('f(x=', class, ')')) + theme(legend.position =
-                                                           "none")
+      geom_bar(
+        aes_string(
+          x = paste0(class, 'l'),
+          y = class,
+          fill = 'class'
+        ),
+        stat = "identity",
+        width = 1
+      ) + theme(
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank()
+      ) +
+      labs(title = paste0('f(x=', class, ')'))
     
     probs_Results[paste0(class, 'l')] <-
       scales::percent(probs_Results[, class])
@@ -407,37 +415,68 @@ plot_error <- function(data, results, f) {
         colsum - x / 2
       })
     right <- ggplot(data = probs_Results[1:n, ]) +
-      geom_bar(aes_string(x = '""', y = class, fill = 'class'),
-               stat = "identity",
-               width = 1) +
-      coord_polar("y", start = 0) +
-      theme_void() + geom_text(aes_string(
-        x = '1',
-        y = paste0(class, 'yl'),
-        label = paste0(class, 'l')
-      )) +
-      labs(caption = paste0('Alpha-Fehler von ', class)) + theme(legend.position =
-                                                                   "none")
+      geom_bar(
+        aes_string(
+          y = class,
+          x = paste0(class, 'l'),
+          fill = 'class'
+        ),
+        stat = "identity",
+        width = 1
+      ) + theme(
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "none",
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank()
+      ) +
+      labs(title = paste0('f^-1(', class, ')'))
     return(grid.arrange(left, right, nrow = 1))
   })
+  
+  mistake_lable <- c(paste0(miss*100,'%',' wrong'),paste0((1-miss)*100,'%',' right'))
+  mistake <- data.frame(i=mistake_lable,per=c(miss,1-miss))
+  mi <- ggplot(data = mistake) +
+    geom_bar(
+      aes(
+        y = per,
+        x = i,
+        fill = i
+      ),
+      stat = "identity",
+      width = 1
+    ) + theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none",
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank(),
+      axis.title.x = element_blank()
+    )+ggtitle('Data')
+  charts[[n+1]] <- mi
   return(charts)
 }
 
-sig <- c(1, 1.5, 2, 0.5)
+sig <- c(1,1.5,2,2.5,1.3,1.1,2.1,1.8)
 test <- make_test(100,
-                  nparam = 2,
-                  nclasses = 4,
+                  nparam = 4,
+                  nclasses = 8,
                   sigma = sig)
-f <- classify(unique(test$class), LDA(test[1:2], test$class))
-liste <- plot_error(test[1:2], test$class, f)
+f <- classify(unique(test$class), LDA(test[1:4], test$class))
+liste <- plot_error(test[1:4], test$class, f)
 p1 <- do.call(grid.arrange, liste)
 testplot <-
-  make_2D_plot(test[1:2], test$class, type = LDA, ppu = 5)
-f2 <- classify(unique(test$class), QDA(test[1:2], test$class))
-liste1 <- plot_error(test[1:2], test$class, f2)
+  make_2D_plot(test[1:4],
+               test$class,
+               type = LDA,
+               ppu = 5)
+f2 <- classify(unique(test$class), QDA(test[1:4], test$class))
+liste1 <- plot_error(test[1:4], test$class, f2)
 p2 <- do.call(grid.arrange, liste1)
 testplot1 <-
-  make_2D_plot(test[1:2], test$class, type = QDA, ppu = 5)
+  make_2D_plot(test[1:4],
+               test$class,
+               type = QDA,
+               ppu = 5)
 plotlist <- list(p1, testplot)
 plotlist2 <- list(p2, testplot1)
 nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "LDA"))
@@ -445,7 +484,8 @@ ggsave('LDA.png',
        plot = nice,
        device = 'png',
        dpi = 400)
-nice2 <- do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
+nice2 <-
+  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
 ggsave('QDA.png',
        plot = nice2,
        device = 'png',
