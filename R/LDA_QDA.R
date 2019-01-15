@@ -487,3 +487,4 @@ ggsave('QDA.png',
        device = 'png',
        dpi = 400)
 
+>>>>>>> d11a34d5d07f5b880259f81102d6277147211f58
