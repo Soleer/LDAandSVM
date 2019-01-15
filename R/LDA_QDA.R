@@ -286,14 +286,14 @@ make_2D_plot <- function(data,
   #prama
   uresults <- unique(results)
   n <- length(uresults)
-  xtimes <- (x[2] - x[1]) * ppu
-  ytimes <- (y[2] - y[1]) * ppu
   proj <- make_projection(data)
   proj_to <- proj[[1]]
   proj_in <- proj[[2]]
   proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
-  x <- c(min(proj_data[, 1]), max(proj_data[, 1]))
-  y <- c(min(proj_data[, 2]), max(proj_data[, 2]))
+  x <- c(as.integer(min(proj_data[, 1])), as.integer(max(proj_data[, 1])+1))
+  y <- c(as.integer(min(proj_data[, 2])), as.integer(max(proj_data[, 2])+1))
+  xtimes <- (x[2] - x[1]) * ppu
+  ytimes <- (y[2] - y[1]) * ppu
   d <- dim(data)[2]
   #prepare plot data
   #input
@@ -315,9 +315,7 @@ make_2D_plot <- function(data,
   if (bg == TRUE) {
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-                 y = c(sapply(
-                   seq(y[1], y[2], length.out = ytimes), rep, times = xtimes
-                 )))
+                 y = c(sapply(seq(y[1], y[2], length.out = ytimes), rep, times = xtimes)))
     proj_background <-
       as.data.frame(t(apply(background, 1, proj_in)))
     background$class <- apply(proj_background, 1, classfun)
@@ -329,7 +327,6 @@ make_2D_plot <- function(data,
       width = 0
     )
   }
-  #4.Lines???
   
   return(mainplot)
 }
@@ -489,3 +486,4 @@ ggsave('QDA.png',
        plot = nice2,
        device = 'png',
        dpi = 400)
+
