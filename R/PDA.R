@@ -1,5 +1,6 @@
 library(ggplot2)
 library(gridExtra)
+library(quadprog)
 set.seed(0)
 rep('A', 10)
 #Chapter 4.3
@@ -101,6 +102,17 @@ sigma_est <- function(data, results) {
     })
   })
   return(Bn / (N - K))
+}
+
+Sigma_bet_est <- function(data, results){
+  G <- unique(results)
+  mu <- mu_est(data, results)
+  total_mean <- colMeans(data)
+  B_i <- lapply(G, function(i){
+    length(results[results == results[i]]) * (mu[i] - total_mean) %*% t(mu[i] - total_mean)
+  })
+  B <- Reduce(`+`, B_i)/(length(results)-1)
+  return(B)
 }
 
 maincomponent_analysis <- function(data) {
@@ -376,41 +388,6 @@ QDA <- function(data, results) {
   return(delta)
 }
 
-LDA_exp <- function(data, results){
-  data_exp <- h(data)
-  G <- unique(results)
-  K <- length(G)
-  p <- log(pi_est(results))
-  mu <- mu_est(data, results)
-  sigma <- solve(sigma_est(data_exp, results))
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-      (h(x) %*% sigma %*% h(mu[k, ]) - 1 / 2 * h(mu[k, ]) %*% sigma %*% h(mu[k, ]))
-    }) + p
-    return(result)
-  }
-  return(delta)
-}
-
-QDA_exp <- function(data, results) {
-  data_exp <- h(data)
-  G <- unique(results)
-  K <- length(G)
-  p <- log(pi_est(results))
-  print(p)
-  mu <- mu_est(data, results)
-  sigma_list <- lapply(1:K, function(k) {
-    sigma_class(data_exp[results==G[k],],mu[k])
-  })
-  sigma_inv <- lapply(sigma_list,solve)
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-      -1 / 2 * log(det(sigma_list[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% sigma_inv[[k]] %*% (h(x) - h(mu[k, ]))
-    }) + p
-    return(result)
-  }
-  return(delta)
-}
 
 PDA <- function(data, results, base) {
   h <- basis_exp(base)
