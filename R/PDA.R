@@ -339,18 +339,6 @@ basis_exp <- function(type){
     })
   }
 }
-?stopifnot
-?lapply
-base_abs <- function(x){
-  if(is.vector(x)){
-    expa <- sapply(x, abs)
-    return(c(x, expa))
-  }
-  if(is.data.frame(x)){
-    expa <- lapply(x, sqrt)
-    return(cbind(x, e))
-  }
-}
 
 base_log <- function(x){
   if(min(x) < 0){
@@ -365,11 +353,6 @@ base_log <- function(x){
     return(cbind(x, expa))
   }
 }
-
-min(test[, 1:4])
-base_sqrt(c(-1, 2))
-base_sqrt(test[1:10, c(1,2)])
-base_sqrt(c(1, 2))
 
 ## LDA, QDA, LDA_exp, QDA_exp, PDA
 
