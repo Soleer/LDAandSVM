@@ -340,23 +340,9 @@ basis_exp <- function(type){
   }
 }
 
-base_log <- function(x){
-  if(min(x) < 0){
-    stop("All values of x must larger than zero for sqrt expansion")
-  }
-  if(is.vector(x)){
-    expa <- sapply(x, sqrt)
-    return(c(x, expa))
-  }
-  if(is.data.frame(x)){
-    expa <- lapply(x, sqrt)
-    return(cbind(x, expa))
-  }
-}
+## LDA, QDA, PDA
 
-## LDA, QDA, LDA_exp, QDA_exp, PDA
-
-LDA <- function(data, results, ...) {
+LDA <- function(data, results) {
   G <- unique(results)
   K <- length(G)
   p <- log(pi_est(results))
@@ -371,7 +357,7 @@ LDA <- function(data, results, ...) {
   return(delta)
 }
 
-QDA <- function(data, results, ...) {
+QDA <- function(data, results) {
   G <- unique(results)
   K <- length(G)
   p <- log(pi_est(results))
@@ -390,8 +376,7 @@ QDA <- function(data, results, ...) {
   return(delta)
 }
 
-LDA_exp <- function(data, results, base){
-  h <- basis_exp(base)
+LDA_exp <- function(data, results){
   data_exp <- h(data)
   G <- unique(results)
   K <- length(G)
@@ -407,8 +392,7 @@ LDA_exp <- function(data, results, base){
   return(delta)
 }
 
-QDA_exp <- function(data, results, base) {
-  h <- basis_exp(base)
+QDA_exp <- function(data, results) {
   data_exp <- h(data)
   G <- unique(results)
   K <- length(G)
@@ -433,7 +417,7 @@ PDA <- function(data, results, base) {
   data_exp <- h(data)
   G <- unique(results)
   K <- length(G)
-  #p <- log(pi_est(results))
+  p <- log(pi_est(results))
   mu <- mu_est(data, results)
   sigma_list <- lapply(1:K, function(k) {
     sigma_class(data_exp[results==G[k],],mu[k])
@@ -442,12 +426,18 @@ PDA <- function(data, results, base) {
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      - (t(as.vector(h(x) - h(mu[k, ]))) %*% Matrix[[k]] %*% (as.vector(h(x) - h(mu[k, ])))) # Minus the function so that max is the searched value
-    }) 
+      -1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(as.vector(h(x) - h(mu[k, ]))) %*% Matrix[[k]] %*% as.vector((h(x) - h(mu[k, ])))
+      #- (t(as.vector(h(x) - h(mu[k, ]))) %*% Matrix[[k]] %*% (as.vector(h(x) - h(mu[k, ])))) # Minus the function so that max is the searched value
+    }) + p
     return(result)
   }
   return(delta)
 }
+
+
+
+#################
+#Test
 
 #killr 2D plot
 make_2D_plot <- function(data,
@@ -458,14 +448,14 @@ make_2D_plot <- function(data,
   #prama
   uresults <- unique(results)
   n <- length(uresults)
-  xtimes <- (x[2] - x[1]) * ppu
-  ytimes <- (y[2] - y[1]) * ppu
   proj <- make_projection(data)
   proj_to <- proj[[1]]
   proj_in <- proj[[2]]
   proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
-  x <- c(min(proj_data[, 1]), max(proj_data[, 1]))
-  y <- c(min(proj_data[, 2]), max(proj_data[, 2]))
+  x <- c(as.integer(min(proj_data[, 1])), as.integer(max(proj_data[, 1])+1))
+  y <- c(as.integer(min(proj_data[, 2])), as.integer(max(proj_data[, 2])+1))
+  xtimes <- (x[2] - x[1]) * ppu
+  ytimes <- (y[2] - y[1]) * ppu
   d <- dim(data)[2]
   #prepare plot data
   #input
@@ -479,7 +469,7 @@ make_2D_plot <- function(data,
     mainplot + geom_jitter(
       data = input_data,
       aes(x = x, y = y, color = Legend),
-      shape = 16,
+      shape = 20,
       height = 0,
       width = 0
     )
@@ -487,9 +477,7 @@ make_2D_plot <- function(data,
   if (bg == TRUE) {
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-                 y = c(sapply(
-                   seq(y[1], y[2], length.out = ytimes), rep, times = xtimes
-                 )))
+                 y = c(sapply(seq(y[1], y[2], length.out = ytimes), rep, times = xtimes)))
     proj_background <-
       as.data.frame(t(apply(background, 1, proj_in)))
     background$class <- apply(proj_background, 1, classfun)
@@ -501,7 +489,6 @@ make_2D_plot <- function(data,
       width = 0
     )
   }
-  #4.Lines???
   
   return(mainplot)
 }
@@ -629,41 +616,61 @@ plot_error <- function(data, results, f) {
 ##Analyse
 sig <- c(1,1.5,2,2.5,1.3,1.1,2.1,1.8)
 test <- make_test(100,
-                  nparam = 2,
-                  nclasses = 4,
+                  nparam = 4,
+                  nclasses = 8,
                   sigma = sig)
-f <- classify(unique(test$class), LDA(test[1:2], test$class))
-liste <- plot_error(test[1:2], test$class, f)
+
+### LDA
+f <- classify(unique(test$class), PDA(test[1:4], test$class, base = "quad"))
+liste <- plot_error(test[1:4], test$class, f)
 p1 <- do.call(grid.arrange, liste)
 testplot <-
-  make_2D_plot(test[1:2],
+  make_2D_plot(test[1:4],
                test$class,
                f,
                ppu = 5)
 plotlist <- list(p1, testplot)
-nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "LDA"))
+nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "PDA"))
 
-f2 <- classify(unique(test$class), PDA(test[1:2], test$class, base = "cube"))
-liste1 <- plot_error(test[1:2], test$class, f2)
-p2 <- do.call(grid.arrange, liste1)
-testplot1 <-
-  make_2D_plot(test[1:2],
-               test$class,
-               f2,
-               ppu = 5,
-               bg = TRUE)
-plotlist2 <- list(p2, testplot1)
-nice <- do.call("grid.arrange", c(plotlist2, ncol = 2, top = "PDA"))
-
-
-ggsave('LDA.png',
+ggsave('PDA.png',
        plot = nice,
        device = 'png',
        dpi = 400)
 
+
+### LDA
+f2 <- classify(unique(test$class), LDA(test[1:4], test$class))
+liste2 <- plot_error(test[1:4], test$class, f2)
+p2 <- do.call(grid.arrange, liste2)
+testplot2 <-
+  make_2D_plot(test[1:4],
+               test$class,
+               f2,
+               ppu = 5)
+plotlist2 <- list(p2, testplot2)
+
 nice2 <-
-  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
-ggsave('QDA.png',
+  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "LDA"))
+ggsave('LDA.png',
        plot = nice2,
+       device = 'png',
+       dpi = 400)
+
+
+### QDA
+f3 <- classify(unique(test$class), QDA(test[1:4], test$class))
+liste3 <- plot_error(test[1:4], test$class, f3)
+p3 <- do.call(grid.arrange, liste3)
+testplot3 <-
+  make_2D_plot(test[1:4],
+               test$class,
+               f3,
+               ppu = 5)
+plotlist3 <- list(p3, testplot3)
+
+nice3 <-
+  do.call("grid.arrange", c(plotlist3, ncol = 2, top = "QDA"))
+ggsave('QDA.png',
+       plot = nice3,
        device = 'png',
        dpi = 400)
