@@ -2,7 +2,6 @@ library(ggplot2)
 library(gridExtra)
 library(quadprog)
 set.seed(0)
-rep('A', 10)
 #Chapter 4.3
 # Gauß test data n classes same sigma:
 
@@ -651,3 +650,28 @@ ggsave('QDA.png',
        plot = nice3,
        device = 'png',
        dpi = 400)
+
+
+
+
+## In Progress: Optimizing
+
+Sigma_bet <- Sigma_bet_est(test[1:4], test$class)
+Sigma_W <- sigma_est(test[1:4], test$class)
+
+library("NlcOptim")
+
+to_be_max <- function(x){
+  t(x) %*% Sigma_bet %*% x
+}
+
+constraint <- function(x){
+  f = NULL
+  f = rbind(f, (t(x) %*% Sigma_W %*% x) - 1)
+  return(list(ceq=f, c = NULL))
+}
+
+eigen(Sigma_bet)$values
+
+u <- solnl(X = c(1, 1, 1, 1), objfun = to_be_max, confun = constraint)
+
