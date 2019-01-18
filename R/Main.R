@@ -1,11 +1,11 @@
 library(ggplot2)
 library(gridExtra)
 library(quadprog)
-source("Basis_expansion")
-source("Test.R")
-source("Estimators.R")
-source("Classifier_funs.R")
-source("plot_functions.R")
+source("R/Basis_expansion.R")
+source('R/Test.R')
+source("R/Estimators.R")
+source("R/Classifier_funs.R")
+source("R/plot_functions.R")
 set.seed(0)
 
 ##Analyse
@@ -15,7 +15,7 @@ test <- make_test(100,
                   nclasses = 8,
                   sigma = sig)
 
-### LDA
+### PDA
 f <- classify(unique(test$class), PDA(test[1:4], test$class, base = "quad"))
 liste <- plot_error(test[1:4], test$class, f)
 p1 <- do.call(grid.arrange, liste)
@@ -75,7 +75,7 @@ ggsave('QDA.png',
 
 ## In Progress: Optimizing
 
-Sigma_bet <- Sigma_bet_est(test[1:4], test$class)
+Sigma_bet_list <- Sigma_bet_est(test[1:4], test$class)
 Sigma_W <- sigma_est(test[1:4], test$class)
 
 library("NlcOptim")

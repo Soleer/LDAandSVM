@@ -61,9 +61,10 @@ Sigma_bet_est <- function(data, results){
   G <- unique(results)
   mu <- mu_est(data, results)
   total_mean <- colMeans(data)
-  B_i <- lapply(G, function(i){
-    length(results[results == results[i]]) * (mu[i] - total_mean) %*% t(mu[i] - total_mean)
+  N <- length(G)
+  B_i <- lapply(1:N, function(i){
+    length(results[results == G[i]]) * (mu[i, ] - total_mean) %*% t(mu[i, ] - total_mean)
   })
-  B <- Reduce(`+`, B_i)/(length(results)-1)
+  B <- Reduce(`+`, B_i)/(length(results)-length(G))
   return(B)
 }
