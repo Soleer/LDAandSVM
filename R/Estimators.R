@@ -57,7 +57,7 @@ sigma_est <- function(data, results) {
   return(Bn / (N - K))
 }
 
-Sigma_bet_est <- function(data, results){
+sigma_bet_est <- function(data, results){
   G <- unique(results)
   mu <- mu_est(data, results)
   total_mean <- colMeans(data)

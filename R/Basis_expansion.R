@@ -105,3 +105,34 @@ basis_exp <- function(type){
     })
   }
 }
+
+## Work in progress
+decompose_vectors <- function(data, results, base){
+  h <- basis_exp(base)
+  data_exp <- h(data)
+  G <- unique(results)
+  N <- length(G)
+  sigma_list <- lapply(1:N, function(k) {
+    sigma_class(data_exp[results==G[k],],mu[k])
+  })
+  sigma_bet <- sigma_bet_est(data_exp, results)
+  
+  max_fun <- function(x){
+    t(x) %*% sigma_bet %*% x
+  }
+  
+  
+  u_list <- lapply(1:N, function(i){
+    constraint <- function(x){
+      f = NULL
+      f = rbind(f, (t(x) %*% sigma_list[[i]] %*% x) - 1)
+      return(list(ceq=f, c = NULL))
+    }
+    
+    x_scla <- rep(1, ncol(sigma_list[[i]]))/
+    
+    return(solnl(X = as.vector(rep(1, ncol(sigma_bet))), objfun = max_fun, confun = constraint)[[1]])
+  })
+}
+
+decompose_vectors(test[1:4], test$class, "quad")
