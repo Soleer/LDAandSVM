@@ -1,250 +1,96 @@
 library(ggplot2)
 library(gridExtra)
-#testdatensatz Gauß 2D
+library(quadprog)
 set.seed(0)
-test <-
-  data.frame(
-    x = rnorm(100, 2, 0.8),
-    y = rnorm(100, 2, 0.8),
-    class = rep('red', 100)
-  )
-test2 <-
-  data.frame(
-    x = rnorm(100, 0, 0.8),
-    y = rnorm(100, 0, 0.8),
-    class = rep('blue', 100)
-  )
-test <- rbind(test, test2)
-testplot <- ggplot()
-testplot <-
-  testplot + geom_jitter(data = test, aes(x, y, color = class))
-testplot
+#Chapter 4.3
+# Gauß test data n classes same sigma:
 
-
-h <- function(x){
-  if(is.vector(x)){
-    len <- length(x)
-    for(i in 1:len){
-      for(j in i:len){
-        y <- x[i] * x[j]
-        x <- c(x, y)
-      }
-    }
-  }
-  if(is.data.frame(x)){
-    cols <- ncol(x)
-    name <- names(x)
-    for(i in 1:cols){
-      for(j in i:cols){
-        y <- x[, i] * x[, j]
-        name <- c(name, paste(name[i], "*" , name[j]))
-        x <- cbind(x, y)
-        colnames(x) <- name
-      }
-    }
-  }
-  return(x)
-}
-
-test_expanded <- cbind(h(test[c(1, 2)]), test$class)
-names(test_expanded)[ncol(test_expanded)] <- "class"
-testplot <-
-  make_plot(test[1:2], test$class, type = QDA, x = c(-5, 5), y = c(-5, 5), ppu = 5)
-
-testplot
-
-
-
-dist_to_class <- function(x,data, results, class) {
-  class_index <- which(as.character(results) == class)
-  Mu_class <- mu_est(data[class_index, ], results[class_index])
-  Sigma_class <- sigma_est(data[class_index, ], result[class_index])
-  Matrix <- Sigma_class + Omega
-  
-  x_mu <- as.vector(h(x) - h(Mu_class))
-
-  Dist <- t(x_mu) %*% solve(Matrix) %*% x_mu
-  Dist[1,1]
-}
-
-sigma_class <- function(data, mu= colMeans(data)){
-  
-  n <- dim(data)[2]
-  Bn <- diag(0, ncol = n, nrow = n)
-  apply(data, 1, function(x) {
-    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+#' make_test
+#'
+#' Generates a Dataframe with three cloumns 'x','y','class'.
+#' Every Class has a normal distribution around a random centers between the given x and y Boundaries.
+#' The Result can be used to train classification methods to sort a 2D Vectors to Class of 'class'.
+#' @param ninputs Number of generated Observations per Class
+#' @param nclasses Number of Classes.
+#' @param simga Numeric Vector of sigma Values for the gaussian Distribution to generate the Observations. Will be recycled if shorter than nclass.
+#' @param x Vector of length 2 with Boundaries for x
+#' @param y Vector of length 2 with Boundaries for y
+#' @return A Dataframe
+#' @examples
+#' make_test(10)
+#' make_test(80,5,sigma=c(1,2,0.8,1.5),x=c(-10,10),y=c(-10,10)))
+make_test <- function(ninputs = 100,
+                      nparam = 2,
+                      nclasses = 2,
+                      sigma = 0.8,
+                      cube = c(-5, 5)) {
+  nsigma <- length(sigma)
+  center <- sapply(1:nparam, function(p) {
+    sample(cube[1]:cube[2], nclasses, replace = TRUE)
   })
-  return(Bn/(dim(data)[1]-1))
-}
-
-mu_est <- function(data, results) {
-  data <- as.data.frame(data)
-  classes <- unique(results)
-  t <- table(results)
-  mu <- sapply(classes, function(class) {
-    colMeans(data[results == class,])
-  })
-  mu <- t(mu)
-  rownames(mu) <- as.character(classes)
-  return(mu)
-}
-
-sigma <- sigma_est(test[1:2], test_expanded$class)
-
-sigma_est <- function(data, results) {
-  G <- unique(results)
-  K <- length(G)
-  N <- length(results)
-  mu <- mu_est(data, results)
-  n <- dim(data)[2]
-  Bn <- diag(0,ncol=n,nrow=n)
-  sapply(1:K, function(k) {
-    apply(data[results == G[k], ], 1, function(x) {
-      Bn <<- Bn + ((x - mu[k, ]) %*% t(x - mu[k, ]))
+  data <- lapply(0:(nclasses - 1), function(i) {
+    class <- LETTERS[i + 1]
+    inputs <- sapply(1:nparam, function(p) {
+      return(rnorm(ninputs, center[i + 1, p], sigma[i %% nsigma + 1]))
     })
+    inputs <- data.frame(inputs, rep(class, times = ninputs))
+    return(inputs)
   })
-  return(Bn/(N-K))
-}
-<<<<<<< HEAD
-
-
-Omega <- diag(3, nrow(sigma_est(test[c(1,2)], test$class)))
-
-h <- function(x){
-  x
-}
-
-dist_to_class <- function(x, data, results, class) {
-  class_index <- which(as.character(results) == class)
-  Mu_class <- mu_est(data[class_index, ], results[class_index])
-  Sigma_class <- sigma_est(data[class_index, ], result[class_index])
-  Matrix <- Sigma_class + Omega
-  
-  x_mu <- as.vector(h(x) - h(Mu_class))
-
-  Dist <- t(x_mu) %*% solve(Matrix) %*% x_mu
-  Dist[1,1]
-}
-
-sigma_class <- function(data, mu= colMeans(data)){
-  
-  n <- dim(data)[2]
-  Bn <- diag(0, ncol = n, nrow = n)
-  apply(data, 1, function(x) {
-    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+  result <- data[[1]]
+  sapply(2:nclasses, function(r) {
+    result <<- rbind(result, data[[r]])
   })
-  return(Bn/(dim(data)[1]-1))
-}
-=======
->>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
-
-pi_est <- function(results) {
-  vec <- unique(results)
-  n <- length(results)
-  t <- table(results)
-  return(sapply(vec, function(x)
-    t[as.character(x)] / n))
+  colnames(result) <- c(letters[1:nparam], 'class')
+  return(result)
 }
 
-LDA <- function(data, results) {
-  G <- unique(results)
-  K <- length(G)
-  p <- log(pi_est(results))
-  mu <- mu_est(data, results)
-  sigma <- solve(sigma_est(data, results))
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-      (x %*% sigma %*% mu[k, ] - 1 / 2 * mu[k, ] %*% sigma %*% mu[k, ])
-    }) + p
-    return(result)
+
+maincomponent_analysis <- function(data) {
+  cov_matrix <- sigma_class(data)
+  ev <- eigen(cov_matrix)
+  values <- ev$values
+  n <- length(values)
+  main_matrix <- ev$vectors
+  D <- diag(values, nrow = n, ncol = n)
+  return(list(D, main_matrix, cov_matrix))
+}
+
+make_projection <- function(data, dim = 2) {
+  l <- maincomponent_analysis(data)
+  U <- l[[2]][, 1:dim]
+  proj <- function(x) {
+    t(U) %*% x
   }
-  return(delta)
+  i_proj <- function(x) {
+    U %*% x
+  }
+  return(list(proj, i_proj))
 }
 
-QDA <- function(data, results) {
-  G <- unique(results)
-  K <- length(G)
-  p <- log(pi_est(results))
-  print(p)
-  mu <- mu_est(data, results)
-  sigma_list <- lapply(1:K, function(k) {
-    sigma_class(data[results==G[k],],mu[k])
+# classification functions -> G
+#helpfunction
+targets <- function(vector) {
+  n <- length(vector)
+  En <- diag(1, n, n)
+  V <- matrix(vector,
+              nrow = n,
+              ncol = n,
+              byrow = TRUE)
+  D <- En - V
+  results <- sapply(1:n, function(i) {
+    D[i, ] %*% D[i, ]
   })
-  sigma_inv <- lapply(sigma_list,solve)
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-      -1 / 2 * log(det(sigma_list[[k]])) - 1 / 2 * t(x - mu[k, ]) %*% sigma_inv[[k]] %*% (x - mu[k, ])
-    }) + p
-    return(result)
-  }
-  return(delta)
+  return(results)
 }
 
-LDA_exp <- function(data, results){
-  data_exp <- h(data)
-  G <- unique(results)
-  K <- length(G)
-  p <- log(pi_est(results))
-  mu <- mu_est(data, results)
-  sigma <- solve(sigma_est(data_exp, results))
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-      (h(x) %*% sigma %*% h(mu[k, ]) - 1 / 2 * h(mu[k, ]) %*% sigma %*% h(mu[k, ]))
-    }) + p
-    return(result)
+#return closest target
+class_by_targets <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.min(targets(f(x)))])
   }
-  return(delta)
+  return(classfunction)
 }
-
-QDA_exp <- function(data, results) {
-  data_exp <- h(data)
-  G <- unique(results)
-  K <- length(G)
-  p <- log(pi_est(results))
-  print(p)
-  mu <- mu_est(data, results)
-  sigma_list <- lapply(1:K, function(k) {
-    sigma_class(data_exp[results==G[k],],mu[k])
-  })
-  sigma_inv <- lapply(sigma_list,solve)
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-      -1 / 2 * log(det(sigma_list[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% sigma_inv[[k]] %*% (h(x) - h(mu[k, ]))
-    }) + p
-    return(result)
-  }
-  return(delta)
-}
-
-PDA <- function(data, results) {
-  data_exp <- h(data)
-  G <- unique(results)
-  K <- length(G)
-  #p <- log(pi_est(results))
-  mu <- mu_est(data, results)
-  sigma_list <- lapply(1:K, function(k) {
-    sigma_class(data_exp[results==G[k],],mu[k])
-  })
-  Matrix <- lapply(sigma_list, function(x) solve(x + diag(0, nrow=nrow(x), ncol=ncol(x))))
-  
-  delta <- function(x) {
-    result <- sapply(1:K, function(k) {
-<<<<<<< HEAD
-      t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% h(x) - h(mu[k, ])
-    }) + p
-=======
-      - (t(as.vector(h(x) - h(mu[k, ]))) %*% Matrix[[k]] %*% (as.vector(h(x) - h(mu[k, ])))) # Minus the function so that max is the searched value
-    }) 
->>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
-    return(result)
-  }
-  return(delta)
-}
-
-<<<<<<< HEAD
-
-=======
->>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
+#return max
 classify <- function(uresults, f) {
   classfunction <- function(x) {
     return(uresults[which.max(f(x))])
@@ -252,145 +98,450 @@ classify <- function(uresults, f) {
   return(classfunction)
 }
 
-make_plot <- function(data,
-                      results,
-                      type = LDA,
-                      y = c(-5, 5),
-                      x = c(-5, 5),
-                      ppu = 10,
-                      owntitle) {
+#seperating lines test not working
+
+create_id <- function(a, b, rf) {
+  getzero <- function(x) {
+    rf(x)[a] - rf(x)[b]
+  }
+  return(getzero)
+}
+
+get_Y_Value <- function(z, ploty) {
+  upper = max(ploty)
+  lower = min(ploty)
+  if (z(lower) * z(upper) <= 0) {
+    return(uniroot(z, ploty)$root)
+  }
+  else{
+    return(NA)
+  }
+}
+
+getseperatorfun <- function(a,
+                            b,
+                            rf,
+                            y = c(-5, 5),
+                            inv = FALSE) {
+  getzero <- create_id(a, b, rf)
+  sep <- function(x) {
+    inverse <- inv
+    z <- function(y) {
+      if (inverse == FALSE) {
+        getzero(c(x, y))
+      }
+      else{
+        getzero(c(y, x))
+      }
+    }
+    y <- get_Y_Value(z, y)
+    if (inverse == FALSE) {
+      if (is.na(y) || which.max(rf(c(x, y))) == a ||
+          which.max(rf(c(x, y))) == b) {
+        return(y)
+      }
+      return(NA)
+    }
+    else{
+      if (is.na(y) || which.max(rf(c(y, x))) == a ||
+          which.max(rf(c(y, x))) == b) {
+        return(y)
+      }
+      return(NA)
+    }
+  }
+  return(sep)
+}
+
+#Not finished
+make_seperator <- function(classf,
+                           nclass,
+                           x = c(-5, 5),
+                           y = c(-5, 5),
+                           ppu = 10) {
+  xval <-  seq(x[1], x[2], length.out = (x[2] - x[1]) * ppu)
+  yval <- seq(y[1], y[2], length.out = (y[2] - y[1]) * ppu)
+  lines <- data.frame()
+  sapply(1:(nclass - 1), function(i) {
+    sapply((i + 1):nclass, function(j) {
+      s <- getseperatorfun(i, j, classf, y = y)
+      sinv <- getseperatorfun(i, j, classf, y = x, inv = TRUE)
+      ony <- FALSE
+      lines[] <<- sapply(sepdata$xval, function(x) {
+        
+      })
+    })
+  })
+  return(sepdata)
+}
+
+
+basis_exp <- function(type){
+  if(type == "quad"){
+    return(quad <- function(x){
+              if(is.vector(x)){
+                len <- length(x)
+                for(i in 1:len){
+                  for(j in i:len){
+                    y <- x[i] * x[j]
+                    x <- c(x, y)
+                  }
+                }
+              }
+              if(is.data.frame(x)){
+                cols <- ncol(x)
+                name <- names(x)
+                for(i in 1:cols){
+                  for(j in i:cols){
+                    y <- x[, i] * x[, j]
+                    name <- c(name, paste(name[i], "*" , name[j]))
+                    x <- cbind(x, y)
+                    colnames(x) <- name
+                  }
+                }
+              }
+              return(x)
+            })
+  }
+  if(type == "cube"){
+    return(cube <- function(x) {
+              quad <- basis_exp("quad")
+              quad_x <- quad(x)
+              if (is.vector(x)) {
+                len <- length(x)
+                for (i in 1:len) {
+                  for (j in i:len) {
+                    for (k in j:len) {
+                      y <- x[i] * x[j] * x[k]
+                      x <- c(x, y)
+                    }
+                  }
+                }
+                x <- c(quad_x, x[(len+1) : length(x)])
+              }
+              if (is.data.frame(x)) {
+                len <- ncol(x)
+                name <- names(x)
+                for (i in 1:len) {
+                  for (j in i:len) {
+                    for (k in j:len) {
+                      y <- x[, i] * x[, j] * x[, k]
+                      name <-
+                        c(name, paste(name[i], "*" , name[j], "*", name[k]))
+                      x <- cbind(x, y)
+                      colnames(x) <- name
+                    }
+                  }
+                }
+                x <- cbind(quad_x, x[, (len+1) : ncol(x)])
+              }
+              return(x)
+            })
+  }
+  if(type == "log"){
+            return(function(x){
+              if(min(x) < 0){
+                stop("All values of x must larger than zero for sqrt expansion")
+              }
+              if(is.vector(x)){
+                expa <- sapply(x, sqrt)
+                return(c(x, expa))
+              }
+              if(is.data.frame(x)){
+                expa <- lapply(x, sqrt)
+                return(cbind(x, expa))
+              }
+              })
+  }
+  if(type == "sqrt"){
+              return(function(x){
+                if(min(x) < 0){
+                  stop("All values of x must larger than zero for sqrt expansion")
+                }
+                if(is.vector(x)){
+                  expa <- sapply(x, sqrt)
+                  return(c(x, expa))
+                }
+                if(is.data.frame(x)){
+                  expa <- lapply(x, sqrt)
+                  return(cbind(x, expa))
+                }
+              })
+  }
+  if(type == "abs"){
+    return(function(x){
+      if(is.vector(x)){
+        expa <- sapply(x, abs)
+        return(c(x, expa))
+      }
+      if(is.data.frame(x)){
+        expa <- lapply(x, abs)
+        return(cbind(x, expa))
+      }
+    })
+  }
+}
+
+#################
+#Test
+
+#killr 2D plot
+make_2D_plot <- function(data,
+                         results,
+                         classfun,
+                         ppu = 10,
+                         bg = TRUE) {
   #prama
-  f <- type(data, results)
   uresults <- unique(results)
-  classfun <- classify(uresults, f)
   n <- length(uresults)
+  proj <- make_projection(data)
+  proj_to <- proj[[1]]
+  proj_in <- proj[[2]]
+  proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
+  x <- c(as.integer(min(proj_data[, 1])), as.integer(max(proj_data[, 1])+1))
+  y <- c(as.integer(min(proj_data[, 2])), as.integer(max(proj_data[, 2])+1))
   xtimes <- (x[2] - x[1]) * ppu
   ytimes <- (y[2] - y[1]) * ppu
-  mainplotdata <- cbind(data, results)
-  mainplot <- ggplot() + xlim(x[1],x[2])+ylim(y[1],y[2])
+  d <- dim(data)[2]
+  #prepare plot data
+  #input
+  input_data <-
+    data.frame(x = proj_data[, 1], y = proj_data[, 2], Legend = results)
+  #make mainplot
+  #1. limit
+  mainplot <- ggplot() + xlim(x[1], x[2]) + ylim(y[1], y[2])
+  #2. input data
   mainplot <-
     mainplot + geom_jitter(
-      data = mainplotdata,
-      aes(x, y, color = results),
-      shape = 16,height = 0,width = 0
+      data = input_data,
+      aes(x = x, y = y, color = Legend),
+      shape = 20,
+      height = 0,
+      width = 0
     )
-  #background
-  background <-
-    data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-               y = c(sapply(seq(y[1], y[2], length.out = ytimes), function(x)
-                 rep(x, times = xtimes))))
-  background$class <- apply(background, 1, classfun)
-  mainplot <- mainplot + geom_jitter(
-    data = background,
-    aes(x, y, color = class),
-    shape = 3,
-    height = 0,width = 0
-  ) + ggtitle(owntitle)
-  #Lines???
-  
-  
+  #3. colored background
+  if (bg == TRUE) {
+    background <-
+      data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
+                 y = c(sapply(seq(y[1], y[2], length.out = ytimes), rep, times = xtimes)))
+    proj_background <-
+      as.data.frame(t(apply(background, 1, proj_in)))
+    background$class <- apply(proj_background, 1, classfun)
+    mainplot <- mainplot + geom_jitter(
+      data = background,
+      aes(x, y, color = class),
+      shape = 3,
+      height = 0,
+      width = 0
+    )
+  }
   
   return(mainplot)
 }
+# performance
 
-make_test <- function(ninputs = 100,
-                      nclasses = 2,
-                      sigma = 0.6,
-                      x = c(-5, 5),
-                      y = c(-5, 5)) {
-  nsigma <- length(sigma)
-  xcoord <- sample(x[1]:x[2], nclasses, replace = FALSE)
-  ycoord <- sample(y[1]:y[2], nclasses, replace = FALSE)
-  print(1)
-  test <-
-    data.frame(
-      x = rnorm(ninputs, xcoord[1], sigma[1]),
-      y = rnorm(ninputs, ycoord[1], sigma[1]),
-      class = rep('A', times = ninputs)
-    )
-  sapply(2:nclasses, function(i) {
-    class <- LETTERS[i]
-    test <<-
-      rbind(test, data.frame(
-        x = rnorm(ninputs, xcoord[i], sigma[i]),
-        y = rnorm(ninputs, ycoord[i], sigma[i]),
-        class = rep(class, times = ninputs)
-      ))
+calc_error <- function(data, results, f) {
+  G <- unique(results)
+  estimated <- apply(data, 1, f)
+  of_Data <- lapply(G, function(class) {
+    c <- as.character(class)
+    t <- table(estimated[results == class])
+    number <- sum(t)
+    classresults <- as.list(t[as.character(G)] / number)
+    right <- t[c] / number
+    wrong <- (1 - right)
+    col <- unlist(list(classresults, right, wrong))
+    return(col)
   })
-  return(test)
+  of_Results <- lapply(G, function(class) {
+    c <- as.character(class)
+    t <- table(results[estimated == class])
+    number <- sum(t)
+    classresults <- as.list(t[as.character(G)] / number)
+    right <- t[c] / number
+    wrong <- (1 - right)
+    col <- unlist(list(classresults, right, wrong))
+    return(col)
+  })
+  probs_of_Data <-
+    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
+  probs_of_Results <-
+    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Results)
+  colnames(probs_of_Data) <- c('class', as.character(G))
+  colnames(probs_of_Results) <- c('class', as.character(G))
+  miss <-
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 2:length(G)]) / length(G)
+  return(list(probs_of_Data, probs_of_Results, miss))
 }
 
+plot_error <- function(data, results, f) {
+  G <- as.character(unique(results))
+  n <- length(G)
+  get_list <- calc_error(data, results, f)
+  probs_Data <- get_list[[1]]
+  probs_Results <- get_list[[2]]
+  miss <- get_list[[3]]
+  charts <- lapply(G, function(class) {
+    
+    probs_Data[paste0(class, 'l')] <-
+      scales::percent(probs_Data[, class])
+    colsum <- 0
+    probs_Data[paste0(class, 'yl')] <-
+      sapply(probs_Data[, class], function(x) {
+        colsum <<- colsum + x
+        colsum - x / 2
+      })
+    left <- ggplot(data = probs_Data[1:n, ]) +
+      geom_bar(
+        aes_string(
+          x = paste0(class, 'l'),
+          y = class,
+          fill = 'class'
+        ),
+        stat = "identity",
+        width = 1
+      ) + theme(
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank()
+      ) +
+      labs(title = paste0('f(x=', class, ')'))
+    
+    probs_Results[paste0(class, 'l')] <-
+      scales::percent(probs_Results[, class])
+    colsum <- 0
+    probs_Results[paste0(class, 'yl')] <-
+      sapply(probs_Results[, class], function(x) {
+        colsum <<- colsum + x
+        colsum - x / 2
+      })
+    right <- ggplot(data = probs_Results[1:n, ]) +
+      geom_bar(
+        aes_string(
+          y = class,
+          x = paste0(class, 'l'),
+          fill = 'class'
+        ),
+        stat = "identity",
+        width = 1
+      ) + theme(
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "none",
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank()
+      ) +
+      labs(title = paste0('f^-1(', class, ')'))
+    return(grid.arrange(left, right, nrow = 1))
+  })
+  
+  mistake_lable <- c(paste0(miss*100,'%',' wrong'),paste0((1-miss)*100,'%',' right'))
+  mistake <- data.frame(i=mistake_lable,per=c(miss,1-miss))
+  mi <- ggplot(data = mistake) +
+    geom_bar(
+      aes(
+        y = per,
+        x = i,
+        fill = i
+      ),
+      stat = "identity",
+      width = 1
+    ) + theme(
+      axis.text.x = element_text(angle = 90, hjust = 1),
+      legend.position = "none",
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank(),
+      axis.title.x = element_blank()
+    )+ggtitle('Data')
+  charts[[n+1]] <- mi
+  return(charts)
+}
 
-x <- c(-10, 10)
-y <- c(-10, 10)
-sig <- c(1, 1, 1, 1)
-test <- make_test(100, nclasses = 4, sigma = sig )
+##Analyse
+sig <- c(1,1.5,2,2.5,1.3,1.1,2.1,1.8)
+test <- make_test(100,
+                  nparam = 4,
+                  nclasses = 8,
+                  sigma = sig)
+
+### LDA
+f <- classify(unique(test$class), PDA(test[1:4], test$class, base = "quad"))
+liste <- plot_error(test[1:4], test$class, f)
+p1 <- do.call(grid.arrange, liste)
 testplot <-
-  make_plot(test[c('x', 'y')], test$class, type =  LDA, x, y, ppu = 5, owntitle = "LDA")
+  make_2D_plot(test[1:4],
+               test$class,
+               f,
+               ppu = 5)
+plotlist <- list(p1, testplot)
+nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "PDA"))
 
-testplot1 <-
-  make_plot(test[c('x', 'y')], test$class, type =  QDA, x, y, ppu = 5, owntitle = "QDA")
+ggsave('PDA.png',
+       plot = nice,
+       device = 'png',
+       dpi = 400)
 
+
+### LDA
+f2 <- classify(unique(test$class), LDA(test[1:4], test$class))
+liste2 <- plot_error(test[1:4], test$class, f2)
+p2 <- do.call(grid.arrange, liste2)
 testplot2 <-
-  make_plot(test[c('x', 'y')], test$class, type =  LDA_exp, x, y, ppu = 5, owntitle = "LDA_exp")
+  make_2D_plot(test[1:4],
+               test$class,
+               f2,
+               ppu = 5)
+plotlist2 <- list(p2, testplot2)
 
+nice2 <-
+  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "LDA"))
+ggsave('LDA.png',
+       plot = nice2,
+       device = 'png',
+       dpi = 400)
+
+
+### QDA
+f3 <- classify(unique(test$class), QDA(test[1:4], test$class))
+liste3 <- plot_error(test[1:4], test$class, f3)
+p3 <- do.call(grid.arrange, liste3)
 testplot3 <-
-  make_plot(test[c('x', 'y')], test$class, type =  QDA_exp, x, y, ppu = 5, owntitle = "QDA_exp")
+  make_2D_plot(test[1:4],
+               test$class,
+               f3,
+               ppu = 5)
+plotlist3 <- list(p3, testplot3)
 
-testplot4 <-
-  make_plot(test[c('x', 'y')], test$class, type =  PDA, x, y, ppu = 5, owntitle = "PDA")
+nice3 <-
+  do.call("grid.arrange", c(plotlist3, ncol = 2, top = "QDA"))
+ggsave('QDA.png',
+       plot = nice3,
+       device = 'png',
+       dpi = 400)
 
-<<<<<<< HEAD
-=======
-grid.arrange(testplot,testplot1,testplot2,testplot3,testplot4, nrow=3, ncol=2)
 
-########################################################################################
-# 
-# y <- Dist_to_class(c(1,2), test[c(1,2)], test$class, "red")
-# 
-# class_distances <- function(x, data, results){
-#   classes <- as.vector(unique(results))
-#   M <- matrix(NA, ncol = length(classes), nrow = 1)
-#   colnames(M) <- classes
-#   for(i in seq_along(classes)){
-#     M[1, i] <- Dist_to_class(x, data, results, classes[i])
-#   }
-#   return(M)
-# }
-# 
-# Class_distances(c(1,2), test[c(1, 2)], test$class)
-# 
-# closest_class <- function(x, data, results){
-#   M <- class_distances(x, data, results)
-#   class_index <- which.min(M[1, ])
-#   colnames(M)[class_index]
-# }
-# 
-# closest_class(c(1,2), test[c(1, 2)], test$class)
-# 
-# 
-# generate_grid <- function(x_min = 0, x_max = 0, length = 0){
-#   if(length < 0){
-#     stop("length must be positive or zero")
-#   }
-#   if(x_max < x_min){
-#     stop("Upper limit must be larger than lower limit")
-#   }
-#   
-#   x_rep = numeric(0)
-#   y_rep = numeric(0)
-#   
-#   
-#   for(i in 0:length){
-#     x <- x_min + (x_max - x_min)/length * i
-#     x_rep <- c(x_rep, rep(x, times = (length+1)))
-#   }
-#   
-#   y <- seq(x_min, x_max, length.out = (length+1))
-#   y_rep <- rep(y, times = (length+1))
-#   
-#   Grid <- matrix(c(x_rep, y_rep), nrow = ((length+1)^2), ncol = 2)
-#   Grid <- as.data.frame(Grid)
-#   
-# }
->>>>>>> b46035dd176ffe62ea67a1677506a8e75311671d
+
+
+## In Progress: Optimizing
+
+Sigma_bet <- Sigma_bet_est(test[1:4], test$class)
+Sigma_W <- sigma_est(test[1:4], test$class)
+
+library("NlcOptim")
+
+to_be_max <- function(x){
+  t(x) %*% Sigma_bet %*% x
+}
+
+constraint <- function(x){
+  f = NULL
+  f = rbind(f, (t(x) %*% Sigma_W %*% x) - 1)
+  return(list(ceq=f, c = NULL))
+}
+
+eigen(Sigma_bet)$values
+
+u <- solnl(X = c(1, 1, 1, 1), objfun = to_be_max, confun = constraint)
+
