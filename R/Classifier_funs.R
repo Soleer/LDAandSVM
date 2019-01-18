@@ -1,3 +1,35 @@
+# classification functions -> G
+#helpfunction
+targets <- function(vector) {
+  n <- length(vector)
+  En <- diag(1, n, n)
+  V <- matrix(vector,
+              nrow = n,
+              ncol = n,
+              byrow = TRUE)
+  D <- En - V
+  results <- sapply(1:n, function(i) {
+    D[i, ] %*% D[i, ]
+  })
+  return(results)
+}
+
+#return closest target
+class_by_targets <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.min(targets(f(x)))])
+  }
+  return(classfunction)
+}
+#return max
+classify <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.max(f(x))])
+  }
+  return(classfunction)
+}
+
+
 ## LDA, QDA, PDA
 
 LDA <- function(data, results) {
