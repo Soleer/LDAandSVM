@@ -3,8 +3,8 @@ library(NlcOptim)
 library(e1071)
 library(ggplot2)
 library(gridExtra)
-library("Test.R")
-library("plot_functions.R")
+source("R/Test.R")
+source("R/plot_functions.R")
 
 #LD############################################
 LD_function <- function(data,results){
