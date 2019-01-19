@@ -7,7 +7,7 @@ source('R/Test.R')
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-source("R/svm.R")
+#source("R/svm.R")
 set.seed(0)
 
 ##Analyse
@@ -18,7 +18,6 @@ test <- make_test(100,
                   nparam = dimension,
                   nclasses = 6,
                   sigma = sig)
-
 
 ### PDA
 f <- classify(unique(test$class), PDA(test[1:dimension], test$class, base = "quad"))
