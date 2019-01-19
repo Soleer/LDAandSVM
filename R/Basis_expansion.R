@@ -142,5 +142,3 @@ decompose_vectors <- function(data, results, base){
   })
   return(u_list)
 }
-
-u <- decompose_vectors(test[1:4], test$class, "quad")

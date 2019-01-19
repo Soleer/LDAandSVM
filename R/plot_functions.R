@@ -36,8 +36,8 @@ make_2D_plot <- function(data,
   proj_to <- proj[[1]]
   proj_in <- proj[[2]]
   proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
-  x <- c(floor(min(proj_data[, 1])), roof(max(proj_data[, 1])))
-  y <- c(floor(min(proj_data[, 2])), roof(max(proj_data[, 2])))
+  x <- c(floor(min(proj_data[, 1])), ceiling(max(proj_data[, 1])))
+  y <- c(floor(min(proj_data[, 2])), ceiling(max(proj_data[, 2])))
   xtimes <- (x[2] - x[1]) * ppu
   ytimes <- (y[2] - y[1]) * ppu
   d <- dim(data)[2]
