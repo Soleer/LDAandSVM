@@ -1,6 +1,11 @@
 ## Basis expansion
 
 basis_exp <- function(type){
+  if(type == "id"){
+    return(id <- function(x){
+      return(x)
+    })
+  }
   if(type == "quad"){
     return(quad <- function(x){
       if(is.vector(x)){
@@ -112,6 +117,8 @@ decompose_vectors <- function(data, results, base){
   data_exp <- h(data)
   G <- unique(results)
   N <- length(G)
+  mu <- mu_est(data, results)
+  
   sigma_list <- lapply(1:N, function(k) {
     sigma_class(data_exp[results==G[k],],mu[k])
   })
@@ -128,11 +135,12 @@ decompose_vectors <- function(data, results, base){
       f = rbind(f, (t(x) %*% sigma_list[[i]] %*% x) - 1)
       return(list(ceq=f, c = NULL))
     }
+    start_vec <- as.vector(rep(1, ncol(sigma_bet)))
     
-    x_scla <- rep(1, ncol(sigma_list[[i]]))/
-    
-    return(solnl(X = as.vector(rep(1, ncol(sigma_bet))), objfun = max_fun, confun = constraint)[[1]])
+    sol <- solnl(X = start_vec, objfun = max_fun, confun = constraint)
+    return(sol[[1]])
   })
+  return(u_list)
 }
 
-decompose_vectors(test[1:4], test$class, "quad")
+u <- decompose_vectors(test[1:4], test$class, "quad")
