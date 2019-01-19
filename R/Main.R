@@ -7,6 +7,7 @@ source('R/Test.R')
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
+source("R/svm.R")
 set.seed(0)
 
 ##Analyse
@@ -27,7 +28,8 @@ testplot <-
   make_2D_plot(test[1:dimension],
                test$class,
                f,
-               ppu = 5)
+               ppu = 5,
+               bg = FALSE)
 plotlist <- list(p1, testplot)
 nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "PDA"))
 

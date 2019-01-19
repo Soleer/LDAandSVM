@@ -53,7 +53,7 @@ make_2D_plot <- function(data,
     mainplot + geom_jitter(
       data = input_data,
       aes(x = x, y = y, color = Legend),
-      shape = 20,
+      shape = 19,
       height = 0,
       width = 0
     )
