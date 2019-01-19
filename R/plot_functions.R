@@ -108,6 +108,7 @@ calc_error <- function(data, results, f) {
   colnames(probs_of_Results) <- c('class', as.character(G))
   miss <-
     sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G)+1]) / length(G)
+  miss <- round(miss,2)
   return(list(probs_of_Data, probs_of_Results, miss))
 }
 

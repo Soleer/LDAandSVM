@@ -11,11 +11,11 @@ set.seed(0)
 
 ##Analyse
 sig <- c(1.5,2,2.5,1.3,1.1,2.1,1.8)
-dimension <- 2
+dimension <- 3
 
 test <- make_test(100,
                   nparam = dimension,
-                  nclasses = 2,
+                  nclasses = 6,
                   sigma = sig)
 
 
@@ -31,7 +31,6 @@ testplot <-
 plotlist <- list(p1, testplot)
 nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "PDA"))
 
-calc_error(test[1:dimension],test$class,f2)
 ggsave('PDA.png',
        plot = nice,
        device = 'png',
