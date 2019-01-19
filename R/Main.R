@@ -17,6 +17,7 @@ test <- make_test(100,
                   nclasses = 8,
                   sigma = sig)
 
+
 ### PDA
 f <- classify(unique(test$class), PDA(test[1:4], test$class, base = "quad"))
 liste <- plot_error(test[1:4], test$class, f)

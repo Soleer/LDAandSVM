@@ -8,14 +8,20 @@ library(gridExtra)
 
 #LD############################################
 LD_function <- function(data,results){
+  cache <- matrix(0,ncol = length(results),nrow=length(results))
+  for (i in 1:length(results)) {
+    for (j in 1:i) {
+      cache[i,j] <- results[i]*results[j]*(sum(data[i,]*data[j,]))
+    }
+  }
   f <- function(a){
     g <- 0
     for (i in 1:length(results)) {
-      for (j in 1:length(results)) {
-        g <- g + a[i]*a[j]*results[i]*results[j]*(sum(data[i,]*data[j,]))
+      for (j in 1:i) {
+        g <- g + a[i]*a[j]*cache[i,j]
       }
     }
-    return(-(sum(a) - 0.5*g))
+    return(-(sum(a) - g))
   }
   return(f)
 }
