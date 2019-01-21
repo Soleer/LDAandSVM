@@ -2,12 +2,14 @@ library(ggplot2)
 library(gridExtra)
 library(quadprog)
 library("NlcOptim")
+library("shiny")
 source("R/Basis_expansion.R")
 source('R/Test.R')
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 source("R/svm.R")
+source("R/shinyplot.R")
 set.seed(0)
 
 ##Analyse
@@ -17,6 +19,9 @@ test <- make_test(100,
                   nclasses = 8,
                   sigma = sig)
 
+### Shiny-Interface
+
+shinyApp(ui, server)
 
 ### PDA
 f <- classify(unique(test$class), PDA(test[1:4], test$class, base = "quad"))
