@@ -90,5 +90,3 @@ ui <- fluidPage(
     tabPanel("Error", Plot2)
   )
 )
-
-shinyApp(ui, server)

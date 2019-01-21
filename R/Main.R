@@ -8,7 +8,7 @@ source('R/Test.R')
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-source("R/svm.R")
+#source("R/svm.R")
 source("R/shinyplot.R")
 set.seed(0)
 
