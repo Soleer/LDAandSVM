@@ -1,9 +1,11 @@
-library("rlang")
-
 Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA"))
-Base <- selectInput("Base (only for PDA)", "Select Basis Expansion", choices = c("none", "quad", "cube", "sqrt", "log", "abs"))
+Base <- selectInput("Base", "Select Basis Expansion  (only for PDA)", choices = c("none", "quad", "cube", "sqrt", "log", "abs"))
 Background <- radioButtons("Background", "Plot classification Grid (greatly increases calculation time)", c("FALSE", "TRUE"))
 Calc_button <- actionButton("Calc_button", "Classifiy")
+
+## ADD OPTION TO SAVE IMAGE TO FILE
+##
+##
 
 Param <- sliderInput("Param", "Number of Dimensions", value = 2, min = 2, max = 10, step = 1)
 Classes <- sliderInput("Classes", "Number of Classes", value = 2, min = 2, max  = 10, step = 1)
@@ -37,6 +39,7 @@ server <- function(input, output){
     BG <- input$Background
     Base <- input$Base
     print(Classfun)
+    print(Base)
     
     if(Classfun == "LDA"){
       f <- classify(unique(test$class), LDA(test[1:(ncol(test)-1)], test$class))
@@ -87,3 +90,5 @@ ui <- fluidPage(
     tabPanel("Error", Plot2)
   )
 )
+
+shinyApp(ui, server)
