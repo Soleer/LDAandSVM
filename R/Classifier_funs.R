@@ -51,7 +51,6 @@ QDA <- function(data, results) {
   G <- unique(results)
   K <- length(G)
   p <- log(pi_est(results))
-  print(p)
   mu <- mu_est(data, results)
   sigma_list <- lapply(1:K, function(k) {
     sigma_class(data[results==G[k],],mu[k])

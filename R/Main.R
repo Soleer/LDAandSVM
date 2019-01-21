@@ -2,12 +2,18 @@ library(ggplot2)
 library(gridExtra)
 library(quadprog)
 library("NlcOptim")
+library("shiny")
 source("R/Basis_expansion.R")
 source('R/Test.R')
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
+<<<<<<< HEAD
 #source("R/svm.R")
+=======
+source("R/svm.R")
+source("R/shinyplot.R")
+>>>>>>> 2fc55a8a1295caabf708ab5181621fbb4beb92a3
 set.seed(0)
 
 ##Analyse
@@ -19,6 +25,13 @@ test <- make_test(100,
                   nclasses = 6,
                   sigma = sig)
 
+<<<<<<< HEAD
+=======
+### Shiny-Interface
+
+shinyApp(ui, server)
+
+>>>>>>> 2fc55a8a1295caabf708ab5181621fbb4beb92a3
 ### PDA
 f <- classify(unique(test$class), PDA(test[1:dimension], test$class, base = "quad"))
 liste <- plot_error(test[1:dimension], test$class, f)
