@@ -3,9 +3,11 @@ library(NlcOptim)
 library(e1071)
 library(ggplot2)
 library(gridExtra)
-#library("Test.R")
-#library("plot_functions.R")
-
+source("R/Basis_expansion.R")
+source('R/Test.R')
+source("R/Estimators.R")
+source("R/Classifier_funs.R")
+source("R/plot_functions.R")
 #LD############################################
 LD_function <- function(data,results){
   cache <- matrix(0,ncol = length(results),nrow=length(results))
@@ -35,7 +37,7 @@ con_fun <- function(results){
   return(con)
 }
 #parameters##########################################
-alpha_est <- function(data,results,C){
+alpha_svm_est <- function(data,results,C){
   LD <- LD_function(data,results)
   con <- con_fun(results)
   #mu <- mu_est(data,results)
@@ -49,11 +51,11 @@ alpha_est <- function(data,results,C){
   a$par[issero] <- 0
   return(a$par)
 }
-beta_est <- function(alpha, data, results) {
+beta_svm_est <- function(alpha, data, results) {
   h <- alpha * data * results
   sapply(1:ncol(data), function(i){sum(h[,i])})
 }
-beta_0 <- function(alpha,data,results,beta){
+beta_svm_0 <- function(alpha,data,results,beta){
   data <- data[alpha != 0,]
   results <- results[alpha != 0]
   alpha <- alpha[alpha != 0]
@@ -64,20 +66,30 @@ beta_0 <- function(alpha,data,results,beta){
   return(mean(s))
 }
 #estimator####################################################
-targets <- function(data, results,C) {
+targets_j <- function(data, results,C=1,kernel=0, d=1,j=1) {
   classes <- unique(results)
   res <- sapply(results, function(class) {
-    if (class == classes[1]) {
+    if (class == classes[j]) {
       return(1)
     }
     return(-1)
   })
   results <- res
-  alpha <- alpha_est(data,results,C)
-  beta <- beta_est(alpha, data, results)
-  beta_Null <- beta_0(alpha,data, results, beta)
-  f <- function(x) {
-    return(x %*% beta + beta_Null)
+  alpha <- alpha_svm_est(data,results,C)
+  beta <- beta_svm_est(alpha, data, results)
+  beta_Null <- beta_svm_0(alpha,data, results, beta)
+  if(kernel==0){
+    f <- function(x) {
+      return(x %*% beta + beta_Null)
+    }
+  }else if(kernel == 1){
+    f <- function(x){
+      h <- 0
+      for (i in 1:nrow(data)) {
+        h <- h+ alpha[i]*results[i](1+x%*%data[i,])^d
+      }
+      h <- h + beta_0
+    }
   }
   return(f)
 }
@@ -88,6 +100,44 @@ svm_decision <- function(t,uresults){
       return(uresults[1])
     }
     return(uresults[2])
+  }
+  return(f)
+}
+#more_classes###################################
+targets_multiple_classes <- function(data,results,C=1,kernel=0,d=1){
+  classes <- unique(results)
+  if(length(classes)==2){return(targets_j(data,results,C,kernel=0,d=1))}
+  fun_list <- function(r,classes,data,results,C,kernel,d){
+    temp <- list()
+    for (s in (r+1):length(classes)) {
+      dat <- rbind(data[r*100-(99:0),],data[s*100-(99:0),])
+      res <- c(results[r*100-(99:0)],results[s*100-(99:0)])
+      temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d)
+    }
+    return(temp)
+  }
+  b <- lapply(1:(length(classes)-1),fun_list,classes=classes,data=data,results=results,C=C,kernel=kernel,d=d)
+  return(b)
+}
+
+svm_decision_more_classes <- function(t,uresults){
+  f <- function(x){
+    cla <- 1
+    tr <- FALSE
+    for (r in 1:(length(uresults)-1)) {
+      for (s in (r+1):(length(uresults))) {
+        a <- t[[r]][[s]](x)
+        if(s==length(uresults)&&a>0){
+          cla <- r
+          tr <- TRUE
+          break
+        }
+        else if(s==length(uresults)&&a<0){cla <- r+1}
+        if(a<0)break
+      }
+      if(tr==TRUE)break
+    }
+    return(uresults[cla])
   }
   return(f)
 }
