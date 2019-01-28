@@ -40,9 +40,6 @@ con_fun <- function(results){
 alpha_svm_est <- function(data,results,C){
   LD <- LD_function(data,results)
   con <- con_fun(results)
-  #mu <- mu_est(data,results)
-  #abc <- calc_C(mu,results)
-  #x <- rep(abc,times=nrow(data))
   x <- rep(1,times=nrow(data))
   llb <- rep(0,times=nrow(data))
   uub <- rep(C,times=nrow(data))
@@ -90,6 +87,11 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1) {
       }
       h <- h + beta_0
     }
+  }else{
+    warning("Wrong Parameter kernel! No Kernel used.",immediate. = TRUE)
+    f <- function(x) {
+      return(x %*% beta + beta_Null)
+    }
   }
   return(f)
 }
@@ -106,7 +108,7 @@ svm_decision <- function(t,uresults){
 #more_classes###################################
 targets_multiple_classes <- function(data,results,C=1,kernel=0,d=1){
   classes <- unique(results)
-  if(length(classes)==2){return(targets_j(data,results,C,kernel=0,d=1))}
+  if(length(classes)==2){return(targets_j(data,results,C,kernel,d=1))}
   fun_list <- function(r,classes,data,results,C,kernel,d){
     temp <- list()
     for (s in (r+1):length(classes)) {
@@ -145,16 +147,19 @@ svm_decision_more_classes <- function(t,uresults){
 
 #Test################################################
 #Vergleiche mit SVM aus Paket e1071
-test <- make_test(nclasses = 2,ninputs = 5000)
+test <- make_test(nclasses = 6,ninputs = 5000)
 data <- test[,1:2]
 results <- test[,3]
-data_self <- rbind(test[1:25,1:2],test[5001:5025,1:2])
-results_self <- c(as.character(test[1:25,3]),as.character(test[5001:5025,3]))
+data_self <- rbind(test[1:100,1:2],test[5001:5100,1:2],test[10001:10100,1:2],test[15001:15100,1:2],test[20001:20100,1:2],test[25001:25100,1:2])
+results_self <- c(as.character(test[1:100,3]),as.character(test[5001:5100,3]),as.character(test[10001:10100,3]),as.character(test[15001:15100,3]),as.character(test[20001:20100,3]),as.character(test[25001:25100,3]))
+results_self
+nrow(data_self)
 data_lib <- rbind(test[1:200,1:2],test[5001:5200,1:2])
 results_lib <- c(as.double(test[1:200,3]),as.character(test[5001:5200,3]))
 results_lib[results_lib=="B"] <- -1
 results_lib <- as.double(results_lib)
-t <- targets(data_self,results_self,1)
+t <- targets_multiple_classes(data = data_self,results = results_self,kernel = 4)
+f <- svm_decision_more_classes(t,c("A","B","C","D","E","F"))
 f <- svm_decision(t,c('A','B'))
 f_lib <- svm(x=data_lib,y=results_lib,cost=1)
 
@@ -177,7 +182,20 @@ test_svms <- function(f,f_lib,data){
   right_pred_f_lib <- sum(sapply(1:10000, test_it, tr=pred_lib,right=right))
   return(c(right_pred_f/10000,right_pred_f_lib/10000))
 }
-test_svms(f,f_lib,data)
+test_svm <- function(f,data){
+  pred <- sapply(1:30000,function(i){return(f(as.double(data[i,])))}) 
+  count <- 0
+  for (i in 1:30000) {
+    if(pred[i]==results[i]){
+      count <- count + 1
+    }
+  }
+  return(count)
+  right_pred_f <- sum(sapply(1:10000, test_it, tr=pred,right=right))
+  right_pred_f_lib <- sum(sapply(1:10000, test_it, tr=pred_lib,right=right))
+  return(c(right_pred_f/10000,right_pred_f_lib/10000))
+}
+test_svm(f,data)/30000
 
 
 #Test_Ende##########################################
