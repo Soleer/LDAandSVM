@@ -1,9 +1,9 @@
 library(MASS)
 library(NlcOptim)
 library(e1071)
-#library(ggplot2)
-#library(gridExtra)
-#source("R/Basis_expansion.R")
+library(ggplot2)
+library(gridExtra)
+source("R/Basis_expansion.R")
 #source('R/Test.R')
 #source("R/Estimators.R")
 #source("R/Classifier_funs.R")
@@ -71,15 +71,16 @@ beta_svm_0 <- function(alpha,data,results,beta){
   return(mean(s))
 }
 #estimator####################################################
-targets_j <- function(data, results,C=1,kernel=0, d=1,j=1) {
-  classes <- unique(results)
+targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes) {
   res <- sapply(results, function(class) {
     if (class == classes[j]) {
       return(1)
     }
     return(-1)
   })
-  results <- res
+  results <- res[]
+  print(names(results))
+  print(results)
   alpha <- alpha_svm_est(data,results,C,kernel,d)
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha,data, results, beta)
@@ -113,19 +114,30 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1) {
 }
 
 #more_classes###################################
-targets_multiple_classes <- function(data,results,C=1,kernel=0,d=1){
-  classes <- unique(results)
-  if(length(classes)==2){return(targets_j(data,results,C,kernel,d))}
-  fun_list <- function(r,classes,data,results,C,kernel,d){
-    temp <- list()
-    for (s in (r+1):length(classes)) {
-      dat <- rbind(data[r*100-(99:0),],data[s*100-(99:0),])
-      res <- c(results[r*100-(99:0)],results[s*100-(99:0)])
-      temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d)
-    }
-    return(temp)
+fun_list <- function(r,data,results,C,kernel,d,ob_mat,classes_multiple,len_cla){
+  temp <- list()
+  for (s in (r+1):len_cla) {
+    dat <- rbind(data[ob_mat[1,r]:ob_mat[2,r],],data[ob_mat[1,s]:ob_mat[2,s],])
+    res <- c(as.character(results[ob_mat[1,r]:ob_mat[2,r]]),as.character(results[ob_mat[1,s]:ob_mat[2,s]]))
+    print(s)
+    temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d,classes=classes_multiple,j=r)
+    
   }
-  b <- lapply(1:(length(classes)-1),fun_list,classes=classes,data=data,results=results,C=C,kernel=kernel,d=d)
+  return(temp)
+}
+fun_ob <- function(i,ob){
+  if(i==1){return(c(1,sum(ob[1:i])))}
+  return(c(sum(ob[1:(i-1)])+1,sum(ob[1:i])))
+}
+
+targets_multiple_classes <- function(data,results,C = 1,kernel = 0,d = 1){
+  classes_multiple <- unique(results)
+  len_cla <- length(classes_multiple)
+  ob <- table(results)
+  if(len_cla==2){return(targets_j(data,results,C,kernel,d,classes=classes_multiple))}
+
+  ob_mat <- sapply(1:len_cla, fun_ob,ob=ob)
+  b <- lapply(1:(len_cla-1),fun_list,data=data,results=results,C=C,kernel=kernel,d=d,ob_mat=ob_mat,classes_multiple=classes_multiple,len_cla=len_cla)
   return(b)
 }
 
@@ -163,24 +175,34 @@ svm_decision_more_classes <- function(t,uresults){
 
 #Test################################################
 #Vergleiche mit SVM aus Paket e1071
-test <- make_test(nclasses = 6,ninputs = 5000)
+test <- make_test(nclasses = 7,ninputs = 2)
+
 data <- test[,1:2]
 results <- test[,3]
+unique(results)
+t <- targets_multiple_classes(data = data,results = results,kernel = 0,d=1)
+f <- svm_decision_more_classes(t,c("A","B","C","D","E","F"))
+for (i in 1:4) {
+  print(f(as.double(data[i,])))
+}
+
+
 x <- c(3,3)
 x %*% as.matrix(data_self)
-data_self <- rbind(test[1:100,1:2],test[5001:5100,1:2])#,test[10001:10100,1:2],test[15001:15100,1:2],test[20001:20100,1:2],test[25001:25100,1:2])
-results_self <- c(as.character(test[1:100,3]),as.character(test[5001:5100,3]))#,as.character(test[10001:10100,3]),as.character(test[15001:15100,3]),as.character(test[20001:20100,3]),as.character(test[25001:25100,3]))
+data_self <- rbind(test[,1:2])#,test[5001:5100,1:2])#,test[10001:10100,1:2],test[15001:15100,1:2],test[20001:20100,1:2],test[25001:25100,1:2])
+results_self <- c(as.character(test[,3]))#,as.character(test[5001:5100,3]))#,as.character(test[10001:10100,3]),as.character(test[15001:15100,3]),as.character(test[20001:20100,3]),as.character(test[25001:25100,3]))
 results_self
+data_self
 nrow(data_self)
-data_lib <- rbind(test[1:200,1:2],test[5001:5200,1:2])
+data_lib <- rbind(test[,1:2],test[5001:5200,1:2])
 results_lib <- c(as.double(test[1:200,3]),as.character(test[5001:5200,3]))
 results_lib[results_lib=="B"] <- -1
 results_lib <- as.double(results_lib)
-t <- targets_multiple_classes(data = data_self,results = results_self,kernel = 1,d=8)
+t <- targets_multiple_classes(data = data_self,results = results_self,kernel = 1,d=2)
 f <- svm_decision_more_classes(t,c("A","B","C","D","E","F"))
 f <- svm_decision_more_classes(t,c("A","B"))
 ff <- svm_decision(t,c('A','B'))
-f_lib <- svm(x=data_lib,y=results_lib,cost=1)
+f_lib <- svm(x=data_self,y=results_self,cost=1)
 #da meine alpha schätzfunktion sehr rechenaufwendig ist,
 #kann mein svm-schätzer bis jetzt auf höchstens 50 
 #Observationen aufbauen. 
