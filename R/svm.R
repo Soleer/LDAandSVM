@@ -8,6 +8,18 @@ source("R/Basis_expansion.R")
 #source("R/Estimators.R")
 #source("R/Classifier_funs.R")
 #source("R/plot_functions.R")
+#safety#########################################
+safety <- function(expr){
+  tryCatch(
+    error = function(cnd){
+      list(result = NULL,error = cnd,warning=cnd)
+    },
+    warning = function(cnd){
+      list(result = NULL,error = cnd,warning=cnd)
+    },
+    list(result = expr,error = NULL,warning = NULL)
+  )
+}
 #LD############################################
 LD_function <- function(data,results,kernel,d,g){
   cache <- matrix(0,ncol = length(results),nrow=length(results))
@@ -57,10 +69,40 @@ alpha_svm_est <- function(data,results,C,kernel,d,g){
   x <- rep(1/sqrt(nrow(data)),times=nrow(data))
   llb <- rep(0,times=nrow(data))
   uub <- rep(C,times=nrow(data))
-  a <- solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub)
-  issero <- sapply(1:nrow(data), function(i){isTRUE(all.equal(a$par[i],0))})
-  a$par[issero] <- 0
-  return(a$par)
+  a <- safety(solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub))
+  if(is.null(a$result) || !is.null(a$warning)){
+    warning(c(a$error,"\n Ändere Startwert zu 0:"))
+    x <- rep(0,times=nrow(data))
+    a <- safety(solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub))
+  }
+  if(is.null(a$result)|| !is.null(a$warning)){
+    warning(c(a$error,"\n Ändere Startwert zu 1/C:"))
+    x <- rep(1/C,times=nrow(data))
+    a <- safety(solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub))
+  }
+  if(is.null(a$result)|| !is.null(a$warning)){
+    warning(c(a$error,"\n Ändere Startwert zu 0:"))
+    x <- rep(0,times=nrow(data))
+    a <- safety(solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub))
+  }
+  if((is.null(a$result)|| !is.null(a$warning))&&kernel!=0){
+    warning(c(a$error,"\n Ändere Startwert zurück zu 1/sqrt(nrow(data)) und wende Standard-kernel an:"))
+    kernel <- 0
+    LD <- LD_function(data,results,kernel,d,g)
+    con <- con_fun(results)
+    x <- rep(1/sqrt(nrow(data)),times=nrow(data))
+    llb <- rep(0,times=nrow(data))
+    uub <- rep(C,times=nrow(data))
+    a <- safety(solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub))
+  }
+  if(is.null(a$result)){
+    stop("Funktion kann vom verwendeten Paket nicht optimiert werden.")
+  }
+  
+  a <- as.double(a$result$par)
+  issero <- sapply(1:nrow(data), function(i){isTRUE(all.equal(a,0))})
+  a[issero] <- 0
+  return(a)
 }
 beta_svm_est <- function(alpha, data, results) {
   h <- alpha * data * results
@@ -74,7 +116,7 @@ beta_svm_0 <- function(alpha,data,results,beta){
     return(results[i]-as.double(data[i,])%*%beta)
   }
   s <- sapply(1:length(results), be,data=data,results=results,beta=beta)
-  return(mean(s))
+  return(mean(as.double(s)))
 }
 #estimator####################################################
 targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
@@ -86,6 +128,7 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
   })
   results <- res[]
   alpha <- alpha_svm_est(data,results,C,kernel,d,g)
+  print(alpha)
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha,data, results, beta)
   if(kernel==0){
@@ -182,13 +225,13 @@ test <- make_test(nclasses = 3,ninputs = 50)
 data <- test[,1:2]
 results <- test[,3]
 unique(results)
-t <- targets_multiple_classes(data = data,results = results,kernel = 2,d=4,g=0.1)
+t <- targets_multiple_classes(data = data,results = results,kernel = 0,d=10,g=0.1)
 f <- svm_decision_more_classes(t,c("A","B","C"))
 for (i in 1:150) {
   print(f(as.double(data[i,])))
 }
 t
-
+asd <- list("v"=c(1,2,3),c(2),c(444))
 x <- c(3,3)
 x %*% as.matrix(data_self)
 data_self <- rbind(test[,1:2])#,test[5001:5100,1:2])#,test[10001:10100,1:2],test[15001:15100,1:2],test[20001:20100,1:2],test[25001:25100,1:2])
