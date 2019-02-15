@@ -9,12 +9,18 @@ source("R/Basis_expansion.R")
 #source("R/Classifier_funs.R")
 #source("R/plot_functions.R")
 #LD############################################
-LD_function <- function(data,results,kernel,d){
+LD_function <- function(data,results,kernel,d,g){
   cache <- matrix(0,ncol = length(results),nrow=length(results))
   if(kernel==1){
     for (i in 1:length(results)) {
       for (j in 1:i) {
         cache[i,j] <- results[i]*results[j]*(1+sum(data[i,]*data[j,]))^d
+      }
+    }
+  }else if(kernel==2){
+    for (i in 1:length(results)) {
+      for (j in 1:i) {
+        cache[i,j] <- results[i]*results[j]*exp((-g)*sum((data[i,]-data[j,]))^2)
       }
     }
   }else{
@@ -45,8 +51,8 @@ con_fun <- function(results){
   return(con)
 }
 #parameters##########################################
-alpha_svm_est <- function(data,results,C,kernel,d){
-  LD <- LD_function(data,results,kernel,d)
+alpha_svm_est <- function(data,results,C,kernel,d,g){
+  LD <- LD_function(data,results,kernel,d,g)
   con <- con_fun(results)
   x <- rep(1/sqrt(nrow(data)),times=nrow(data))
   llb <- rep(0,times=nrow(data))
@@ -71,7 +77,7 @@ beta_svm_0 <- function(alpha,data,results,beta){
   return(mean(s))
 }
 #estimator####################################################
-targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes) {
+targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
   res <- sapply(results, function(class) {
     if (class == classes[j]) {
       return(1)
@@ -79,28 +85,26 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes) {
     return(-1)
   })
   results <- res[]
-  print(names(results))
-  print(results)
-  alpha <- alpha_svm_est(data,results,C,kernel,d)
+  alpha <- alpha_svm_est(data,results,C,kernel,d,g)
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha,data, results, beta)
   if(kernel==0){
     f <- function(x) {
       return(x %*% beta + beta_Null)
     }
-#  }else if(kernel == 1){
- #   f <- function(x){
-  #    h <- 0
-   #   for (i in 1:nrow(data)) {
-    #    h <- h+ alpha[i]*results[i](1+x%*%data[i,])^d
-     # }
-      #h <- h + beta_Null
-    #}
   }else if(kernel == 1){
     f <- function(x){
       h <- 0
       for (i in 1:nrow(data)) {
         h[i] <- (alpha[i] * results[i])*(1 + x %*% as.double(data[i,]))^d
+      }
+      return(sum(h) + beta_Null)
+    }
+  }else if(kernel == 2){
+    f <- function(x){
+      h <- 0
+      for (i in 1:nrow(data)) {
+        h[i] <- (alpha[i] * results[i])*exp(-g*sum((x-as.double(data[i,]))^2))
       }
       return(sum(h) + beta_Null)
     }
@@ -114,13 +118,12 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes) {
 }
 
 #more_classes###################################
-fun_list <- function(r,data,results,C,kernel,d,ob_mat,classes_multiple,len_cla){
+fun_list <- function(r,data,results,C,kernel,d,ob_mat,classes_multiple,len_cla,g){
   temp <- list()
   for (s in (r+1):len_cla) {
     dat <- rbind(data[ob_mat[1,r]:ob_mat[2,r],],data[ob_mat[1,s]:ob_mat[2,s],])
     res <- c(as.character(results[ob_mat[1,r]:ob_mat[2,r]]),as.character(results[ob_mat[1,s]:ob_mat[2,s]]))
-    print(s)
-    temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d,classes=classes_multiple,j=r)
+    temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d,classes=classes_multiple,j=r,g=g)
     
   }
   return(temp)
@@ -130,14 +133,13 @@ fun_ob <- function(i,ob){
   return(c(sum(ob[1:(i-1)])+1,sum(ob[1:i])))
 }
 
-targets_multiple_classes <- function(data,results,C = 1,kernel = 0,d = 1){
+targets_multiple_classes <- function(data,results,C = 1,kernel = 0,d = 1,g=1){
   classes_multiple <- unique(results)
   len_cla <- length(classes_multiple)
   ob <- table(results)
-  if(len_cla==2){return(targets_j(data,results,C,kernel,d,classes=classes_multiple))}
-
+  if(len_cla==2){return(targets_j(data=data,results = results,C = C,kernel = kernel,d = d,classes=classes_multiple,g = g))}
   ob_mat <- sapply(1:len_cla, fun_ob,ob=ob)
-  b <- lapply(1:(len_cla-1),fun_list,data=data,results=results,C=C,kernel=kernel,d=d,ob_mat=ob_mat,classes_multiple=classes_multiple,len_cla=len_cla)
+  b <- lapply(1:(len_cla-1),fun_list,data=data,results=results,C=C,kernel=kernel,d=d,ob_mat=ob_mat,classes_multiple=classes_multiple,len_cla=len_cla,g=g)
   return(b)
 }
 
@@ -175,17 +177,17 @@ svm_decision_more_classes <- function(t,uresults){
 
 #Test################################################
 #Vergleiche mit SVM aus Paket e1071
-test <- make_test(nclasses = 7,ninputs = 2)
+test <- make_test(nclasses = 3,ninputs = 50)
 
 data <- test[,1:2]
 results <- test[,3]
 unique(results)
-t <- targets_multiple_classes(data = data,results = results,kernel = 0,d=1)
-f <- svm_decision_more_classes(t,c("A","B","C","D","E","F"))
-for (i in 1:4) {
+t <- targets_multiple_classes(data = data,results = results,kernel = 2,d=4,g=0.1)
+f <- svm_decision_more_classes(t,c("A","B","C"))
+for (i in 1:150) {
   print(f(as.double(data[i,])))
 }
-
+t
 
 x <- c(3,3)
 x %*% as.matrix(data_self)
