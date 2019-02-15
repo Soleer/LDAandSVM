@@ -1,17 +1,27 @@
 library(MASS)
 library(NlcOptim)
 library(e1071)
-library(ggplot2)
-library(gridExtra)
-#library("Test.R")
-#library("plot_functions.R")
-
+#library(ggplot2)
+#library(gridExtra)
+#source("R/Basis_expansion.R")
+#source('R/Test.R')
+#source("R/Estimators.R")
+#source("R/Classifier_funs.R")
+#source("R/plot_functions.R")
 #LD############################################
-LD_function <- function(data,results){
+LD_function <- function(data,results,kernel,d){
   cache <- matrix(0,ncol = length(results),nrow=length(results))
-  for (i in 1:length(results)) {
-    for (j in 1:i) {
-      cache[i,j] <- results[i]*results[j]*(sum(data[i,]*data[j,]))
+  if(kernel==1){
+    for (i in 1:length(results)) {
+      for (j in 1:i) {
+        cache[i,j] <- results[i]*results[j]*(1+sum(data[i,]*data[j,]))^d
+      }
+    }
+  }else{
+    for (i in 1:length(results)) {
+     for (j in 1:i) {
+       cache[i,j] <- results[i]*results[j]*(sum(data[i,]*data[j,]))
+      }
     }
   }
   f <- function(a){
@@ -35,13 +45,10 @@ con_fun <- function(results){
   return(con)
 }
 #parameters##########################################
-alpha_est <- function(data,results,C){
-  LD <- LD_function(data,results)
+alpha_svm_est <- function(data,results,C,kernel,d){
+  LD <- LD_function(data,results,kernel,d)
   con <- con_fun(results)
-  #mu <- mu_est(data,results)
-  #abc <- calc_C(mu,results)
-  #x <- rep(abc,times=nrow(data))
-  x <- rep(1,times=nrow(data))
+  x <- rep(1/sqrt(nrow(data)),times=nrow(data))
   llb <- rep(0,times=nrow(data))
   uub <- rep(C,times=nrow(data))
   a <- solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub)
@@ -49,11 +56,11 @@ alpha_est <- function(data,results,C){
   a$par[issero] <- 0
   return(a$par)
 }
-beta_est <- function(alpha, data, results) {
+beta_svm_est <- function(alpha, data, results) {
   h <- alpha * data * results
   sapply(1:ncol(data), function(i){sum(h[,i])})
 }
-beta_0 <- function(alpha,data,results,beta){
+beta_svm_0 <- function(alpha,data,results,beta){
   data <- data[alpha != 0,]
   results <- results[alpha != 0]
   alpha <- alpha[alpha != 0]
@@ -64,30 +71,91 @@ beta_0 <- function(alpha,data,results,beta){
   return(mean(s))
 }
 #estimator####################################################
-targets <- function(data, results,C) {
+targets_j <- function(data, results,C=1,kernel=0, d=1,j=1) {
   classes <- unique(results)
   res <- sapply(results, function(class) {
-    if (class == classes[1]) {
+    if (class == classes[j]) {
       return(1)
     }
     return(-1)
   })
   results <- res
-  alpha <- alpha_est(data,results,C)
-  beta <- beta_est(alpha, data, results)
-  beta_Null <- beta_0(alpha,data, results, beta)
-  f <- function(x) {
-    return(x %*% beta + beta_Null)
+  alpha <- alpha_svm_est(data,results,C,kernel,d)
+  beta <- beta_svm_est(alpha, data, results)
+  beta_Null <- beta_svm_0(alpha,data, results, beta)
+  if(kernel==0){
+    f <- function(x) {
+      return(x %*% beta + beta_Null)
+    }
+#  }else if(kernel == 1){
+ #   f <- function(x){
+  #    h <- 0
+   #   for (i in 1:nrow(data)) {
+    #    h <- h+ alpha[i]*results[i](1+x%*%data[i,])^d
+     # }
+      #h <- h + beta_Null
+    #}
+  }else if(kernel == 1){
+    f <- function(x){
+      h <- 0
+      for (i in 1:nrow(data)) {
+        h[i] <- (alpha[i] * results[i])*(1 + x %*% as.double(data[i,]))^d
+      }
+      return(sum(h) + beta_Null)
+    }
+  }else{
+    warning("Wrong Parameter kernel! No Kernel used.",immediate. = TRUE)
+    f <- function(x) {
+      return(x %*% beta + beta_Null)
+    }
   }
   return(f)
 }
 
-svm_decision <- function(t,uresults){
-  f <- function(x){
-    if(t(x)>=0){
-      return(uresults[1])
+#more_classes###################################
+targets_multiple_classes <- function(data,results,C=1,kernel=0,d=1){
+  classes <- unique(results)
+  if(length(classes)==2){return(targets_j(data,results,C,kernel,d))}
+  fun_list <- function(r,classes,data,results,C,kernel,d){
+    temp <- list()
+    for (s in (r+1):length(classes)) {
+      dat <- rbind(data[r*100-(99:0),],data[s*100-(99:0),])
+      res <- c(results[r*100-(99:0)],results[s*100-(99:0)])
+      temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d)
     }
-    return(uresults[2])
+    return(temp)
+  }
+  b <- lapply(1:(length(classes)-1),fun_list,classes=classes,data=data,results=results,C=C,kernel=kernel,d=d)
+  return(b)
+}
+
+svm_decision_more_classes <- function(t,uresults){
+  if(length(t)==1){
+    f <- function(x){
+      if(t(x)>=0){
+        return(uresults[1])
+      }
+      return(uresults[2])
+    }
+    return(f)
+  }
+  f <- function(x){
+    cla <- 1
+    tr <- FALSE
+    for (r in 1:(length(uresults)-1)) {
+      for (s in (r+1):(length(uresults))) {
+        a <- t[[r]][[s]](x)
+        if(s==length(uresults)&&a>0){
+          cla <- r
+          tr <- TRUE
+          break
+        }
+        else if(s==length(uresults)&&a<0){cla <- r+1}
+        if(a<0)break
+      }
+      if(tr==TRUE)break
+    }
+    return(uresults[cla])
   }
   return(f)
 }
@@ -95,19 +163,24 @@ svm_decision <- function(t,uresults){
 
 #Test################################################
 #Vergleiche mit SVM aus Paket e1071
-test <- make_test(nclasses = 2,ninputs = 5000)
+test <- make_test(nclasses = 6,ninputs = 5000)
 data <- test[,1:2]
 results <- test[,3]
-data_self <- rbind(test[1:25,1:2],test[5001:5025,1:2])
-results_self <- c(as.character(test[1:25,3]),as.character(test[5001:5025,3]))
+x <- c(3,3)
+x %*% as.matrix(data_self)
+data_self <- rbind(test[1:100,1:2],test[5001:5100,1:2])#,test[10001:10100,1:2],test[15001:15100,1:2],test[20001:20100,1:2],test[25001:25100,1:2])
+results_self <- c(as.character(test[1:100,3]),as.character(test[5001:5100,3]))#,as.character(test[10001:10100,3]),as.character(test[15001:15100,3]),as.character(test[20001:20100,3]),as.character(test[25001:25100,3]))
+results_self
+nrow(data_self)
 data_lib <- rbind(test[1:200,1:2],test[5001:5200,1:2])
 results_lib <- c(as.double(test[1:200,3]),as.character(test[5001:5200,3]))
 results_lib[results_lib=="B"] <- -1
 results_lib <- as.double(results_lib)
-t <- targets(data_self,results_self,1)
-f <- svm_decision(t,c('A','B'))
+t <- targets_multiple_classes(data = data_self,results = results_self,kernel = 1,d=8)
+f <- svm_decision_more_classes(t,c("A","B","C","D","E","F"))
+f <- svm_decision_more_classes(t,c("A","B"))
+ff <- svm_decision(t,c('A','B'))
 f_lib <- svm(x=data_lib,y=results_lib,cost=1)
-
 #da meine alpha schätzfunktion sehr rechenaufwendig ist,
 #kann mein svm-schätzer bis jetzt auf höchstens 50 
 #Observationen aufbauen. 
@@ -127,9 +200,28 @@ test_svms <- function(f,f_lib,data){
   right_pred_f_lib <- sum(sapply(1:10000, test_it, tr=pred_lib,right=right))
   return(c(right_pred_f/10000,right_pred_f_lib/10000))
 }
+test_svm <- function(f,data){
+  pred <- sapply(1:30000,function(i){return(f(as.double(data[i,])))}) 
+  count <- 0
+  for (i in 1:30000) {
+    if(pred[i]==results[i]){
+      count <- count + 1
+    }
+  }
+  return(count)
+  right_pred_f <- sum(sapply(1:10000, test_it, tr=pred,right=right))
+  right_pred_f_lib <- sum(sapply(1:10000, test_it, tr=pred_lib,right=right))
+  return(c(right_pred_f/10000,right_pred_f_lib/10000))
+}
 test_svms(f,f_lib,data)
 
+f(as.double(data[1,]))
+sapply(1:10000,function(i){return(f(as.double(data[i,])))}) 
+tt((as.double(data[1,])))  
+f(as.double(data[30000,]))
+sapply(500:30000,function(i){return(print(c(f(as.double(data[i,])),i)))}) 
 
+?print
 #Test_Ende##########################################
 ####################################################
 #plot##############################################

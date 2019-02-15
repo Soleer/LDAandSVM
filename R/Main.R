@@ -9,9 +9,13 @@ source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 <<<<<<< HEAD
+<<<<<<< HEAD
 #source("R/svm.R")
 =======
 source("R/svm.R")
+=======
+#source("R/svm.R")
+>>>>>>> 799ea67375f0dd7253546b17c0d090de89c50a50
 source("R/shinyplot.R")
 >>>>>>> 2fc55a8a1295caabf708ab5181621fbb4beb92a3
 set.seed(0)
