@@ -34,6 +34,8 @@ server <- function(input, output){
                       sigma = c(input$Sigma1, input$Sigma2, input$Sigma3, input$Sigma4, input$Sigma5, 
                                 input$Sigma6, input$Sigma7, input$Sigma8, input$Sigma9, input$Sigma10))
   })
+  testplot <- ggplot()
+  liste <- ggplot()
   observeEvent(input$Calc_button, {
     Classfun <- input$Classifier
     BG <- input$Background
@@ -54,8 +56,8 @@ server <- function(input, output){
     
     if(Classfun == "QDA"){
       f <- classify(unique(test$class), QDA(test[1:(ncol(test)-1)], test$class))
-      liste <- plot_error(test[1:(ncol(test)-1)], test$class, f)
-      testplot <-
+      liste <<- plot_error(test[1:(ncol(test)-1)], test$class, f)
+      testplot <<-
         make_2D_plot(test[1:(ncol(test)-1)],
                      test$class,
                      f,
@@ -65,8 +67,8 @@ server <- function(input, output){
     
     if(Classfun == "PDA"){
       f <- classify(unique(test$class), PDA(test[1:(ncol(test)-1)], test$class, base = Base))
-      liste <- plot_error(test[1:(ncol(test)-1)], test$class, f)
-      testplot <-
+      liste <<- plot_error(test[1:(ncol(test)-1)], test$class, f)
+      testplot <<-
         make_2D_plot(test[1:(ncol(test)-1)],
                      test$class,
                      f,
