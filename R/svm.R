@@ -62,6 +62,9 @@ con_fun <- function(results){
   }
   return(con)
 }
+#####################################################
+#safe_solnl <- function(x,LD,con,llb,uub,C,data)
+
 #parameters##########################################
 alpha_svm_est <- function(data,results,C,kernel,d,g){
   LD <- LD_function(data,results,kernel,d,g)
@@ -86,7 +89,7 @@ alpha_svm_est <- function(data,results,C,kernel,d,g){
     a <- safety(solnl(X=x, objfun =LD,confun=con,lb = llb,ub = uub))
   }
   if((is.null(a$result)|| !is.null(a$warning))&&kernel!=0){
-    warning(c(a$error,"\n Ändere Startwert zurück zu 1/sqrt(nrow(data)) und wende Standard-kernel an:"))
+    warning(c(a$error,"\n Ändere Startwert zurück zu 1/sqrt(nrow(data)) und verwende keinen Kernel:"))
     kernel <- 0
     LD <- LD_function(data,results,kernel,d,g)
     con <- con_fun(results)
@@ -119,7 +122,7 @@ beta_svm_0 <- function(alpha,data,results,beta){
   return(mean(as.double(s)))
 }
 #estimator####################################################
-targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
+svm_two_classes <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
   res <- sapply(results, function(class) {
     if (class == classes[j]) {
       return(1)
@@ -128,7 +131,6 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
   })
   results <- res[]
   alpha <- alpha_svm_est(data,results,C,kernel,d,g)
-  print(alpha)
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha,data, results, beta)
   if(kernel==0){
@@ -161,12 +163,12 @@ targets_j <- function(data, results,C=1,kernel=0, d=1,j=1,classes,g=1) {
 }
 
 #more_classes###################################
-fun_list <- function(r,data,results,C,kernel,d,ob_mat,classes_multiple,len_cla,g){
+fun_list <- function(r,data,results,C,kernel,d,ob_mat,unique_results,length_unique_results,g){
   temp <- list()
-  for (s in (r+1):len_cla) {
+  for (s in (r+1):length_unique_results) {
     dat <- rbind(data[ob_mat[1,r]:ob_mat[2,r],],data[ob_mat[1,s]:ob_mat[2,s],])
     res <- c(as.character(results[ob_mat[1,r]:ob_mat[2,r]]),as.character(results[ob_mat[1,s]:ob_mat[2,s]]))
-    temp[[s]] <- targets_j(data=dat,results=res,C=C,kernel=kernel,d=d,classes=classes_multiple,j=r,g=g)
+    temp[[s]] <- svm_two_classes(data=dat,results=res,C=C,kernel=kernel,d=d,classes=unique_results,j=r,g=g)
     
   }
   return(temp)
@@ -176,17 +178,17 @@ fun_ob <- function(i,ob){
   return(c(sum(ob[1:(i-1)])+1,sum(ob[1:i])))
 }
 
-targets_multiple_classes <- function(data,results,C = 1,kernel = 0,d = 1,g=1){
-  classes_multiple <- unique(results)
-  len_cla <- length(classes_multiple)
+svm <- function(data,results,C = 1,kernel = 0,d = 1,g=1){
+  unique_results <- unique(results)
+  length_unique_results <- length(unique_results)
   ob <- table(results)
-  if(len_cla==2){return(targets_j(data=data,results = results,C = C,kernel = kernel,d = d,classes=classes_multiple,g = g))}
-  ob_mat <- sapply(1:len_cla, fun_ob,ob=ob)
-  b <- lapply(1:(len_cla-1),fun_list,data=data,results=results,C=C,kernel=kernel,d=d,ob_mat=ob_mat,classes_multiple=classes_multiple,len_cla=len_cla,g=g)
+  if(length_unique_results==2){return(svm_two_classes(data=data,results = results,C = C,kernel = kernel,d = d,classes=unique_results,g = g))}
+  ob_mat <- sapply(1:length_unique_results, fun_ob,ob=ob)
+  b <- lapply(1:(length_unique_results-1),fun_list,data=data,results=results,C=C,kernel=kernel,d=d,ob_mat=ob_mat,unique_results=unique_results,length_unique_results=length_unique_results,g=g)
   return(b)
 }
 
-svm_decision_more_classes <- function(t,uresults){
+svm_classify <- function(t,uresults){
   if(length(t)==1){
     f <- function(x){
       if(t(x)>=0){
@@ -199,18 +201,18 @@ svm_decision_more_classes <- function(t,uresults){
   f <- function(x){
     cla <- 1
     tr <- FALSE
-    for (r in 1:(length(uresults)-1)) {
-      for (s in (r+1):(length(uresults))) {
+    for (r in 1:(length(uresults) - 1)) {
+      for (s in (r + 1):(length(uresults))) {
         a <- t[[r]][[s]](x)
-        if(s==length(uresults)&&a>0){
+        if(s == length(uresults) && a > 0){
           cla <- r
           tr <- TRUE
           break
         }
-        else if(s==length(uresults)&&a<0){cla <- r+1}
-        if(a<0)break
+        else if( s == length(uresults) && a < 0) {cla <- r + 1}
+        if( a < 0) break
       }
-      if(tr==TRUE)break
+      if(tr == TRUE) break
     }
     return(uresults[cla])
   }
@@ -218,107 +220,4 @@ svm_decision_more_classes <- function(t,uresults){
 }
 
 
-#Test################################################
 #Vergleiche mit SVM aus Paket e1071
-test <- make_test(nclasses = 3,ninputs = 50)
-
-data <- test[,1:2]
-results <- test[,3]
-unique(results)
-t <- targets_multiple_classes(data = data,results = results,kernel = 0,d=10,g=0.1)
-f <- svm_decision_more_classes(t,c("A","B","C"))
-for (i in 1:150) {
-  print(f(as.double(data[i,])))
-}
-t
-asd <- list("v"=c(1,2,3),c(2),c(444))
-x <- c(3,3)
-x %*% as.matrix(data_self)
-data_self <- rbind(test[,1:2])#,test[5001:5100,1:2])#,test[10001:10100,1:2],test[15001:15100,1:2],test[20001:20100,1:2],test[25001:25100,1:2])
-results_self <- c(as.character(test[,3]))#,as.character(test[5001:5100,3]))#,as.character(test[10001:10100,3]),as.character(test[15001:15100,3]),as.character(test[20001:20100,3]),as.character(test[25001:25100,3]))
-results_self
-data_self
-nrow(data_self)
-data_lib <- rbind(test[,1:2],test[5001:5200,1:2])
-results_lib <- c(as.double(test[1:200,3]),as.character(test[5001:5200,3]))
-results_lib[results_lib=="B"] <- -1
-results_lib <- as.double(results_lib)
-t <- targets_multiple_classes(data = data_self,results = results_self,kernel = 1,d=2)
-f <- svm_decision_more_classes(t,c("A","B","C","D","E","F"))
-f <- svm_decision_more_classes(t,c("A","B"))
-ff <- svm_decision(t,c('A','B'))
-f_lib <- svm(x=data_self,y=results_self,cost=1)
-#da meine alpha schätzfunktion sehr rechenaufwendig ist,
-#kann mein svm-schätzer bis jetzt auf höchstens 50 
-#Observationen aufbauen. 
-test_svms <- function(f,f_lib,data){
-  pred_lib <- sign(predict(f_lib,data))
-  pred <- sapply(1:10000,function(i){return(f(as.double(data[i,])))}) 
-  pred[pred == "A"] <- 1
-  pred[pred == "B"] <- -1
-  pred <- as.double(pred)
-  right <- c(rep(1,times=5000),rep(-1,times=5000))
-  test_it <- function(i,tr,right){
-    if(tr[i] == right[i]){
-      return(1)
-    } else return(0)
-  }
-  right_pred_f <- sum(sapply(1:10000, test_it, tr=pred,right=right))
-  right_pred_f_lib <- sum(sapply(1:10000, test_it, tr=pred_lib,right=right))
-  return(c(right_pred_f/10000,right_pred_f_lib/10000))
-}
-test_svm <- function(f,data){
-  pred <- sapply(1:30000,function(i){return(f(as.double(data[i,])))}) 
-  count <- 0
-  for (i in 1:30000) {
-    if(pred[i]==results[i]){
-      count <- count + 1
-    }
-  }
-  return(count)
-  right_pred_f <- sum(sapply(1:10000, test_it, tr=pred,right=right))
-  right_pred_f_lib <- sum(sapply(1:10000, test_it, tr=pred_lib,right=right))
-  return(c(right_pred_f/10000,right_pred_f_lib/10000))
-}
-test_svms(f,f_lib,data)
-
-f(as.double(data[1,]))
-sapply(1:10000,function(i){return(f(as.double(data[i,])))}) 
-tt((as.double(data[1,])))  
-f(as.double(data[30000,]))
-sapply(500:30000,function(i){return(print(c(f(as.double(data[i,])),i)))}) 
-
-?print
-#Test_Ende##########################################
-####################################################
-#plot##############################################
-
-liste <- plot_error(data, results, f)
-p1 <- do.call(grid.arrange, liste)
-testplot <-
-  make_2D_plot(data,
-               results,
-               f,
-               ppu = 5,
-               bg=FALSE)
-f2 <- classify(unique(results), QDA(data, results))
-liste1 <- plot_error(data, results, f2)
-p2 <- do.call(grid.arrange, liste1)
-testplot1 <-
-  make_2D_plot(data,
-               results,
-               f2,
-               ppu = 5)
-plotlist <- list(p1, testplot)
-plotlist2 <- list(p2, testplot1)
-nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "LDA"))
-ggsave('LDA.png',
-       plot = nice,
-       device = 'png',
-       dpi = 400)
-nice2 <-
-  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
-ggsave('QDA.png',
-       plot = nice2,
-       device = 'png',
-       dpi = 400)

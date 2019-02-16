@@ -8,7 +8,7 @@ source('R/Test.R')
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-#source("R/svm.R")
+source("R/svm.R")
 source("R/shinyplot.R")
 set.seed(0)
 
@@ -20,7 +20,6 @@ test <- make_test(100,
                   sigma = sig)
 
 ### Shiny-Interface
-
 shinyApp(ui, server)
 
 ### PDA
@@ -76,5 +75,22 @@ nice3 <-
   do.call("grid.arrange", c(plotlist3, ncol = 2, top = "QDA"))
 ggsave('QDA.png',
        plot = nice3,
+       device = 'png',
+       dpi = 400)
+###svm
+f4 <- svm_classify(uresults=unique(test$class), t=svm(test[1:4], test$class))
+liste4 <- plot_error(test[1:4], test$class, f4)
+p4 <- do.call(grid.arrange, liste4)
+testplot4 <-
+  make_2D_plot(test[1:4],
+               test$class,
+               f4,
+               ppu = 5)
+plotlist4 <- list(p4, testplot4)
+
+nice4 <-
+  do.call("grid.arrange", c(plotlist4, ncol = 2, top = "svm"))
+ggsave('svm.png',
+       plot = nice4,
        device = 'png',
        dpi = 400)
