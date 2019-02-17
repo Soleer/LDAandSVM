@@ -1,6 +1,6 @@
 ## Basis expansion
 
-basis_exp <- function(type){    ##Function factory that returns function that makes a basis expansion
+basis_exp <- function(type = "id"){    ##Function factory that returns function that makes a basis expansion
   if(type == "id"){             ##No extra basis expansion.
     return(id <- function(x){
       return(x)
@@ -12,7 +12,8 @@ basis_exp <- function(type){    ##Function factory that returns function that ma
         len <- length(x)        ##Takes length of the vector for later use
         for(i in 1:len){        ##First iteration of the double loop. 
           for(j in i:len){      ##Second iteration if the double loop. Starts only at whatever position the first loop as in to not calculate twice
-            x <- c(x, x[i] * x[j])  ##Multiply the i-th column with the j-th one to get the product of the two and appending it to the already existing vector
+            y <- x[i] * x[j]
+            x <- c(x, y)  ##Multiply the i-th column with the j-th one to get the product of the two and appending it to the already existing vector
           }
         }
       }
@@ -21,7 +22,8 @@ basis_exp <- function(type){    ##Function factory that returns function that ma
         name <- names(x)        ##Saving name sof data-frame
         for(i in 1:cols){       ##First iteration of the double loop
           for(j in i:cols){     ##Second iteration if the double loop. Starts only at whatever position the first loop as in to not calculate twice
-            x <- cbind(x, x[, i] * x[, j]) ##Multiplying the i-th column with the j-th one to get the product of the two and appending it to the already existing data-frame
+            y <- x[, i] * x[, j]
+            x <- cbind(x, y) ##Multiplying the i-th column with the j-th one to get the product of the two and appending it to the already existing data-frame
             name <- c(name, paste(name[i], "*" , name[j])) ##creating a new name from the names of the coriginal olums
             colnames(x) <- name ##Setting the names of the new data-frame
           }
@@ -53,7 +55,7 @@ basis_exp <- function(type){    ##Function factory that returns function that ma
             for (k in j:len) {
               x <- cbind(x, x[, i] * x[, j] * x[, k])
               name <-
-                c(name, paste(name[i], "*" , name[j], "*", name[k]))
+                c(name, paste(name[i], "*" , name[j], "*", name[k]))  ##Setting the names for the new columns
               colnames(x) <- name
             }
           }
@@ -63,45 +65,45 @@ basis_exp <- function(type){    ##Function factory that returns function that ma
       return(x)
     })
   }
-  if(type == "log"){
+  if(type == "log"){    ##Logarithm: Given columns x, y it calculates log(x), log(y)
     return(function(x){
-      if(min(x) < 0){
+      if(min(x) <= 0){   ##Stops if not all values of the are larger than 0
         stop("All values of x must larger than zero for sqrt expansion")
       }
       if(is.vector(x)){
-        expa <- sapply(x, sqrt)
-        return(c(x, expa))
+        expa <- sapply(x, log)  ##Applying log to every value of the vector
+        return(c(x, expa))      ##Appending the new columns to the old one
       }
       if(is.data.frame(x)){
-        expa <- lapply(x, sqrt)
-        return(cbind(x, expa))
+        expa <- lapply(x, log)  ##Appying log to every column of the data-frame
+        return(cbind(x, expa))  ##Appending the new columns to the old one
       }
     })
   }
-  if(type == "sqrt"){
+  if(type == "sqrt"){   ##Square-root: For columns x, y it calculates sqrt(x), sqrt(y)
     return(function(x){
-      if(min(x) < 0){
+      if(min(x) < 0){   ##Stops if not all values of the input are larger or equal to 0
         stop("All values of x must larger than zero for sqrt expansion")
       }
       if(is.vector(x)){
-        expa <- sapply(x, sqrt)
-        return(c(x, expa))
+        expa <- sapply(x, sqrt) ##Applying sqrt to every value of the vector
+        return(c(x, expa))      ##Appending the new columns to the old one
       }
       if(is.data.frame(x)){
-        expa <- lapply(x, sqrt)
-        return(cbind(x, expa))
+        expa <- lapply(x, sqrt) ##Applying sqrt to every value of the data-frame
+        return(cbind(x, expa))  ##Appending the new columns to the old one
       }
     })
   }
-  if(type == "abs"){
-    return(function(x){
+  if(type == "abs"){    ##Absolute: For columns x, y it calculates abs(x) = |x|, abs(y) = |y|
+    return(function(x){ 
       if(is.vector(x)){
-        expa <- sapply(x, abs)
-        return(c(x, expa))
+        expa <- sapply(x, abs)  ##Applying abs to every value of the vector
+        return(c(x, expa))      ##Appending the new columns to the old one
       }
       if(is.data.frame(x)){
-        expa <- lapply(x, abs)
-        return(cbind(x, expa))
+        expa <- lapply(x, abs)  ##Applying abs to every value of the data-frame
+        return(cbind(x, expa))  ##Appending the new columns to the old one
       }
     })
   }
