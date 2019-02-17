@@ -24,7 +24,7 @@ Test_button <- actionButton("Test_button", "Generate random testdata")
 Plot1 <- plotOutput("Classification")
 Plot2 <- plotOutput("Error")
 
-server <- function(input, output){
+server_LDA_SVM <- function(input, output){
   observeEvent(input$Test_button, {
     nparam <- input$Param
     nclasses <- input$Classes
@@ -84,7 +84,7 @@ server <- function(input, output){
 }
 
 
-ui <- fluidPage(
+ui_LDA_SVM <- fluidPage(
   headerPanel("RProject LDA & SVM"),
   tabsetPanel(
     tabPanel("Options", 
@@ -95,3 +95,8 @@ ui <- fluidPage(
     tabPanel("Error", Plot2)
   )
 )
+
+
+classify_app <- function(){
+  shinyApp(ui_LDA_SVM, server_LDA_SVM)
+}

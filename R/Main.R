@@ -22,8 +22,7 @@ test <- make_test(100,
                   sigma = sig)
 
 ### Shiny-Interface
-
-shinyApp(ui, server)
+classify_app()
 
 ### PDA
 f <- classify(unique(test$class), PDA(test[1:dimension], test$class, base = "quad"))
