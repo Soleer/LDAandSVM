@@ -24,62 +24,67 @@ Test_button <- actionButton("Test_button", "Generate random testdata")
 Plot1 <- plotOutput("Classification")
 Plot2 <- plotOutput("Error")
 
-server <- function(input, output){
+server_LDA_SVM <- function(input, output){
   observeEvent(input$Test_button, {
     nparam <- input$Param
     nclasses <- input$Classes
-    test <<- make_test(100,
+    print(paste("Creating a test with", nclasses, "classes in", nparam, "dimensions."))
+    test_shiny <<- make_test(100,
                       nparam = nparam,
                       nclasses = nclasses,
                       sigma = c(input$Sigma1, input$Sigma2, input$Sigma3, input$Sigma4, input$Sigma5, 
                                 input$Sigma6, input$Sigma7, input$Sigma8, input$Sigma9, input$Sigma10))
+    print("test created")
   })
+  testplot <- ggplot()
+  liste <- ggplot()
   observeEvent(input$Calc_button, {
     Classfun <- input$Classifier
     BG <- input$Background
     Base <- input$Base
-    print(Classfun)
-    print(Base)
+    print(paste("classifying with:", Classfun, "and basis expansion:", Base))
+    print("Please wait for the calculations to finish")
     
     if(Classfun == "LDA"){
-      f <- classify(unique(test$class), LDA(test[1:(ncol(test)-1)], test$class))
-      liste <- plot_error(test[1:(ncol(test)-1)], test$class, f)
+      f <- classify(unique(test_shiny$class), LDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
+      liste <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
       testplot <-
-        make_2D_plot(test[1:(ncol(test)-1)],
-                     test$class,
+        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
+                     test_shiny$class,
                      f,
                      ppu = 5,
                      bg = BG)
     }
     
     if(Classfun == "QDA"){
-      f <- classify(unique(test$class), QDA(test[1:(ncol(test)-1)], test$class))
-      liste <- plot_error(test[1:(ncol(test)-1)], test$class, f)
-      testplot <-
-        make_2D_plot(test[1:(ncol(test)-1)],
-                     test$class,
+      f <- classify(unique(test_shiny$class), QDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
+      liste <<- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
+      testplot <<-
+        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
+                     test_shiny$class,
                      f,
                      ppu = 5,
                      bg = BG)
     }
     
     if(Classfun == "PDA"){
-      f <- classify(unique(test$class), PDA(test[1:(ncol(test)-1)], test$class, base = Base))
-      liste <- plot_error(test[1:(ncol(test)-1)], test$class, f)
-      testplot <-
-        make_2D_plot(test[1:(ncol(test)-1)],
-                     test$class,
+      f <- classify(unique(test_shiny$class), PDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, base = Base))
+      liste <<- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
+      testplot <<-
+        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
+                     test_shiny$class,
                      f,
                      ppu = 5,
                      bg = BG)
     }
     output$Classification <- renderPlot({testplot})
     output$Error <- renderPlot({do.call(grid.arrange, liste)})
+    print("finished!")
   })
 }
 
 
-ui <- fluidPage(
+ui_LDA_SVM <- fluidPage(
   headerPanel("RProject LDA & SVM"),
   tabsetPanel(
     tabPanel("Options", 
@@ -90,3 +95,8 @@ ui <- fluidPage(
     tabPanel("Error", Plot2)
   )
 )
+
+
+classify_app <- function(){
+  shinyApp(ui_LDA_SVM, server_LDA_SVM)
+}

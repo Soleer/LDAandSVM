@@ -57,14 +57,14 @@ sigma_est <- function(data, results) {
 }
 
 sigma_bet_est <- function(data, results){
-  G <- unique(results)
-  mu <- mu_est(data, results)
-  total_mean <- colMeans(data)
-  N <- length(G)
-  B_i <- lapply(1:N, function(i){
-    length(results[results == G[i]]) * (mu[i, ] - total_mean) %*% t(mu[i, ] - total_mean)
+  G <- unique(results)                    ##vector with all unique classnames in it. Nothing mentioned twice
+  mu <- mu_est(data, results)             ##Gets the Class centroids of each class (the expected value)
+  total_mean <- colMeans(data)            ##The total centroid of all data points (expected value of everything)
+  N <- length(G)                          ##Number of unique classes
+  B_i <- lapply(1:N, function(i){         ##Calculates the bewtween class covariance Matrix in two steps:
+    length(results[results == G[i]]) * (mu[i, ] - total_mean) %*% t(mu[i, ] - total_mean) ##1. Calculating a class specific part of the covariance matrix for every class
   })
-  B <- Reduce(`+`, B_i)/(length(results)-length(G))
+  B <- Reduce(`+`, B_i)/(length(results)-N) ##Adding all parts, which are in one big list, together and dividing by a standarizing factor
   return(B)
 }
 
