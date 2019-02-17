@@ -1,5 +1,4 @@
 #Estimators
-
 pi_est <- function(results) {
   classes <- unique(results)
   K <- length(results)
@@ -68,3 +67,4 @@ sigma_bet_est <- function(data, results){
   B <- Reduce(`+`, B_i)/(length(results)-length(G))
   return(B)
 }
+

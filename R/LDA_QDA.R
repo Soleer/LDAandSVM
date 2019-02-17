@@ -74,9 +74,11 @@ maincomponent_analysis <- function(data) {
 make_projection <- function(data, dim = 2) {
   l <- maincomponent_analysis(data)
   U <- l[[2]][, 1:dim]
+  #from p to dim
   proj <- function(x) {
     t(U) %*% x
   }
+  #from dim to p ( other dimensions set to 0 ) 
   i_proj <- function(x) {
     U %*% x
   }
