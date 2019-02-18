@@ -1,11 +1,10 @@
-library(R6)
 #Our Basic Object "Dataset":
-
-make_set <- R6Class(
-  "Dataset",
+data_set <- R6Class(
+  "data_set",
   private = list(
     #list of private slots
     .data = NULL,
+    .data_expansion = list(),
     .results = NULL,
     .col_names = NULL,
     .classes = NULL,
@@ -21,9 +20,10 @@ make_set <- R6Class(
     .mean = 0,
     .meantotal = 0,
     .sigma = 0,
-    .sigma_bet = 0,
-    .classification_functions = list(),
-    .function_informations = list()
+    .sigma_bet = NA,
+    .n_func = 0,
+    .function_list = list(),
+    .function_info = list()
   ),
   public = list(
     #init function
@@ -44,14 +44,22 @@ make_set <- R6Class(
       
       #Data
       
-      #Check if parameter are numerical
+      #Check if parameter are usable
       if (any(sapply(data[, private$.col_names != by], Negate(is.numeric)))) {
         stop("Parametercolumns must be numerical!", call. = FALSE)
       }
+      if (any(sapply(data[, private$.col_names != by], is.na))) {
+        stop("Parametercolumns contain NA Values!", call. = FALSE)
+      }
+      if (any(sapply(data[, private$.col_names != by], is.infinite))) {
+        stop("Parametercolumns contain NA Values!", call. = FALSE)
+      }
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+      private$.data_expansion[['id']] <- private$.data
       #Print progress
       print(private$.data[1:5,])
+      cat("...\n")
       #save classvalues of parameters under '.results'
       private$.results <- data[, by]
       #save parameternames
@@ -117,9 +125,11 @@ make_set <- R6Class(
       sigma_list <- as.list(rep(NA, times = private$.n_classes))
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
+      
     },
     
     #custom print function
+    
     print = function(...) {
       #print given title and description
       if (private$.title != "") {
@@ -128,13 +138,60 @@ make_set <- R6Class(
       if (private$.description != "") {
         cat(sprintf("Description: %s \n", private$.description))
       }
+      cat(sprintf("Number of classification Functions: %s \n", private$.n_func))
       #print short overview
       cat("\nNumer of Observations per Class:")
       print(private$.count)
+      if (length(private$.data_expansion) > 0) {
+        cat("\nExpansions:\n")
+        print(names(private$.data_expansion))
+      }
+      cat("\nData:\n")
       print(private$.data[1:5,])
       invisible(self)
-    }
+    },
     
+    set_function = function(func, type, parameter) {
+      if (typeof(func) != "closure") {
+        stop("No valid Input", call. = FALSE)
+      }
+      else{
+        stopifnot(length(type) == 1 && is.character(type))
+        private$.n_func <- private$.n_func + 1
+        name <- sprintf("%s_%s", type, private$.n_func)
+        private$.function_list[[name]] <- func
+        private$.function_info[[name]] <-
+          list(type = type, parameter = parameter)
+        return(invisible(list(name = name, func = func)))
+      }
+      
+    },
+    change_func_name = function(from, to) {
+      stopifnot(is.character(from) && is.character(to))
+      if (!any(names(private$.function_list) == from)) {
+        stop(sprintf("%s is no function name", from))
+      }
+      if (any(names(private$.function_list) == to)) {
+        stop(sprintf("%s is already taken", to))
+      }
+      private$.function_list[[to]] <- private$.function_list[[from]]
+      private$.function_info[[to]] <- private$.function_info[[from]]
+      private$.function_list[[from]] <- NULL
+      private$.function_info[[from]] <- NULL
+      return(invisible(to))
+    },
+    expansion = function(base) {
+      stopifnot(is.character(base))
+      if (is.null(private$.data_expansion[[base]])) {
+        h <-
+          basis_exp(base)                            ##Gets the basis expansion function
+        private$.data_expansion[[base]] <- h(self$data)
+        return(private$.data_expansion[[base]])
+      }
+      else{
+        private$.data_expansion[[base]]
+      }
+    }
   ),
   
   #Control
@@ -274,23 +331,20 @@ make_set <- R6Class(
           return(private$.sigma)
         }
         else{
-          cat("\nCalculating variances ...\n")
+          cat("\nCalculating Variances ...\n")
           n <- self$dim
-          #calculate matrix for each class (iterate over names for subsetting)
+          #calculate matrix for each class (iterating over classnames for subsetting)
           sapply(self$classnames, function(class) {
-            #seperate parameter of specific class
-            data <-self$data[self$results == self$classes[class], ]
-            #get parameter means for this class
-            mu <- self$mean[[class]]
-            print(mu)
-            # sum up variance of each observation
-            array <- apply(data, 1, function(x) {
-              x - mu
-            })
-            vec <- rowSums(array)
-            print(vec)
-            #save Matrix in already created private list
-            private$.sigma[[class]] <- vec %o% vec / (self$count[class] - 1)
+            rows <-
+              self$data[self$results == self$classes[class], ]  #get rows of specific class
+            mu <-
+              self$mean[[class]]                               #get parameter means for this class
+            Bn <- diag(0, ncol = n, nrow = n)
+            apply(rows, 1, function(x) {
+              Bn <<- Bn + tcrossprod(x - mu)
+            })                                         #get row-means
+            private$.sigma[[class]] <-
+              Bn / (self$count[class] - 1)             #save Matrix in already created private list
             #repeat
           })
           return(private$.sigma)
@@ -300,10 +354,12 @@ make_set <- R6Class(
         stop("sigma is read only", call. = FALSE)
       }
     },
+    
     #Between Classes Variance
+    
     sigma_bet = function(Value) {
       if (missing(Value)) {
-        if (is.na(private$.sigma[1]) == FALSE) {
+        if (is.na(private$.sigma_bet[1]) == FALSE) {
           return(private$.sigma_bet)
         }
         else{
@@ -312,64 +368,41 @@ make_set <- R6Class(
           total <- self$meantotal
           N <- self$n_classes
           B_i <- lapply(1:N, function(i) {
-            self$count[G[i]] * (mu[[i]] - total) %o% (mu[[i]] - total)
+            self$count[G[i]] * tcrossprod(mu[[i]] - total)
           })
-          private$.sigma_bet <- Reduce(`+`, B_i) / (self$n_obs-N)
+          private$.sigma_bet <- Reduce(`+`, B_i) / (self$n_obs - N)
         }
       }
       else{
         stop("sigma_bet is read only", call. = FALSE)
       }
+    },
+    func = function(Value) {
+      if (missing(Value)) {
+        return(private$.function_list)
+      }
+      else{
+        stop("Read only", call. = FALSE)
+      }
+    },
+    func_info = function(Value) {
+      if (missing(Value)) {
+        return(private$.function_info)
+      }
+      else{
+        stop("read only", call. = FALSE)
+      }
     }
   )
 )
 
-data <- make_test()
-problem <- make_set$new(data,
-                        by = "class",
-                        title = "Versuch",
-                        description = "Warum nicht?")
-problem$sigma[['A']]
-#OOP Estimators
-pi_est <- function(set) {
-  stopifnot(class(set) == "Dataset")
-  return(set$pi)
-}
-#'mue_est
-#'
-#'given a dataframe with Parameters of Observations and a second dataframe with the corresponding Classes
-#'mu_es returns a Matrix with the mean vectors of the classes as rows.
-#'
-#'@param set Object of Class 'Dataset' see: \code{\link[graphics]{Problem}
-#'@return A List with the mean vectors of the parameters for each class
-mu_est <- function(set) {
-  stopifnot(class(set) == "Dataset")
-  return(set$mean)
+make_set <- function(data,
+                     by,
+                     title,
+                     description) {
+  data_set$new(data, by, title, description)
 }
 
-#'sigma_class
-#'
-#'@param set Object of Class 'Dataset'
-#'@param class Name of a specific Class of 'set'
-#'@return The covariance matrix of the Class 'class'
-#'
-sigma_class <- function(set, class) {
-  stopifnot(class(set) == "Dataset")
-  stopifnot(any(set$classnames == class))
-  return(set$sigma[[class]])
-}
-
-#'sigma_est
-#'
-#'@param set Object of Class 'Dataset'
-#'@return a list of Covariance Matrices for each Class of 'set'
-#'
-sigma_est <- function(set) {
-  stopifnot(class(set) == "Dataset")
-  return(set$sigma)
-}
-
-sigma_bet_est <- function(problem) {
-  stopifnot(class(set) == "Dataset")
-  return(set$sigma_bet)
+is.data_set <- function(set) {
+  any(class(set) == "data_set")
 }

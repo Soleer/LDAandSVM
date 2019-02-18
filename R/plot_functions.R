@@ -2,8 +2,8 @@ library(ggplot2)
 library(gridExtra)
 #Plot functions
 
-maincomponent_analysis <- function(data) {
-  cov_matrix <- sigma_class(data)
+maincomponent_analysis <- function(data, results) {
+  cov_matrix <- sigma_exp(data, results)
   ev <- eigen(cov_matrix)
   values <- ev$values
   n <- length(values)
@@ -12,8 +12,8 @@ maincomponent_analysis <- function(data) {
   return(list(D, main_matrix, cov_matrix))
 }
 
-make_projection <- function(data, dim = 2) {
-  l <- maincomponent_analysis(data)
+make_projection <- function(data, results, dim = 2) {
+  l <- maincomponent_analysis(data, results)
   U <- l[[2]][, 1:dim]
   proj <- function(x) {
     t(U) %*% x
@@ -24,27 +24,44 @@ make_projection <- function(data, dim = 2) {
   return(list(proj, i_proj))
 }
 
-make_2D_plot <- function(data,
-                         results,
-                         classfun,
+make_2D_plot <- function(set,
+                         func_name,
                          ppu = 10,
+                         project = TRUE,
                          bg = TRUE) {
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
   #prama
-  uresults <- unique(results)
-  n <- length(uresults)
-  proj <- make_projection(data)
-  proj_to <- proj[[1]]
-  proj_in <- proj[[2]]
-  proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
+  info <- set$func_info[[func_name]][['parameter']]
+  classfunc <- set$func[[func_name]]
+  uresults <- set$classes
+  n <- set$n_classes
+  #Project on first two parameter or maincomponents
+  if (project == TRUE) {
+    proj <- make_projection(set$expansion(info[['base']]), set$results)
+    proj_to <- proj[[1]]
+    proj_in <- proj[[2]]
+    proj_data <-
+      as.data.frame(t(apply(set$expansion(info[['base']]), 1, proj_to)))
+  }
+  else{
+    proj_in <- function(x)
+      c(x, rep(0, times = (info[['dim']] - 2)))
+    proj_data <- set$data
+  }
+  
   x <- c(floor(min(proj_data[, 1])), ceiling(max(proj_data[, 1])))
   y <- c(floor(min(proj_data[, 2])), ceiling(max(proj_data[, 2])))
   xtimes <- (x[2] - x[1]) * ppu
   ytimes <- (y[2] - y[1]) * ppu
-  d <- dim(data)[2]
+  d <- set$dim
   #prepare plot data
   #input
   input_data <-
-    data.frame(x = proj_data[, 1], y = proj_data[, 2], Legend = results)
+    data.frame(x = proj_data[, 1],
+               y = proj_data[, 2],
+               Legend = set$results)
   #make mainplot
   #1. limit
   mainplot <- ggplot() + xlim(x[1], x[2]) + ylim(y[1], y[2])
@@ -57,14 +74,15 @@ make_2D_plot <- function(data,
       height = 0,
       width = 0
     )
+  
   #3. colored background
   if (bg == TRUE) {
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-                 y = c(sapply(seq(y[1], y[2], length.out = ytimes), rep, times = xtimes)))
+                 y = rep(seq(y[1], y[2], length.out = ytimes),  each = xtimes))
     proj_background <-
       as.data.frame(t(apply(background, 1, proj_in)))
-    background$class <- apply(proj_background, 1, classfun)
+    background$class <- apply(proj_background, 1, classfunc)
     mainplot <- mainplot + geom_jitter(
       data = background,
       aes(x, y, color = class),
@@ -76,123 +94,132 @@ make_2D_plot <- function(data,
   return(mainplot)
 }
 
-calc_error <- function(data, results, f) {
-  G <- unique(results)
-  estimated <- apply(data, 1, f)
+calc_error <- function(set, name) {
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
+  info <- set$func_info[[name]][['parameter']]
+  f <- set$func[[name]]
+  G <- set$classnames
+  estimated <- apply(set$data, 1, f)
   of_Data <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(estimated[results == class])
+    t <- table(estimated[set$results == set$classes[class]])
     number <- sum(t)
-    classresults <- as.list(t[as.character(G)] / number)
-    right <- t[c] / number
+    classresults <- as.list(t[G] / number)
+    right <- t[class] / number
     wrong <- (1 - right)
     col <- unlist(list(classresults, right, wrong))
     return(col)
   })
   
   of_Results <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(results[estimated == class])
+    t <- table(set$results[estimated == set$classes[class]])
     number <- sum(t)
-    classresults <- as.list(t[as.character(G)] / number)
-    right <- t[c] / number
+    classresults <- as.list(t[G] / number)
+    right <- t[class] / number
     wrong <- (1 - right)
     col <- unlist(list(classresults, right, wrong))
     return(col)
   })
   probs_of_Data <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
+    data.frame(class = c(G, 'right', 'wrong'), of_Data)
   probs_of_Results <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Results)
-  colnames(probs_of_Data) <- c('class', as.character(G))
-  colnames(probs_of_Results) <- c('class', as.character(G))
+    data.frame(class = c(G, 'right', 'wrong'), of_Results)
+  colnames(probs_of_Data) <- c('class', G)
+  colnames(probs_of_Results) <- c('class', G)
   miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G)+1]) / length(G)
-  miss <- round(miss,2)
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes +
+                        1]) / set$n_classes
+  miss <- round(miss, 2)
   return(list(probs_of_Data, probs_of_Results, miss))
 }
 
 
-plot_error <- function(data, results, f) {
-  G <- as.character(unique(results))
-  n <- length(G)
-  get_list <- calc_error(data, results, f)
+plot_error <- function(set, name) {
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
+  G <- set$classnames
+  n <- set$n_classes
+  get_list <- calc_error(set, name)
   probs_Data <- get_list[[1]]
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
-  charts <- lapply(G, function(class) {
-    
-    probs_Data[paste0(class, 'l')] <-
-      scales::percent(probs_Data[, class])
-    colsum <- 0
-    probs_Data[paste0(class, 'yl')] <-
-      sapply(probs_Data[, class], function(x) {
-        colsum <<- colsum + x
-        colsum - x / 2
-      })
-    left <- ggplot(data = probs_Data[1:n, ]) +
-      geom_bar(
-        aes_string(
-          x = paste0(class, 'l'),
-          y = class,
-          fill = 'class'
-        ),
-        stat = "identity",
-        width = 1
-      ) + theme(
-        axis.text.x = element_text(angle = 90, hjust = 1),
-        legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.y = element_blank()
-      ) +
-      labs(title = paste0('f(x=', class, ')'))
-    
-    probs_Results[paste0(class, 'l')] <-
-      scales::percent(probs_Results[, class])
-    colsum <- 0
-    probs_Results[paste0(class, 'yl')] <-
-      sapply(probs_Results[, class], function(x) {
-        colsum <<- colsum + x
-        colsum - x / 2
-      })
-    right <- ggplot(data = probs_Results[1:n, ]) +
-      geom_bar(
-        aes_string(
-          y = class,
-          x = paste0(class, 'l'),
-          fill = 'class'
-        ),
-        stat = "identity",
-        width = 1
-      ) + theme(
-        axis.text.x = element_text(angle = 90, hjust = 1),
-        legend.position = "none",
-        axis.text.y = element_blank(),
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank()
-      ) +
-      labs(title = paste0('f^-1(', class, ')'))
-    return(grid.arrange(left, right, nrow = 1))
-  })
-  mistake_lable <- c(paste0(miss*100,'%',' wrong'),paste0((1-miss)*100,'%',' right'))
-  mistake <- data.frame(i=mistake_lable,per=c(miss,1-miss))
-  mi <- ggplot(data = mistake) +
-    geom_bar(
-      aes(
-        y = per,
-        x = i,
-        fill = i
-      ),
-      stat = "identity",
-      width = 1
-    ) + theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
-      legend.position = "none",
-      axis.text.y = element_blank(),
-      axis.title.y = element_blank(),
-      axis.title.x = element_blank()
-    )+ggtitle('Data')
-  charts[[n+1]] <- mi
+  
+  charts <-
+    lapply(G, function(class) {
+      # Create mistake plots for each Class
+      
+      probs_Data[paste0(class, 'label')] <-    #Labels in percent
+        scales::percent(probs_Data[, class])
+      
+      left <-
+        ggplot(data = probs_Data[1:n, ]) +            #make plot mit aesthetics
+        geom_bar(
+          aes_string(
+            x = paste0(class, 'label'),
+            y = class,
+            fill = 'class'
+          ),
+          stat = "identity",
+          width = 1
+        ) + theme(
+          axis.text.x = element_text(angle = 90, hjust = 1),
+          legend.position = "none",
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank()
+        ) +
+        labs(title = paste0('f(x=', class, ')'))             #
+      
+      probs_Results[paste0(class, 'label')] <-
+        #Labels in percent
+        scales::percent(probs_Results[, class])
+      
+      right <-
+        ggplot(data = probs_Results[1:n, ]) +         #make plot mit aesthetics
+        geom_bar(
+          aes_string(
+            y = class,
+            x = paste0(class, 'label'),
+            fill = 'class'
+          ),
+          stat = "identity",
+          width = 1
+        ) + theme(
+          axis.text.x = element_text(angle = 90, hjust = 1),
+          legend.position = "none",
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank()
+        ) +
+        labs(title = paste0('f^-1(', class, ')'))            #
+      
+      return(grid.arrange(left, right, nrow = 1))   # arrange in one row and return
+    })
+  
+  
+  mistake_lable <-
+    c(paste0(miss * 100, '%', ' wrong'), paste0((1 - miss) * 100, '%', ' right')) #Labels in percent
+  
+  mistake <-
+    data.frame(i = mistake_lable, per = c(miss, 1 - miss))  #combine labels and data
+  
+  mi <-
+    ggplot(data = mistake) +                             #make plot
+    geom_bar(aes(y = per,
+                 x = i,
+                 fill = i),
+             stat = "identity",
+             width = 1) + theme(
+               axis.text.x = element_text(angle = 90, hjust = 1),
+               legend.position = "none",
+               axis.text.y = element_blank(),
+               axis.title.y = element_blank(),
+               axis.title.x = element_blank()
+             ) + ggtitle('Data')
+  
+  charts[[n + 1]] <-
+    mi                                  #add last Plot
   return(charts)
 }

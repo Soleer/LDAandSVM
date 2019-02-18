@@ -1,13 +1,4 @@
 #Estimators
-pi_est <- function(results) {
-  classes <- unique(results)
-  K <- length(results)
-  obs <- table(results)
-  #return possibilitys in order of classes
-  vec <- sapply(classes, function(class)
-    obs[as.character(class)] / K)
-  return(vec)
-}
 #'mue_est
 #'
 #'given a dataframe with Parameters of Observations and a second dataframe with the corresponding Classes
@@ -16,13 +7,13 @@ pi_est <- function(results) {
 #'@param data Dataframe of Parameters for all Observations
 #'@param results Vector of corresponding Classes to the Data
 #'@return A Matrix with the mean vectors of the classes as rows
-mu_est <- function(data, results) {
+mu_exp <- function(data, set) {
   data <- as.data.frame(data)
-  classes <- unique(results)
-  mu <- sapply(classes, function(class) {
-    colMeans(data[results == class, ])
+  classes <- set$classes
+  mu <- lapply(classes, function(class) {
+    colMeans(data[set$results == class,])
   })
-  mu <- t(mu)
+  names(mu) <- set$classnames
   return(mu)
 }
 #'sigma_class
@@ -32,39 +23,66 @@ mu_est <- function(data, results) {
 #'
 #'@param data Dataframe of Parameters for all Observations
 #'@return The covariance matrix of the Data
-sigma_class <- function(data, mu = colMeans(data)) {
+sigma_class_exp <- function(data, mu = colMeans(data)) {
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   apply(data, 1, function(x) {
-    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+    Bn <<- Bn + tcrossprod(x - mu)
   })
   return(Bn / (dim(data)[1] - 1))
 }
 
-sigma_est <- function(data, results) {
-  G <- unique(results)
-  K <- length(G)
-  N <- length(results)
-  mu <- mu_est(data, results)
-  n <- dim(data)[2]
+mu_est <- function(data, results, G) {
+  lapply(G, function(class) {
+    colMeans(data[results == class, ])
+  })
+}
+
+sigma_est <- function(set) {
+  G <- set$classes
+  K <- set$n_classes
+  N <- set$n_obs
+  mu <- set$mean
+  n <- set$dim
   Bn <- diag(0, ncol = n, nrow = n)
   sapply(1:K, function(k) {
-    apply(data[results == G[k],], 1, function(x) {
-      Bn <<- Bn + ((x - mu[k,]) %*% t(x - mu[k,]))
+    apply(set$data[set$results == G[k], ], 1, function(x) {
+      Bn <<- Bn + tcrossprod(x - mu[[k]])
     })
   })
   return(Bn / (N - K))
 }
 
-sigma_bet_est <- function(data, results){
-  G <- unique(results)                    ##vector with all unique classnames in it. Nothing mentioned twice
-  mu <- mu_est(data, results)             ##Gets the Class centroids of each class (the expected value)
-  total_mean <- colMeans(data)            ##The total centroid of all data points (expected value of everything)
-  N <- length(G)                          ##Number of unique classes
-  B_i <- lapply(1:N, function(i){         ##Calculates the bewtween class covariance Matrix in two steps:
-    length(results[results == G[i]]) * (mu[i, ] - total_mean) %*% t(mu[i, ] - total_mean) ##1. Calculating a class specific part of the covariance matrix for every class
+
+sigma_exp <- function(data, results) {
+  G <- unique(results)
+  K <- length(G)
+  N <- length(results)
+  mu <- mu_est(data, results, G)
+  n <- dim(data)[2]
+  Bn <- diag(0, ncol = n, nrow = n)
+  sapply(1:K, function(k) {
+    apply(data[results == G[k],], 1, function(x) {
+      Bn <<- Bn + tcrossprod((x - mu[[k]]))
+    })
   })
-  B <- Reduce(`+`, B_i)/(length(results)-N) ##Adding all parts, which are in one big list, together and dividing by a standarizing factor
-  return(B)
+  return(Bn / (N - K))
 }
 
+sigma_bet_exp <- function(data, results) {
+  G <-
+    unique(results)                    ##vector with all unique classnames in it. Nothing mentioned twice
+  mu <-
+    mu_est(data, results)             ##Gets the Class centroids of each class (the expected value)
+  total_mean <-
+    colMeans(data)            ##The total centroid of all data points (expected value of everything)
+  N <- length(G)                          ##Number of unique classes
+  B_i <-
+    lapply(1:N, function(i) {
+      ##Calculates the bewtween class covariance Matrix in two steps:
+      length(results[results == G[i]]) * (mu[i,] - total_mean) %*% t(mu[i,] - total_mean) ##1. Calculating a class specific part of the covariance matrix for every class
+    })
+  B <-
+    Reduce(`+`, B_i) / (length(results) - N) ##Adding all parts, which are in one big list, together and dividing by a standarizing factor
+  return(B)
+}
