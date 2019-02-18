@@ -41,70 +41,65 @@ Save2 <- wellPanel(Save_name2, Save_DPI2, Save_button2)                         
 
 server_LDA_SVM <- function(input, output){
   shiny_env <- new_environment()                          ##Creates a new environment where the plots will be saved in later for easier access
-  
+      
   observeEvent(input$Load_button, {                       ##What happens when the Load button is pressed:
     dataset <- input$Load_test                            ##loads in the dataset from the name given in the text input
     print(paste("Loading Dataset Object", dataset))       ##Console output confing that the object is being loaded
-    test_shiny <<- eval(parse_expr(dataset))              ##Object test_shiny gets overwritten by the loaded dataset
+    shiny_set <- eval(parse_expr(dataset))                ##Object test_shiny gets overwritten by the loaded dataset
+    assign("shiny_set", shiny_set, envir=shiny_env)
+    print("Data loaded")
   })
   
-  observeEvent(input$Test_button, {                       ##What happens when the "create random Test" button is pressed:
-    nparam <- input$Param                                 ##Number of Dimensions and
-    nclasses <- input$Classes                             ##number of Classes gets loaded
-    print(paste("Creating a test with", nclasses, "classes in", nparam, "dimensions.")) ##Confirmation console output
-    test_shiny <<- make_test(100,                         ##Creating a test via make_test() with classes, dimensions and sigma values
+  observeEvent(input$Test_button, {                                                       ##What happens when the "create random Test" button is pressed:
+    nparam <- input$Param                                                                 ##Number of Dimensions and
+    nclasses <- input$Classes                                                             ##number of Classes gets loaded
+    print(paste("Creating a test with", nclasses, "classes in", nparam, "dimensions."))   ##Confirmation console output
+    test_shiny <- make_test(100,                                                          ##Creating a test via make_test() with classes, dimensions and sigma values
                       nparam = nparam,
                       nclasses = nclasses,
                       sigma = c(input$Sigma1, input$Sigma2, input$Sigma3, input$Sigma4, input$Sigma5, 
                                 input$Sigma6, input$Sigma7, input$Sigma8, input$Sigma9, input$Sigma10))
-    
-    # shiny_test <<- make_set$new(test_shiny,
-    #                         by = "class",
-    #                         title = "Shiny Test",
-    #                         description = "This is a randomly generated Test for shiny")
-    print("test created")                                 ##Confirmation that the test has been created
+    shiny_set <- make_set(test_shiny, by = "class", title = "Shiny Test", 
+                          description = "This is a randomly generated test for shiny")
+    assign("shiny_set", shiny_set, envir=shiny_env)                                       ##Adding the set into the environment for easier access
+    print("test created")                                                                 ##Confirmation that the test has been created
   })
   
-  observeEvent(input$Calc_button, {                       ##What happens when the "classify" button is pressed:
-    Classfun <- input$Classifier                          
-    BG <- input$Background
-    Base <- input$Base
-    print(paste("classifying with:", Classfun, "and basis expansion:", Base))
+  observeEvent(input$Calc_button, {                                                       ##What happens when the "classify" button is pressed:
+    Classfun <- input$Classifier                                                          ##Function by which the set should be classified               
+    BG <- input$Background                                                                ##Reading whether the plot should be with a background
+    Base <- input$Base                                                                    ##Reading which basis expansion should be used (only PDA)
+    print(paste("classifying with:", Classfun, "and basis expansion:", Base))             ##Console output for transparency
     print("Please wait for the calculations to finish")
+    shiny_set <- shiny_env$shiny_set                                                      ##Reading the shiny set out of the environment
     
-    if(Classfun == "LDA"){
-      f <- classify(unique(test_shiny$class), LDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
-      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      Class_plot_shiny <-
-        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
-                     test_shiny$class,
-                     f,
-                     ppu = 5,
-                     bg = BG)
+    if(Classfun == "LDA"){                                                                ##What happens when the set is classified with LDA:
+      func_shiny <- LDA(shiny_set)[['name']]                                              ##Classfifying the set with LDA
+      Error_plot_shiny <- plot_error(shiny_set, func_shiny)                               ##Plotting the Error
+      Class_plot_shiny <- make_2D_plot(shiny_set,                                         ##Plotting the Classification results
+                          func_shiny,
+                          ppu = 5,
+                          bg = BG)
+      Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)                         ##Arranging and saving the Error plot in an object 
+    }
+    
+    if(Classfun == "QDA"){                                                                ##What happens when the set is classified with QDA (for further comments see LDA)
+      func_shiny <- QDA(shiny_set)[['name']]
+      Error_plot_shiny <- plot_error(shiny_set, func_shiny)
+      Class_plot_shiny <- make_2D_plot(shiny_set,
+                                       func_shiny,
+                                       ppu = 5,
+                                       bg = BG)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     
-    if(Classfun == "QDA"){
-      f <- classify(unique(test_shiny$class), QDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
-      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      Class_plot_shiny <-
-        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
-                     test_shiny$class,
-                     f,
-                     ppu = 5,
-                     bg = BG)
-      Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
-    }
-    
-    if(Classfun == "PDA"){
-      f <- classify(unique(test_shiny$class), PDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, base = Base))
-      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      Class_plot_shiny <-
-        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
-                     test_shiny$class,
-                     f,
-                     ppu = 5,
-                     bg = BG)
+    if(Classfun == "PDA"){                                                                ##What happens when the set is classified with PDA (for further comments see LDA)
+      func_shiny <- PDA(shiny_set, base = Base)[['name']]                                 ##Classifying the set with PDA and the given basis expansion
+      Error_plot_shiny <- plot_error(shiny_set, func_shiny)
+      Class_plot_shiny <- make_2D_plot(shiny_set,
+                                       func_shiny,
+                                       ppu = 5,
+                                       bg = BG)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     if(Classfun == "SVM"){

@@ -1,11 +1,18 @@
 
 library(quadprog)
+<<<<<<< HEAD
+=======
+library(R6)
+>>>>>>> 9dee89145dbf6917434513f517703de88b614c19
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
+<<<<<<< HEAD
 library(NlcOptim)
 library(shiny)
+=======
+>>>>>>> 9dee89145dbf6917434513f517703de88b614c19
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")
@@ -19,7 +26,7 @@ set.seed(0)
 
 ##Analyse
 sig <- c(1.5, 2, 2.5, 1.3, 1.1, 2.1, 1.8)
-dimension <- 4
+dimension <- 2
 
 test <- make_test(100,
                   nparam = dimension,

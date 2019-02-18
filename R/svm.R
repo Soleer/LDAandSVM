@@ -133,12 +133,8 @@ alpha_svm_est <- function(data, results, C, kernel, d, g) {
         "\n Ändere Startwert zurück zu 1/sqrt(nrow(data)) und verwende keinen Kernel:"
       )
     )
-    kernel <- 0
-    LD <- LD_function(data, results, kernel, d, g)
-    con <- con_fun(results)
+    LD <- LD_function(data, results, 0, 0, 0)
     x <- rep(1 / sqrt(nrow(data)), times = nrow(data))
-    llb <- rep(0, times = nrow(data))
-    uub <- rep(C, times = nrow(data))
     a <- safety(solnl(
       X = x,
       objfun = LD,
@@ -147,7 +143,7 @@ alpha_svm_est <- function(data, results, C, kernel, d, g) {
       ub = uub
     ))
   }
-  if (is.null(a$result)) {
+  if (is.null(a$result) || !is.null(a$error) || !is.null(a$warning)) {
     stop("Funktion kann vom verwendeten Paket nicht optimiert werden.")
   }
   
@@ -185,15 +181,14 @@ beta_svm_0 <- function(alpha, data, results, beta) {
   return(mean(as.double(s)))
 }
 #estimator####################################################
-svm_two_classes <-
-  function(data,
-           results,
-           C = 1,
-           kernel = 0,
-           d = 1,
-           j = 1,
-           classes ,
-           g = 1) {
+svm_two_classes <- function(data,
+                            results,
+                            C = 1,
+                            kernel = 0,
+                            d = 1,
+                            j = 1,
+                            classes ,
+                            g = 1) {
     res <- sapply(results, function(class) {
       if (class == classes[j]) {
         return(1)
@@ -353,4 +348,36 @@ svm_classify <- function(t, uresults) {
   }
   return(f)
 }
+test <- make_test()
+results <- test[,3]
+data <- test[,1:2]
+f <- svm(data,results,kernel=2,d=0.9,g=2)
+dd <- svm_classify(f,c("A","B"))
+gg <- 0
+for (i in 1:200) {
+  gg[i] <- (dd(as.double(data[i,])))
+}
+gg
+liste4 <- plot_error(test[1:2], test$class, dd)
+p4 <- do.call(grid.arrange, liste4)
+testplot4 <-
+  make_2D_plot(test[1:2],
+               test$class,
+               dd,
+               ppu = 5)
+plotlist4 <- list(p4, testplot4)
+
+nice4 <-
+  do.call("grid.arrange", c(plotlist4, ncol = 2, top = "svm"))
+ggsave('svm.png',
+       plot = nice4,
+       device = 'png',
+       dpi = 400)
+
+
+
+
+
+
+
 #Vergleiche mit SVM aus Paket e1071
