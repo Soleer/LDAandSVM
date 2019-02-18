@@ -99,25 +99,20 @@ QDA <- function(set) {
 }
 
 
-PDA <-
-  function(set, base, omega) {
-    ##The PDA classification function. A function factory
+PDA <- function(set, base, omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
     }
     data_exp <- set$expansion(base)
     d <- dim(data_exp)[2]
-    if (missing(omega)) {
-      #check for omega
+    if (missing(omega)) {                                       ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
     if (length(set$func) > 0) {
       slot <- character(0)
       sapply(set$func_info, function(l) {
-        if (!is.null(l[["parameter"]][["base"]]) &&
-            !is.null(l[["parameter"]][["omega"]])) {
-          if (l[["parameter"]][["base"]] == base &&
-              l[["parameter"]][["omega"]] == omega) {
+        if (!is.null(l[["parameter"]][["base"]]) && !is.null(l[["parameter"]][["omega"]])) {
+          if (l[["parameter"]][["base"]] == base && l[["parameter"]][["omega"]] == omega) {
             slot <<- l[["name"]]
           }
         }
@@ -126,64 +121,36 @@ PDA <-
         return(list(name=slot,func=set$func[[slot]]))
       }
     }
-    data_exp <- set$expansion(base)     #expand data if needed
-    h <- basis_exp(base)                #get expansion function
+    data_exp <- set$expansion(base)     ##expand data if needed
+    h <- basis_exp(base)                ##get expansion function
     d <- dim(data_exp)[2]
-    if (missing(omega)) {
-      #check for omega
+    if (missing(omega)) {               ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
-    G <-
-      set$classnames                            ##Vector containing all unique classes
-    K <-
-      set$n_classes                             ##Number of unique classes
-    p <-
-      log(unlist(set$pi))                       ##Probability of one class occuring
-    mu <-
-      mu_exp(data_exp, set)                     ##List of class centroid for each class
-    sigma_list <-
-      lapply(G, function(class) {
-        ##Calculating expanded Covariances
+    G <- set$classnames                            ##Vector containing all unique classes
+    K <- set$n_classes                             ##Number of unique classes
+    p <- log(unlist(set$pi))                       ##Probability of one class occuring
+    mu <- mu_exp(data_exp, set)                    ##List of class centroid for each class
+    
+    sigma_list <- lapply(G, function(class) {      ##Calculating expanded Covariances
         sigma_class_exp(data_exp[set$results == set$classes[class],], mu[[class]])
       })
-    Matrix <-
-      lapply(sigma_list, function(x)
-        solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse
+    
+    Matrix <- lapply(sigma_list, function(x) solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse
     names(Matrix) <- set$classnames
-    delta <-
-      function(x) {
-        ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
+    
+    delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
         result <- sapply(G, function(class) {
-          diff <- h(x) - mu[[class]]
-          - 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff)
+          diff <- h(x) - mu[[class]] - 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff)
         }) + p
         return(result)
-      }
+    }
+    
     classify_func <- classify(set$classes, delta)
+    
     return(set$set_function(classify_func, type = "PDA", list(
       base = base,
       dim = d,
       omega = omega
     )))
 }
-# PDA <- function(data, results, base) {            ##The PDA classification function. A function factory
-#   h <- basis_exp(base)                            ##Gets the basis expansion function
-#   data_exp <- h(data)                             ##Expands the data via the expansion function
-#   G <- unique(results)                            ##Vector containing all unique classes
-#   K <- length(G)                                  ##Number of unique classes
-#   p <- log(pi_est(results))                       ##Probability of one class occuring
-#   mu <- mu_est(data, results)                     ##Vector of class centroid for each class
-#   sigma_list <- lapply(1:K, function(k) {         ##Calculating the class specific covariance matrices of the expanded data and writing them to a list
-#     sigma_class(data_exp[results==G[k],],mu[k])
-#   })
-#   Matrix <- lapply(sigma_list, function(x) solve(x + diag(0, nrow=nrow(x), ncol=ncol(x))))  ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse 
-#   
-#   delta <- function(x) {                          ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
-#     result <- sapply(1:K, function(k) {
-#       
-#       
-#       -1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% (h(x) - h(mu[k, ]))
-#     }) + p
-#     return(result)
-#   }
-# }
