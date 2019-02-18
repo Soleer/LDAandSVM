@@ -2,13 +2,27 @@ Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "Q
 Base <- selectInput("Base", "Select Basis Expansion  (only for PDA)", choices = c("none", "quad", "cube", "sqrt", "log", "abs"))
 Background <- radioButtons("Background", "Plot classification Grid (greatly increases calculation time)", c("FALSE", "TRUE"))
 Calc_button <- actionButton("Calc_button", "Classifiy")
+Classify <- wellPanel(Classifier, Base, Background, Calc_button)
 
-## ADD OPTION TO SAVE IMAGE TO FILE
-##
-##
+Load_test <- textInput("Load_test", "Load an R6 Dataset", value = "Name of the object", width = NULL, placeholder = NULL)
+Load_button <- actionButton("Load_button", "Load Object")
+Load <- wellPanel(Load_test, Load_button)
+
+Save_name1 <- textInput("Save_name1", "Save image to .png", value = "ShinyClassification")
+Save_DPI1 <- sliderInput("Save_DPI1", "DPI of Image", value = 400, min = 100, max = 1000, step = 1)
+Save_button1 <- actionButton("Save_button1", "Save image")
+Save1 <- wellPanel(Save_name1, Save_DPI1, Save_button1)
+
+Save_name2 <- textInput("Save_name2", "Save image to .png", value = "ShinyError")
+Save_DPI2 <- sliderInput("Save_DPI2", "DPI of Image", value = 400, min = 100, max = 1000, step = 1)
+Save_button2 <- actionButton("Save_button2", "Save image")
+Save2 <- wellPanel(Save_name2, Save_DPI2, Save_button2)
 
 Param <- sliderInput("Param", "Number of Dimensions", value = 2, min = 2, max = 10, step = 1)
 Classes <- sliderInput("Classes", "Number of Classes", value = 2, min = 2, max  = 10, step = 1)
+Test_button <- actionButton("Test_button", "Generate random testdata")
+Create <- wellPanel(Param, Classes, Test_button)
+
 Sigma1 <- numericInput("Sigma1", "std. of Class 1", value = 1, min = 0.01, max = 5)
 Sigma2 <- numericInput("Sigma2", "std. of Class 2", value = 1.5, min = 0.01, max = 5)
 Sigma3 <- numericInput("Sigma3", "std. of Class 3", value = 2, min = 0.01, max = 5)
@@ -19,12 +33,21 @@ Sigma7 <- numericInput("Sigma7", "std. of Class 7", value = 2.1, min = 0.01, max
 Sigma8 <- numericInput("Sigma8", "std. of Class 8", value = 1.8, min = 0.01, max = 5)
 Sigma9 <- numericInput("Sigma9", "std. of Class 9", value = 0.7, min = 0.01, max = 5)
 Sigma10 <- numericInput("Sigma10", "std. of Class 10", value = 1.1, min = 0.01, max = 5)
-Test_button <- actionButton("Test_button", "Generate random testdata")
+Sigma <- wellPanel(Sigma1, Sigma2, Sigma3, Sigma4, Sigma5, Sigma6, Sigma7, Sigma8, Sigma9, Sigma10)
+
 
 Plot1 <- plotOutput("Classification")
 Plot2 <- plotOutput("Error")
 
 server_LDA_SVM <- function(input, output){
+  shiny_env <- new_environment()
+  
+  observeEvent(input$Load_button, {
+    dataset <- input$Load_test
+    print(paste("Loading Dataset Object", dataset))
+    test_shiny <<- eval(parse_expr(dataset))
+  })
+  
   observeEvent(input$Test_button, {
     nparam <- input$Param
     nclasses <- input$Classes
@@ -34,10 +57,14 @@ server_LDA_SVM <- function(input, output){
                       nclasses = nclasses,
                       sigma = c(input$Sigma1, input$Sigma2, input$Sigma3, input$Sigma4, input$Sigma5, 
                                 input$Sigma6, input$Sigma7, input$Sigma8, input$Sigma9, input$Sigma10))
+    
+    # shiny_test <<- make_set$new(test_shiny,
+    #                         by = "class",
+    #                         title = "Shiny Test",
+    #                         description = "This is a randomly generated Test for shiny")
     print("test created")
   })
-  testplot <- ggplot()
-  liste <- ggplot()
+  
   observeEvent(input$Calc_button, {
     Classfun <- input$Classifier
     BG <- input$Background
@@ -47,42 +74,74 @@ server_LDA_SVM <- function(input, output){
     
     if(Classfun == "LDA"){
       f <- classify(unique(test_shiny$class), LDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
-      liste <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      testplot <-
+      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
+      Class_plot_shiny <-
         make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
                      test_shiny$class,
                      f,
                      ppu = 5,
                      bg = BG)
+      Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     
     if(Classfun == "QDA"){
       f <- classify(unique(test_shiny$class), QDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
-      liste <<- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      testplot <<-
+      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
+      Class_plot_shiny <-
         make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
                      test_shiny$class,
                      f,
                      ppu = 5,
                      bg = BG)
+      Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     
     if(Classfun == "PDA"){
       f <- classify(unique(test_shiny$class), PDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, base = Base))
-      liste <<- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      testplot <<-
+      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
+      Class_plot_shiny <-
         make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
                      test_shiny$class,
                      f,
                      ppu = 5,
                      bg = BG)
+      Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
+    
     if(Classfun == "RDA"){
       #TODO
     }
-    output$Classification <- renderPlot({testplot})
-    output$Error <- renderPlot({do.call(grid.arrange, liste)})
+    
+    assign("Class_plot_shiny", Class_plot_shiny, envir=shiny_env)
+    assign("Error_plot_shiny", Error_plot_shiny, envir=shiny_env)
+    
+    output$Classification <- renderPlot({Class_plot_shiny})
+    output$Error <- renderPlot({do.call(grid.arrange, Error_plot_shiny)})
     print("finished!")
+  })
+  
+  observeEvent(input$Save_button1, {
+    shiny_name <- input$Save_name1
+    DPI <- input$Save_DPI1
+    Shiny_plot <- shiny_env$Class_plot_shiny
+    print(paste0("Saving plot with ", DPI, " DPI to \"", shiny_name, "\""))
+    ggsave(paste0(shiny_name, ".png"),
+           plot = Shiny_plot,
+           device = 'png',
+           dpi = DPI)
+    print("Image saved")
+  })
+  
+  observeEvent(input$Save_button2, {
+    shiny_name <- input$Save_name2
+    DPI <- input$Save_DPI2
+    Shiny_plot <- shiny_env$Error_plot_shiny
+    print(paste0("Saving plot with ", DPI, " DPI to: ", shiny_name))
+    ggsave(paste0(shiny_name, ".png"),
+           plot = Shiny_plot,
+           device = 'png',
+           dpi = DPI)
+    print("Image saved")
   })
 }
 
@@ -91,11 +150,11 @@ ui_LDA_SVM <- fluidPage(
   headerPanel("RProject LDA & SVM"),
   tabsetPanel(
     tabPanel("Options", 
-             fluidRow(column(width=4, titlePanel("Create Test"), Param, Classes, Test_button),
-                      column(width=4, titlePanel("Test Variables"), Sigma1, Sigma2, Sigma3, Sigma4, Sigma5, Sigma6, Sigma7, Sigma8, Sigma9, Sigma10),
-                      column(width=4, titlePanel("Classification"), Classifier, Base, Background, Calc_button))),
-    tabPanel("Classification", Plot1),
-    tabPanel("Error", Plot2)
+             fluidRow(column(width=4, titlePanel("Dataset"), Load, Create),
+                      column(width=4, titlePanel("Test Variables"), Sigma),
+                      column(width=4, titlePanel("Classification"), Classify))),
+    tabPanel("Classification", Plot1, Save1),
+    tabPanel("Error", Plot2, Save2)
   )
 )
 

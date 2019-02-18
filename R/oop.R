@@ -57,7 +57,7 @@ make_set <- R6Class(
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
-      u_classes <- as.vector(unique(results))
+      u_classes <- as.vector(unique(private$.results))
       #print progress
       cat("\nClasses:\n")
       print(u_classes)
