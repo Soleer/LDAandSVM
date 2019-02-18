@@ -99,7 +99,6 @@ QDA <- function(set) {
 }
 
 
-<<<<<<< HEAD
 PDA <-
   function(set, base, omega) {
     ##The PDA classification function. A function factory
@@ -166,25 +165,25 @@ PDA <-
       dim = d,
       omega = omega
     )))
-=======
-PDA <- function(data, results, base) {            ##The PDA classification function. A function factory
-  h <- basis_exp(base)                            ##Gets the basis expansion function
-  data_exp <- h(data)                             ##Expands the data via the expansion function
-  G <- unique(results)                            ##Vector containing all unique classes
-  K <- length(G)                                  ##Number of unique classes
-  p <- log(pi_est(results))                       ##Probability of one class occuring
-  mu <- mu_est(data, results)                     ##Vector of class centroid for each class
-  sigma_list <- lapply(1:K, function(k) {         ##Calculating the class specific covariance matrices of the expanded data and writing them to a list
-    sigma_class(data_exp[results==G[k],],mu[k])
-  })
-  Matrix <- lapply(sigma_list, function(x) solve(x + diag(0, nrow=nrow(x), ncol=ncol(x))))  ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse 
-  
-  delta <- function(x) {                          ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
-    result <- sapply(1:K, function(k) {
-      
-      
-      -1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% (h(x) - h(mu[k, ]))
-    }) + p
-    return(result)
->>>>>>> 97d72ddad5d10180b7119adc7e4f64e9f21df0b0
-  }
+}
+# PDA <- function(data, results, base) {            ##The PDA classification function. A function factory
+#   h <- basis_exp(base)                            ##Gets the basis expansion function
+#   data_exp <- h(data)                             ##Expands the data via the expansion function
+#   G <- unique(results)                            ##Vector containing all unique classes
+#   K <- length(G)                                  ##Number of unique classes
+#   p <- log(pi_est(results))                       ##Probability of one class occuring
+#   mu <- mu_est(data, results)                     ##Vector of class centroid for each class
+#   sigma_list <- lapply(1:K, function(k) {         ##Calculating the class specific covariance matrices of the expanded data and writing them to a list
+#     sigma_class(data_exp[results==G[k],],mu[k])
+#   })
+#   Matrix <- lapply(sigma_list, function(x) solve(x + diag(0, nrow=nrow(x), ncol=ncol(x))))  ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse 
+#   
+#   delta <- function(x) {                          ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
+#     result <- sapply(1:K, function(k) {
+#       
+#       
+#       -1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% (h(x) - h(mu[k, ]))
+#     }) + p
+#     return(result)
+#   }
+# }
