@@ -17,72 +17,78 @@ source("R/shinyplot.R")
 set.seed(0)
 
 ##Analyse
-sig <- c(1.5,2,2.5,1.3,1.1,2.1,1.8)
-dimension <- 3
+sig <- c(1.5, 2, 2.5, 1.3, 1.1, 2.1, 1.8)
+dimension <- 4
 
 test <- make_test(100,
                   nparam = dimension,
-                  nclasses = 6,
+                  nclasses = 3,
                   sigma = sig)
 
-set <- make_set(test,by="class",title="TEST",description="Weil ich kann!")
+set <-
+  make_set(test,
+           by = "class",
+           title = "TEST",
+           description = "Weil ich kann!")
 ### Shiny-Interface
 classify_app()
 ### PDA
-func_name <-  PDA(set, base = "quad")[['name']]
-liste <- plot_error(set, func_name)
-p1 <- do.call(grid.arrange, liste)
-testplot <-
+func_name0 <-  PDA(set, base = "quad")[['name']]
+liste0 <- plot_error(set, func_name0)
+p0 <- do.call(grid.arrange, liste0)
+testplot0 <-
   make_2D_plot(set,
-               func_name,
+               func_name0,
                ppu = 5,
                bg = FALSE)
-plotlist <- list(p1, testplot)
-nice <- do.call("grid.arrange", c(plotlist, ncol = 2, top = "PDA"))
+plotlist0 <- list(p0, testplot0)
+nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))
 
 ggsave('PDA.png',
-       plot = nice,
+       plot = nice0,
        device = 'png',
        dpi = 400)
 
 
 ### LDA
-f2 <- LDA(set)[['name']]
-liste2 <- plot_error(set, f2)
-p2 <- do.call(grid.arrange, liste2)
-testplot2 <-
+func_name1 <- LDA(set)[['name']]
+liste1 <- plot_error(set, func_name1)
+p1 <- do.call(grid.arrange, liste1)
+testplot1 <-
   make_2D_plot(set,
-               f2,
+               func_name1,
                ppu = 5)
-plotlist2 <- list(p2, testplot2)
+plotlist1 <- list(p1, testplot1)
 
-nice2 <-
-  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "LDA"))
+nice1 <-
+  do.call("grid.arrange", c(plotlist1, ncol = 2, top = "LDA"))
 ggsave('LDA.png',
-       plot = nice2,
+       plot = nice1,
        device = 'png',
        dpi = 400)
 
 
 ### QDA
-f3 <- classify(set$classes, QDA(set))
-liste3 <- plot_error(set, f3)
-p3 <- do.call(grid.arrange, liste3)
-testplot3 <-
+func_name2 <- QDA(set)[['name']]
+liste2 <- plot_error(set, func_name2)
+p2 <- do.call(grid.arrange, liste2)
+testplot2 <-
   make_2D_plot(set,
-               f3,
+               func_name2,
                ppu = 5)
-plotlist3 <- list(p3, testplot3)
+plotlist2 <- list(p2, testplot2)
 
-nice3 <-
-  do.call("grid.arrange", c(plotlist3, ncol = 2, top = "QDA"))
+nice2 <-
+  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
 ggsave('QDA.png',
-       plot = nice3,
+       plot = nice2,
        device = 'png',
        dpi = 400)
 
 ###svm
-f4 <- svm_classify(uresults=set$classes, t=svm(set$data, set$results))
+f4 <-
+  svm_classify(uresults = set$classes,
+               t = svm(set$data, set$results))
 liste4 <- plot_error(set, f4)
 p4 <- do.call(grid.arrange, liste4)
 testplot4 <-
@@ -97,4 +103,3 @@ ggsave('svm.png',
        plot = nice4,
        device = 'png',
        dpi = 400)
-

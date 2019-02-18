@@ -2,8 +2,8 @@ library(ggplot2)
 library(gridExtra)
 #Plot functions
 
-maincomponent_analysis <- function(data,results) {
-  cov_matrix <- sigma_exp(data,results)
+maincomponent_analysis <- function(data, results) {
+  cov_matrix <- sigma_exp(data, results)
   ev <- eigen(cov_matrix)
   values <- ev$values
   n <- length(values)
@@ -12,8 +12,8 @@ maincomponent_analysis <- function(data,results) {
   return(list(D, main_matrix, cov_matrix))
 }
 
-make_projection <- function(data,results, dim = 2) {
-  l <- maincomponent_analysis(data,results)
+make_projection <- function(data, results, dim = 2) {
+  l <- maincomponent_analysis(data, results)
   U <- l[[2]][, 1:dim]
   proj <- function(x) {
     t(U) %*% x
@@ -29,7 +29,7 @@ make_2D_plot <- function(set,
                          ppu = 10,
                          project = TRUE,
                          bg = TRUE) {
-  if(!is.data_set(set)){
+  if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
   }
   #prama
@@ -37,15 +37,17 @@ make_2D_plot <- function(set,
   classfunc <- set$func[[func_name]]
   uresults <- set$classes
   n <- set$n_classes
-  #Project on first two parameter or maincomponents 
-  if(project==TRUE){
-    proj <- make_projection(set$expansion(info[['base']]),set$results)
+  #Project on first two parameter or maincomponents
+  if (project == TRUE) {
+    proj <- make_projection(set$expansion(info[['base']]), set$results)
     proj_to <- proj[[1]]
     proj_in <- proj[[2]]
-    proj_data <- as.data.frame(t(apply(set$data, 1, proj_to)))
+    proj_data <-
+      as.data.frame(t(apply(set$expansion(info[['base']]), 1, proj_to)))
   }
   else{
-    proj_in <- function(x) c(x,rep(0,times=(info[['dim']]-2)))
+    proj_in <- function(x)
+      c(x, rep(0, times = (info[['dim']] - 2)))
     proj_data <- set$data
   }
   
@@ -57,7 +59,9 @@ make_2D_plot <- function(set,
   #prepare plot data
   #input
   input_data <-
-    data.frame(x = proj_data[, 1], y = proj_data[, 2], Legend = set$results)
+    data.frame(x = proj_data[, 1],
+               y = proj_data[, 2],
+               Legend = set$results)
   #make mainplot
   #1. limit
   mainplot <- ggplot() + xlim(x[1], x[2]) + ylim(y[1], y[2])
@@ -90,8 +94,8 @@ make_2D_plot <- function(set,
   return(mainplot)
 }
 
-calc_error <- function(set,name) {
-  if(!is.data_set(set)){
+calc_error <- function(set, name) {
+  if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
   }
   info <- set$func_info[[name]][['parameter']]
@@ -124,14 +128,15 @@ calc_error <- function(set,name) {
   colnames(probs_of_Data) <- c('class', G)
   colnames(probs_of_Results) <- c('class', G)
   miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes+1]) / set$n_classes
-  miss <- round(miss,2)
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes +
+                        1]) / set$n_classes
+  miss <- round(miss, 2)
   return(list(probs_of_Data, probs_of_Results, miss))
 }
 
 
 plot_error <- function(set, name) {
-  if(!is.data_set(set)){
+  if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
   }
   G <- set$classnames
@@ -141,75 +146,80 @@ plot_error <- function(set, name) {
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
   
-  charts <- lapply(G, function(class) {      # Create mistake plots for each Class
-    
-    probs_Data[paste0(class, 'label')] <-    #Labels in percent
-      scales::percent(probs_Data[, class])
-    
-    left <- ggplot(data = probs_Data[1:n, ]) +            #make plot mit aesthetics
-      geom_bar(
-        aes_string(
-          x = paste0(class, 'label'),
-          y = class,
-          fill = 'class'
-        ),
-        stat = "identity",
-        width = 1
-      ) + theme(
-        axis.text.x = element_text(angle = 90, hjust = 1),
-        legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.y = element_blank()
-      ) +
-      labs(title = paste0('f(x=', class, ')'))             #
-    
-    probs_Results[paste0(class, 'label')] <-     #Labels in percent
-      scales::percent(probs_Results[, class])
-    
-    right <- ggplot(data = probs_Results[1:n, ]) +         #make plot mit aesthetics
-      geom_bar(                                                              
-        aes_string(
-          y = class,
-          x = paste0(class, 'label'),
-          fill = 'class'
-        ),
-        stat = "identity",
-        width = 1
-      ) + theme(
-        axis.text.x = element_text(angle = 90, hjust = 1),
-        legend.position = "none",
-        axis.text.y = element_blank(),
-        axis.title.y = element_blank(),
-        axis.title.x = element_blank()
-      ) +
-      labs(title = paste0('f^-1(', class, ')'))            #
-    
-    return(grid.arrange(left, right, nrow = 1))   # arrange in one row and return
-  })
+  charts <-
+    lapply(G, function(class) {
+      # Create mistake plots for each Class
+      
+      probs_Data[paste0(class, 'label')] <-    #Labels in percent
+        scales::percent(probs_Data[, class])
+      
+      left <-
+        ggplot(data = probs_Data[1:n, ]) +            #make plot mit aesthetics
+        geom_bar(
+          aes_string(
+            x = paste0(class, 'label'),
+            y = class,
+            fill = 'class'
+          ),
+          stat = "identity",
+          width = 1
+        ) + theme(
+          axis.text.x = element_text(angle = 90, hjust = 1),
+          legend.position = "none",
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank()
+        ) +
+        labs(title = paste0('f(x=', class, ')'))             #
+      
+      probs_Results[paste0(class, 'label')] <-
+        #Labels in percent
+        scales::percent(probs_Results[, class])
+      
+      right <-
+        ggplot(data = probs_Results[1:n, ]) +         #make plot mit aesthetics
+        geom_bar(
+          aes_string(
+            y = class,
+            x = paste0(class, 'label'),
+            fill = 'class'
+          ),
+          stat = "identity",
+          width = 1
+        ) + theme(
+          axis.text.x = element_text(angle = 90, hjust = 1),
+          legend.position = "none",
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank()
+        ) +
+        labs(title = paste0('f^-1(', class, ')'))            #
+      
+      return(grid.arrange(left, right, nrow = 1))   # arrange in one row and return
+    })
   
   
-  mistake_lable <- c(paste0(miss*100,'%',' wrong'),paste0((1-miss)*100,'%',' right')) #Labels in percent
+  mistake_lable <-
+    c(paste0(miss * 100, '%', ' wrong'), paste0((1 - miss) * 100, '%', ' right')) #Labels in percent
   
-  mistake <- data.frame(i=mistake_lable,per=c(miss,1-miss))  #combine labels and data
+  mistake <-
+    data.frame(i = mistake_lable, per = c(miss, 1 - miss))  #combine labels and data
   
-  mi <- ggplot(data = mistake) +                             #make plot
-    geom_bar(
-      aes(
-        y = per,
-        x = i,
-        fill = i
-      ),
-      stat = "identity",
-      width = 1
-    ) + theme(
-      axis.text.x = element_text(angle = 90, hjust = 1),
-      legend.position = "none",
-      axis.text.y = element_blank(),
-      axis.title.y = element_blank(),
-      axis.title.x = element_blank()
-    )+ggtitle('Data')
+  mi <-
+    ggplot(data = mistake) +                             #make plot
+    geom_bar(aes(y = per,
+                 x = i,
+                 fill = i),
+             stat = "identity",
+             width = 1) + theme(
+               axis.text.x = element_text(angle = 90, hjust = 1),
+               legend.position = "none",
+               axis.text.y = element_blank(),
+               axis.title.y = element_blank(),
+               axis.title.x = element_blank()
+             ) + ggtitle('Data')
   
-  charts[[n+1]] <- mi                                  #add last Plot
+  charts[[n + 1]] <-
+    mi                                  #add last Plot
   return(charts)
 }

@@ -11,7 +11,7 @@ mu_exp <- function(data, set) {
   data <- as.data.frame(data)
   classes <- set$classes
   mu <- lapply(classes, function(class) {
-    colMeans(data[set$results == class, ])
+    colMeans(data[set$results == class,])
   })
   names(mu) <- set$classnames
   return(mu)
@@ -27,40 +27,62 @@ sigma_class_exp <- function(data, mu = colMeans(data)) {
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   apply(data, 1, function(x) {
-    Bn <<- Bn + tcrossprod(x-mu)
+    Bn <<- Bn + tcrossprod(x - mu)
   })
   return(Bn / (dim(data)[1] - 1))
 }
-mu_est <- function(data,results,G){
-  lapply(G, function(class){
-    colMeans(data[results == class,])
+
+mu_est <- function(data, results, G) {
+  lapply(G, function(class) {
+    colMeans(data[results == class, ])
   })
 }
+
+sigma_est <- function(set) {
+  G <- set$classes
+  K <- set$n_classes
+  N <- set$n_obs
+  mu <- set$mean
+  n <- set$dim
+  Bn <- diag(0, ncol = n, nrow = n)
+  sapply(1:K, function(k) {
+    apply(set$data[set$results == G[k], ], 1, function(x) {
+      Bn <<- Bn + tcrossprod(x - mu[[k]])
+    })
+  })
+  return(Bn / (N - K))
+}
+
 
 sigma_exp <- function(data, results) {
   G <- unique(results)
   K <- length(G)
   N <- length(results)
-  mu <- mu_est(data, results,G)
+  mu <- mu_est(data, results, G)
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   sapply(1:K, function(k) {
-    apply(data[results == G[k], ], 1, function(x) {
+    apply(data[results == G[k],], 1, function(x) {
       Bn <<- Bn + tcrossprod((x - mu[[k]]))
     })
   })
   return(Bn / (N - K))
 }
 
-sigma_bet_exp <- function(data, results){
-  G <- unique(results)                    ##vector with all unique classnames in it. Nothing mentioned twice
-  mu <- mu_est(data, results)             ##Gets the Class centroids of each class (the expected value)
-  total_mean <- colMeans(data)            ##The total centroid of all data points (expected value of everything)
+sigma_bet_exp <- function(data, results) {
+  G <-
+    unique(results)                    ##vector with all unique classnames in it. Nothing mentioned twice
+  mu <-
+    mu_est(data, results)             ##Gets the Class centroids of each class (the expected value)
+  total_mean <-
+    colMeans(data)            ##The total centroid of all data points (expected value of everything)
   N <- length(G)                          ##Number of unique classes
-  B_i <- lapply(1:N, function(i){         ##Calculates the bewtween class covariance Matrix in two steps:
-    length(results[results == G[i]]) * (mu[i, ] - total_mean) %*% t(mu[i, ] - total_mean) ##1. Calculating a class specific part of the covariance matrix for every class
-  })
-  B <- Reduce(`+`, B_i)/(length(results)-N) ##Adding all parts, which are in one big list, together and dividing by a standarizing factor
+  B_i <-
+    lapply(1:N, function(i) {
+      ##Calculates the bewtween class covariance Matrix in two steps:
+      length(results[results == G[i]]) * (mu[i,] - total_mean) %*% t(mu[i,] - total_mean) ##1. Calculating a class specific part of the covariance matrix for every class
+    })
+  B <-
+    Reduce(`+`, B_i) / (length(results) - N) ##Adding all parts, which are in one big list, together and dividing by a standarizing factor
   return(B)
 }
-

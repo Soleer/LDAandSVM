@@ -4,7 +4,7 @@ data_set <- R6Class(
   private = list(
     #list of private slots
     .data = NULL,
-    .data_expansion =list(),
+    .data_expansion = list(),
     .results = NULL,
     .col_names = NULL,
     .classes = NULL,
@@ -58,7 +58,7 @@ data_set <- R6Class(
       private$.data <- data[, private$.col_names != by]
       private$.data_expansion[['id']] <- private$.data
       #Print progress
-      print(private$.data[1:5, ])
+      print(private$.data[1:5,])
       cat("...\n")
       #save classvalues of parameters under '.results'
       private$.results <- data[, by]
@@ -110,7 +110,7 @@ data_set <- R6Class(
       #mean
       
       private$.mean <- lapply(private$.classes, function(class) {
-        colMeans(private$.data[private$.results == class,])
+        colMeans(private$.data[private$.results == class, ])
       })
       names(private$.mean) <- private$.classnames
       cat("\nMeans of Parameters:\n")
@@ -142,12 +142,12 @@ data_set <- R6Class(
       #print short overview
       cat("\nNumer of Observations per Class:")
       print(private$.count)
-      if (length(private$.data_expansion)>0) {
-        cat("\nExpansions:\n") 
+      if (length(private$.data_expansion) > 0) {
+        cat("\nExpansions:\n")
         print(names(private$.data_expansion))
       }
       cat("\nData:\n")
-      print(private$.data[1:5, ])
+      print(private$.data[1:5,])
       invisible(self)
     },
     
@@ -158,20 +158,21 @@ data_set <- R6Class(
       else{
         stopifnot(length(type) == 1 && is.character(type))
         private$.n_func <- private$.n_func + 1
-        name <- sprintf("%s_%s",type,private$.n_func)
+        name <- sprintf("%s_%s", type, private$.n_func)
         private$.function_list[[name]] <- func
-        private$.function_info[[name]] <- list(type=type, parameter=parameter)
-        return(invisible(list(name=name,func=func)))
+        private$.function_info[[name]] <-
+          list(type = type, parameter = parameter)
+        return(invisible(list(name = name, func = func)))
       }
       
     },
-    change_func_name = function(from,to){
-      stopifnot(is.character(from)&&is.character(to))
-      if(!any(names(private$.function_list)==from)){
-        stop(sprintf("%s is no function name",from))
+    change_func_name = function(from, to) {
+      stopifnot(is.character(from) && is.character(to))
+      if (!any(names(private$.function_list) == from)) {
+        stop(sprintf("%s is no function name", from))
       }
-      if(any(names(private$.function_list)==to)){
-        stop(sprintf("%s is already taken",to))
+      if (any(names(private$.function_list) == to)) {
+        stop(sprintf("%s is already taken", to))
       }
       private$.function_list[[to]] <- private$.function_list[[from]]
       private$.function_info[[to]] <- private$.function_info[[from]]
@@ -179,10 +180,11 @@ data_set <- R6Class(
       private$.function_info[[from]] <- NULL
       return(invisible(to))
     },
-    expansion = function(base){
+    expansion = function(base) {
       stopifnot(is.character(base))
-      if(is.null(private$.data_expansion[[base]])){
-        h <- basis_exp(base)                            ##Gets the basis expansion function
+      if (is.null(private$.data_expansion[[base]])) {
+        h <-
+          basis_exp(base)                            ##Gets the basis expansion function
         private$.data_expansion[[base]] <- h(self$data)
         return(private$.data_expansion[[base]])
       }
@@ -334,7 +336,7 @@ data_set <- R6Class(
           #calculate matrix for each class (iterating over classnames for subsetting)
           sapply(self$classnames, function(class) {
             rows <-
-              self$data[self$results == self$classes[class],]  #get rows of specific class
+              self$data[self$results == self$classes[class], ]  #get rows of specific class
             mu <-
               self$mean[[class]]                               #get parameter means for this class
             Bn <- diag(0, ncol = n, nrow = n)
@@ -397,10 +399,10 @@ data_set <- R6Class(
 make_set <- function(data,
                      by,
                      title,
-                     description){
-  data_set$new(data,by,title,description )
+                     description) {
+  data_set$new(data, by, title, description)
 }
 
-is.data_set <- function(set){
-  any(class(set)=="data_set")
+is.data_set <- function(set) {
+  any(class(set) == "data_set")
 }
