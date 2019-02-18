@@ -271,7 +271,7 @@ fun_ob <- function(i, ob) {
   return(c(sum(ob[1:(i - 1)]) + 1, sum(ob[1:i])))
 }
 
-svm <- function(data,
+svm_fun_list <- function(data,
                 results,
                 C = 1,
                 kernel = 0,
@@ -315,6 +315,8 @@ svm <- function(data,
 }
 #The svm_classify function returns a function that actually classifies an observation.
 svm_classify <- function(t, uresults) {
+
+  
   if (length(t) == 1) {
     f <- function(x) {
       if (t(x) >= 0) {
@@ -348,6 +350,18 @@ svm_classify <- function(t, uresults) {
   }
   return(f)
 }
+
+
+
+
+
+
+
+
+
+
+
+#########test#############################
 test <- make_test()
 results <- test[,3]
 data <- test[,1:2]
