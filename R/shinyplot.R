@@ -77,6 +77,9 @@ server_LDA_SVM <- function(input, output){
                      ppu = 5,
                      bg = BG)
     }
+    if(Classfun == "RDA"){
+      #TODO
+    }
     output$Classification <- renderPlot({testplot})
     output$Error <- renderPlot({do.call(grid.arrange, liste)})
     print("finished!")
