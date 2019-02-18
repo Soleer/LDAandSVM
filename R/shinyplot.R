@@ -1,4 +1,4 @@
-Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA"))
+Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA","SVM"))
 Base <- selectInput("Base", "Select Basis Expansion  (only for PDA)", choices = c("none", "quad", "cube", "sqrt", "log", "abs"))
 Background <- radioButtons("Background", "Plot classification Grid (greatly increases calculation time)", c("FALSE", "TRUE"))
 Calc_button <- actionButton("Calc_button", "Classifiy")
@@ -98,6 +98,17 @@ server_LDA_SVM <- function(input, output){
     
     if(Classfun == "PDA"){
       f <- classify(unique(test_shiny$class), PDA(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, base = Base))
+      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
+      Class_plot_shiny <-
+        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
+                     test_shiny$class,
+                     f,
+                     ppu = 5,
+                     bg = BG)
+      Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
+    }
+    if(Classfun == "SVM"){
+      f <- svm_classify(unique(test_shiny$class), svm(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
       Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
       Class_plot_shiny <-
         make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
