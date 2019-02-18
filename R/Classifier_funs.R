@@ -80,6 +80,8 @@ PDA <- function(data, results, base) {            ##The PDA classification funct
   
   delta <- function(x) {                          ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
     result <- sapply(1:K, function(k) {
+      
+      
       -1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(h(x) - h(mu[k, ])) %*% Matrix[[k]] %*% (h(x) - h(mu[k, ]))
     }) + p
     return(result)
