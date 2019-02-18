@@ -1,17 +1,12 @@
-library(ggplot2)
-library(gridExtra)
+
 library(quadprog)
-<<<<<<< HEAD
-library(R6)
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
-=======
-library("NlcOptim")
-library("shiny")
+library(NlcOptim)
+library(shiny)
 library(rlang)
->>>>>>> 97d72ddad5d10180b7119adc7e4f64e9f21df0b0
 source("R/Basis_expansion.R")
 source("R/Test.R")
 source("R/oop.R")
@@ -20,7 +15,6 @@ source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 source("R/svm.R")
 source("R/shinyplot.R")
-#source("R/oop.R")
 set.seed(0)
 
 ##Analyse
@@ -47,6 +41,7 @@ testplot0 <-
   make_2D_plot(set,
                func_name0,
                ppu = 5,
+               project = FALSE,
                bg = FALSE)
 plotlist0 <- list(p0, testplot0)
 nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))

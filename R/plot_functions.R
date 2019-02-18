@@ -1,7 +1,15 @@
+#Plot functions
 library(ggplot2)
 library(gridExtra)
-#Plot functions
 
+#'maincomponent_analysis
+#'
+#'
+#'
+#'
+#'@param data Dataframe of Parameters
+#'@param results Vector with corresponding Classes to \code{data}
+#'@return A list with  the mean vectors of the classes as rows
 maincomponent_analysis <- function(data, results) {
   cov_matrix <- sigma_exp(data, results)
   ev <- eigen(cov_matrix)
