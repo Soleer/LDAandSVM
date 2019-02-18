@@ -50,7 +50,7 @@ sigma_est <- function(data, results) {
   Bn <- diag(0, ncol = n, nrow = n)
   sapply(1:K, function(k) {
     apply(data[results == G[k],], 1, function(x) {
-      Bn <<- Bn + ((x - mu[k,]) %*% t(x - mu[k,]))
+      Bn <<- Bn + tcrossprod((x - mu[k,]))
     })
   })
   return(Bn / (N - K))

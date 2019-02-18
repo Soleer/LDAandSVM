@@ -2,8 +2,8 @@ library(ggplot2)
 library(gridExtra)
 #Plot functions
 
-maincomponent_analysis <- function(data) {
-  cov_matrix <- sigma_class(data)
+maincomponent_analysis <- function(set) {
+  cov_matrix <- sigma_est(set)
   ev <- eigen(cov_matrix)
   values <- ev$values
   n <- length(values)
@@ -12,8 +12,8 @@ maincomponent_analysis <- function(data) {
   return(list(D, main_matrix, cov_matrix))
 }
 
-make_projection <- function(data, dim = 2) {
-  l <- maincomponent_analysis(data)
+make_projection <- function(set, dim = 2) {
+  l <- maincomponent_analysis(set)
   U <- l[[2]][, 1:dim]
   proj <- function(x) {
     t(U) %*% x
@@ -24,27 +24,26 @@ make_projection <- function(data, dim = 2) {
   return(list(proj, i_proj))
 }
 
-make_2D_plot <- function(data,
-                         results,
-                         classfun,
+make_2D_plot <- function(set,
+                         classfunc,
                          ppu = 10,
                          bg = TRUE) {
   #prama
-  uresults <- unique(results)
-  n <- length(uresults)
-  proj <- make_projection(data)
+  uresults <- set$classes
+  n <- set$n_classes
+  proj <- make_projection(set)
   proj_to <- proj[[1]]
   proj_in <- proj[[2]]
-  proj_data <- as.data.frame(t(apply(data, 1, proj_to)))
+  proj_data <- as.data.frame(t(apply(set$data, 1, proj_to)))
   x <- c(floor(min(proj_data[, 1])), ceiling(max(proj_data[, 1])))
   y <- c(floor(min(proj_data[, 2])), ceiling(max(proj_data[, 2])))
   xtimes <- (x[2] - x[1]) * ppu
   ytimes <- (y[2] - y[1]) * ppu
-  d <- dim(data)[2]
+  d <- set$dim
   #prepare plot data
   #input
   input_data <-
-    data.frame(x = proj_data[, 1], y = proj_data[, 2], Legend = results)
+    data.frame(x = proj_data[, 1], y = proj_data[, 2], Legend = set$results)
   #make mainplot
   #1. limit
   mainplot <- ggplot() + xlim(x[1], x[2]) + ylim(y[1], y[2])
@@ -57,14 +56,15 @@ make_2D_plot <- function(data,
       height = 0,
       width = 0
     )
+  
   #3. colored background
   if (bg == TRUE) {
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-                 y = c(sapply(seq(y[1], y[2], length.out = ytimes), rep, times = xtimes)))
+                 y = rep(seq(y[1], y[2], length.out = ytimes), each = xtimes))
     proj_background <-
       as.data.frame(t(apply(background, 1, proj_in)))
-    background$class <- apply(proj_background, 1, classfun)
+    background$class <- apply(proj_background, 1, classfunc)
     mainplot <- mainplot + geom_jitter(
       data = background,
       aes(x, y, color = class),
@@ -76,56 +76,54 @@ make_2D_plot <- function(data,
   return(mainplot)
 }
 
-calc_error <- function(data, results, f) {
-  G <- unique(results)
-  estimated <- apply(data, 1, f)
+calc_error <- function(set,f) {
+  G <- set$classnames
+  estimated <- apply(set$data, 1, f)
   of_Data <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(estimated[results == class])
+    t <- table(estimated[set$results == set$classes[class]])
     number <- sum(t)
-    classresults <- as.list(t[as.character(G)] / number)
-    right <- t[c] / number
+    classresults <- as.list(t[G] / number)
+    right <- t[class] / number
     wrong <- (1 - right)
     col <- unlist(list(classresults, right, wrong))
     return(col)
   })
   
   of_Results <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(results[estimated == class])
+    t <- table(set$results[estimated == set$classes[class]])
     number <- sum(t)
-    classresults <- as.list(t[as.character(G)] / number)
-    right <- t[c] / number
+    classresults <- as.list(t[G] / number)
+    right <- t[class] / number
     wrong <- (1 - right)
     col <- unlist(list(classresults, right, wrong))
     return(col)
   })
   probs_of_Data <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
+    data.frame(class = c(G, 'right', 'wrong'), of_Data)
   probs_of_Results <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Results)
+    data.frame(class = c(G, 'right', 'wrong'), of_Results)
   colnames(probs_of_Data) <- c('class', as.character(G))
   colnames(probs_of_Results) <- c('class', as.character(G))
   miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G)+1]) / length(G)
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes+1]) / set$n_classes
   miss <- round(miss,2)
   return(list(probs_of_Data, probs_of_Results, miss))
 }
 
 
-plot_error <- function(data, results, f) {
-  G <- as.character(unique(results))
-  n <- length(G)
-  get_list <- calc_error(data, results, f)
+plot_error <- function(set, f) {
+  G <- set$classnames
+  n <- set$n_classes
+  get_list <- calc_error(set, f)
   probs_Data <- get_list[[1]]
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
   charts <- lapply(G, function(class) {
     
-    probs_Data[paste0(class, 'l')] <-
+    probs_Data[paste0(class, 'label')] <-
       scales::percent(probs_Data[, class])
     colsum <- 0
-    probs_Data[paste0(class, 'yl')] <-
+    probs_Data[paste0(class, 'ylabel')] <-
       sapply(probs_Data[, class], function(x) {
         colsum <<- colsum + x
         colsum - x / 2
@@ -148,10 +146,10 @@ plot_error <- function(data, results, f) {
       ) +
       labs(title = paste0('f(x=', class, ')'))
     
-    probs_Results[paste0(class, 'l')] <-
+    probs_Results[paste0(class, 'label')] <-
       scales::percent(probs_Results[, class])
     colsum <- 0
-    probs_Results[paste0(class, 'yl')] <-
+    probs_Results[paste0(class, 'ylabel')] <-
       sapply(probs_Results[, class], function(x) {
         colsum <<- colsum + x
         colsum - x / 2

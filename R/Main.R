@@ -5,7 +5,7 @@ library("NlcOptim")
 library("shiny")
 source("R/Basis_expansion.R")
 source('R/Test.R')
-source("R/Estimators.R")
+source("R/oop.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 source("R/svm.R")
@@ -20,7 +20,7 @@ test <- make_test(100,
                   nparam = dimension,
                   nclasses = 6,
                   sigma = sig)
-
+problem <- make_set(test,by="class",title="TEST",description="Weil ich kann!")
 ### Shiny-Interface
 classify_app()
 
