@@ -2,8 +2,8 @@ library(ggplot2)
 library(gridExtra)
 #Plot functions
 
-maincomponent_analysis <- function(set) {
-  cov_matrix <- sigma_est(set)
+maincomponent_analysis <- function(data,results) {
+  cov_matrix <- sigma_exp(data,results)
   ev <- eigen(cov_matrix)
   values <- ev$values
   n <- length(values)
@@ -12,8 +12,8 @@ maincomponent_analysis <- function(set) {
   return(list(D, main_matrix, cov_matrix))
 }
 
-make_projection <- function(set, dim = 2) {
-  l <- maincomponent_analysis(set)
+make_projection <- function(data,results, dim = 2) {
+  l <- maincomponent_analysis(data,results)
   U <- l[[2]][, 1:dim]
   proj <- function(x) {
     t(U) %*% x
@@ -25,16 +25,30 @@ make_projection <- function(set, dim = 2) {
 }
 
 make_2D_plot <- function(set,
-                         classfunc,
+                         func_name,
                          ppu = 10,
+                         project = TRUE,
                          bg = TRUE) {
+  if(!is.data_set(set)){
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
   #prama
+  info <- set$func_info[[func_name]][['parameter']]
+  classfunc <- set$func[[func_name]]
   uresults <- set$classes
   n <- set$n_classes
-  proj <- make_projection(set)
-  proj_to <- proj[[1]]
-  proj_in <- proj[[2]]
-  proj_data <- as.data.frame(t(apply(set$data, 1, proj_to)))
+  #Project on first two parameter or maincomponents 
+  if(project==TRUE){
+    proj <- make_projection(set$expansion(info[['base']]),set$results)
+    proj_to <- proj[[1]]
+    proj_in <- proj[[2]]
+    proj_data <- as.data.frame(t(apply(set$data, 1, proj_to)))
+  }
+  else{
+    proj_in <- function(x) c(x,rep(0,times=(info[['dim']]-2)))
+    proj_data <- set$data
+  }
+  
   x <- c(floor(min(proj_data[, 1])), ceiling(max(proj_data[, 1])))
   y <- c(floor(min(proj_data[, 2])), ceiling(max(proj_data[, 2])))
   xtimes <- (x[2] - x[1]) * ppu
@@ -61,7 +75,7 @@ make_2D_plot <- function(set,
   if (bg == TRUE) {
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
-                 y = rep(seq(y[1], y[2], length.out = ytimes), each = xtimes))
+                 y = rep(seq(y[1], y[2], length.out = ytimes),  each = xtimes))
     proj_background <-
       as.data.frame(t(apply(background, 1, proj_in)))
     background$class <- apply(proj_background, 1, classfunc)
@@ -76,7 +90,12 @@ make_2D_plot <- function(set,
   return(mainplot)
 }
 
-calc_error <- function(set,f) {
+calc_error <- function(set,name) {
+  if(!is.data_set(set)){
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
+  info <- set$func_info[[name]][['parameter']]
+  f <- set$func[[name]]
   G <- set$classnames
   estimated <- apply(set$data, 1, f)
   of_Data <- lapply(G, function(class) {
@@ -102,8 +121,8 @@ calc_error <- function(set,f) {
     data.frame(class = c(G, 'right', 'wrong'), of_Data)
   probs_of_Results <-
     data.frame(class = c(G, 'right', 'wrong'), of_Results)
-  colnames(probs_of_Data) <- c('class', as.character(G))
-  colnames(probs_of_Results) <- c('class', as.character(G))
+  colnames(probs_of_Data) <- c('class', G)
+  colnames(probs_of_Results) <- c('class', G)
   miss <-
     sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes+1]) / set$n_classes
   miss <- round(miss,2)
@@ -111,27 +130,26 @@ calc_error <- function(set,f) {
 }
 
 
-plot_error <- function(set, f) {
+plot_error <- function(set, name) {
+  if(!is.data_set(set)){
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
   G <- set$classnames
   n <- set$n_classes
-  get_list <- calc_error(set, f)
+  get_list <- calc_error(set, name)
   probs_Data <- get_list[[1]]
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
-  charts <- lapply(G, function(class) {
+  
+  charts <- lapply(G, function(class) {      # Create mistake plots for each Class
     
-    probs_Data[paste0(class, 'label')] <-
+    probs_Data[paste0(class, 'label')] <-    #Labels in percent
       scales::percent(probs_Data[, class])
-    colsum <- 0
-    probs_Data[paste0(class, 'ylabel')] <-
-      sapply(probs_Data[, class], function(x) {
-        colsum <<- colsum + x
-        colsum - x / 2
-      })
-    left <- ggplot(data = probs_Data[1:n, ]) +
+    
+    left <- ggplot(data = probs_Data[1:n, ]) +            #make plot mit aesthetics
       geom_bar(
         aes_string(
-          x = paste0(class, 'l'),
+          x = paste0(class, 'label'),
           y = class,
           fill = 'class'
         ),
@@ -144,21 +162,16 @@ plot_error <- function(set, f) {
         axis.title.y = element_blank(),
         axis.text.y = element_blank()
       ) +
-      labs(title = paste0('f(x=', class, ')'))
+      labs(title = paste0('f(x=', class, ')'))             #
     
-    probs_Results[paste0(class, 'label')] <-
+    probs_Results[paste0(class, 'label')] <-     #Labels in percent
       scales::percent(probs_Results[, class])
-    colsum <- 0
-    probs_Results[paste0(class, 'ylabel')] <-
-      sapply(probs_Results[, class], function(x) {
-        colsum <<- colsum + x
-        colsum - x / 2
-      })
-    right <- ggplot(data = probs_Results[1:n, ]) +
-      geom_bar(
+    
+    right <- ggplot(data = probs_Results[1:n, ]) +         #make plot mit aesthetics
+      geom_bar(                                                              
         aes_string(
           y = class,
-          x = paste0(class, 'l'),
+          x = paste0(class, 'label'),
           fill = 'class'
         ),
         stat = "identity",
@@ -170,12 +183,17 @@ plot_error <- function(set, f) {
         axis.title.y = element_blank(),
         axis.title.x = element_blank()
       ) +
-      labs(title = paste0('f^-1(', class, ')'))
-    return(grid.arrange(left, right, nrow = 1))
+      labs(title = paste0('f^-1(', class, ')'))            #
+    
+    return(grid.arrange(left, right, nrow = 1))   # arrange in one row and return
   })
-  mistake_lable <- c(paste0(miss*100,'%',' wrong'),paste0((1-miss)*100,'%',' right'))
-  mistake <- data.frame(i=mistake_lable,per=c(miss,1-miss))
-  mi <- ggplot(data = mistake) +
+  
+  
+  mistake_lable <- c(paste0(miss*100,'%',' wrong'),paste0((1-miss)*100,'%',' right')) #Labels in percent
+  
+  mistake <- data.frame(i=mistake_lable,per=c(miss,1-miss))  #combine labels and data
+  
+  mi <- ggplot(data = mistake) +                             #make plot
     geom_bar(
       aes(
         y = per,
@@ -191,6 +209,7 @@ plot_error <- function(set, f) {
       axis.title.y = element_blank(),
       axis.title.x = element_blank()
     )+ggtitle('Data')
-  charts[[n+1]] <- mi
+  
+  charts[[n+1]] <- mi                                  #add last Plot
   return(charts)
 }

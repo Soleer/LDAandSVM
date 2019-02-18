@@ -1,11 +1,15 @@
 library(ggplot2)
 library(gridExtra)
 library(quadprog)
-library("NlcOptim")
-library("shiny")
+library(R6)
+library(MASS)
+library(NlcOptim)
+library(e1071)
+library(shiny)
 source("R/Basis_expansion.R")
-source('R/Test.R')
+source("R/Test.R")
 source("R/oop.R")
+source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 source("R/svm.R")
@@ -20,18 +24,17 @@ test <- make_test(100,
                   nparam = dimension,
                   nclasses = 6,
                   sigma = sig)
-problem <- make_set(test,by="class",title="TEST",description="Weil ich kann!")
+
+set <- make_set(test,by="class",title="TEST",description="Weil ich kann!")
 ### Shiny-Interface
 classify_app()
-
 ### PDA
-f <- classify(unique(test$class), PDA(test[1:dimension], test$class, base = "quad"))
-liste <- plot_error(test[1:dimension], test$class, f)
+func_name <-  PDA(set, base = "quad")[['name']]
+liste <- plot_error(set, func_name)
 p1 <- do.call(grid.arrange, liste)
 testplot <-
-  make_2D_plot(test[1:dimension],
-               test$class,
-               f,
+  make_2D_plot(set,
+               func_name,
                ppu = 5,
                bg = FALSE)
 plotlist <- list(p1, testplot)
@@ -44,12 +47,11 @@ ggsave('PDA.png',
 
 
 ### LDA
-f2 <- classify(unique(test$class), LDA(test[1:dimension], test$class))
-liste2 <- plot_error(test[1:dimension], test$class, f2)
+f2 <- LDA(set)[['name']]
+liste2 <- plot_error(set, f2)
 p2 <- do.call(grid.arrange, liste2)
 testplot2 <-
-  make_2D_plot(test[1:dimension],
-               test$class,
+  make_2D_plot(set,
                f2,
                ppu = 5)
 plotlist2 <- list(p2, testplot2)
@@ -63,12 +65,11 @@ ggsave('LDA.png',
 
 
 ### QDA
-f3 <- classify(unique(test$class), QDA(test[1:dimension], test$class))
-liste3 <- plot_error(test[1:dimension], test$class, f3)
+f3 <- classify(set$classes, QDA(set))
+liste3 <- plot_error(set, f3)
 p3 <- do.call(grid.arrange, liste3)
 testplot3 <-
-  make_2D_plot(test[1:dimension],
-               test$class,
+  make_2D_plot(set,
                f3,
                ppu = 5)
 plotlist3 <- list(p3, testplot3)
@@ -81,12 +82,11 @@ ggsave('QDA.png',
        dpi = 400)
 
 ###svm
-f4 <- svm_classify(uresults=unique(test$class), t=svm(test[1:dimension], test$class))
-liste4 <- plot_error(test[1:dimension], test$class, f4)
+f4 <- svm_classify(uresults=set$classes, t=svm(set$data, set$results))
+liste4 <- plot_error(set, f4)
 p4 <- do.call(grid.arrange, liste4)
 testplot4 <-
-  make_2D_plot(test[1:dimension],
-               test$class,
+  make_2D_plot(set,
                f4,
                ppu = 5)
 plotlist4 <- list(p4, testplot4)

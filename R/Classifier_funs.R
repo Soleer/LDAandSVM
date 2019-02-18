@@ -15,16 +15,16 @@ targets <- function(vector) {
 }
 
 #return closest target
-class_by_targets <- function(uresults, f) {
+class_by_targets <- function(classes, delta) {
   classfunction <- function(x) {
-    return(uresults[which.min(targets(f(x)))])
+    return(classes[which.min(targets(delta(x)))])
   }
   return(classfunction)
 }
 #return max
-classify <- function(uresults, f) {
+classify <- function(classes, delta) {
   classfunction <- function(x) {
-    return(uresults[which.max(f(x))])
+    return(classes[which.max(delta(x))])
   }
   return(classfunction)
 }
@@ -33,10 +33,22 @@ classify <- function(uresults, f) {
 ## LDA, QDA, PDA
 
 LDA <- function(set) {
-  if(is.data.set(set)){
-    stop("Input must be of class 'Dataset' (?make_set)")
+  if(!is.data_set(set)){
+    stop("Input must be of class 'data_set' (?make_set)")
   }
-  if(is.null(set$func['LDA'])){
+  if(length(set$func)>0){
+    slot <- character(0)
+    sapply(set$func_info, function(l){
+      if( !is.null(l[["type"]])){
+        if(l[["type"]]=="LDA"){
+          slot <<- l[["name"]]
+        }
+      }
+    })
+    if(length(slot)>0){
+      return(set$func[[slot]])
+    }
+  }
   G <- set$classes
   K <- set$n_classe
   p <- log(unlist(set$pi))
@@ -48,19 +60,27 @@ LDA <- function(set) {
     }) + p
     return(result)
   }
-  set$set_function(delta,"LDA",list(name="LDA",  description="basic LDA function"))
-  return(delta)
-  }
-  else{
-    set$func[['LDA']]
-  }
+  classify_func <- classify(set$classes,delta)
+  return(set$set_function(classify_func,type="LDA",list(description="basic LDA function")))
 }
 
 QDA <- function(set) {
-  if(is.data.set(set)){
-    stop("Input must be of class 'Dataset' (?make_set)")
+  if(!is.data_set(set)){
+    stop("Input must be of class 'data_set' (?make_set)")
   }
-  if(is.null(set$func['QDA'])){
+  if(length(set$func)>0){
+    slot <- character(0)
+    sapply(set$func_info, function(l){
+      if( !is.null(l[["type"]])){
+        if(l[["type"]]=="QDA"){
+          slot <<- l[["name"]]
+        }
+      }
+    })
+    if(length(slot)>0){
+      return(set$func[[slot]])
+    }
+  }
     G <- set$classes
     K <- set$n_classes
     p <- log(unlist(set$pi))
@@ -72,45 +92,51 @@ QDA <- function(set) {
       }) + p
       return(result)
     }
-    set$set_function(delta,"QDA",list(name="QDA", description="basic QDA function"))
-    return(delta)
-  }
-  else{
-    set$func[['QDA']]
-  }
+    classify_func <- classify(set$classes,delta)
+    return(set$set_function(classify_func,type="QDA", list(description="basic QDA function")))
 }
 
 
 PDA <- function(set, base, omega) { ##The PDA classification function. A function factory
-  if(missing(omega)){
-    omega <- diag(0, nrow=nrow(x), ncol=ncol(x))
+  if(!is.data_set(set)){
+    stop("Input must be of class 'data_set' (?make_set)")
   }
-  if(is.null(set$func['PDA'])==FALSE){
-    info_list <- set$func_info['PDA']
-    find <- sapply(info_list,function(l){
-      l["base"]==base && l["omega"]==omega
+  if(length(set$func)>0){
+    slot <- character(0)
+    sapply(set$func_info, function(l){
+      if( !is.null(l[["parameter"]][["base"]]) && !is.null(l[["parameter"]][["omega"]]) ){
+        if(l[["parameter"]][["base"]]==base && l[["parameter"]][["omega"]]==omega){
+          slot <<- l[["name"]]
+        }
+      }
     })
-  if(any(find)){
-    name <- names(info_list)[find][[1]]
-    return(set$func(name))
+  if(length(slot)>0){
+    return(set$func[[slot]])
   }
   }
-  h <- basis_exp(base)                            ##Gets the basis expansion function
-  data_exp <- h(set$data)                             ##Expands the data via the expansion function
-  G <- set$classes                            ##Vector containing all unique classes
-  K <- set$n_classes                                  ##Number of unique classes
+  data_exp <- set$expansion(base)     #expand data if needed
+  h <- basis_exp(base)                #get expansion function
+  d <- dim(data_exp)[2]
+  if(missing(omega)){                 #check for omega
+    omega <- diag(0, nrow=d, ncol=d) # set 0
+  }                                             
+  G <- set$classnames                            ##Vector containing all unique classes
+  K <- set$n_classes                             ##Number of unique classes
   p <- log(unlist(set$pi))                       ##Probability of one class occuring
-  mu <- set$mean                    ##Vector of class centroid for each class
-  sigma_list <- set$sigma
-  Matrix <- lapply(sigma_list, function(x) solve(x + omega))  ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse 
-  delta <- function(x) {                          ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
-    result <- sapply(1:K, function(k) {
-      value <- h(x)
-      m <- h(mu[[k]])
-      -1 / 2 * log(det(Matrix[[k]])) - 1 / 2 * t(value - m) %*% Matrix[[k]] %*% (value - m)
+  mu <- mu_exp(data_exp,set)                     ##List of class centroid for each class
+  sigma_list <- lapply(G,function(class){        ##Calculating expanded Covariances
+    sigma_class_exp(data_exp[set$results==set$classes[class], ], mu[[class]])
+  })
+  Matrix <- lapply(sigma_list, function(x) solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse 
+  names(Matrix) <- set$classnames                 
+  delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
+    result <- sapply(G, function(class) {
+      diff <- h(x) - mu[[class]]
+      -1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff)
     }) + p
     return(result)
   }
-  set$set_function(delta,"PDA",list(name=Sys.time(),base=base,omega=omega))
-  return(delta)
+  classify_func <- classify(set$classes,delta)
+  return(set$set_function(classify_func,type="PDA", list(base=base,dim=d,omega=omega)))
 }
+

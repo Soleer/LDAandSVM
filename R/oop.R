@@ -1,11 +1,10 @@
-library(R6)
 #Our Basic Object "Dataset":
-source("R/Test.R")
-make_set <- R6Class(
-  "data.set",
+data_set <- R6Class(
+  "data_set",
   private = list(
     #list of private slots
     .data = NULL,
+    .data_expansion =list(),
     .results = NULL,
     .col_names = NULL,
     .classes = NULL,
@@ -22,6 +21,7 @@ make_set <- R6Class(
     .meantotal = 0,
     .sigma = 0,
     .sigma_bet = NA,
+    .n_func = 0,
     .function_list = list(),
     .function_info = list()
   ),
@@ -44,12 +44,19 @@ make_set <- R6Class(
       
       #Data
       
-      #Check if parameter are numerical
+      #Check if parameter are usable
       if (any(sapply(data[, private$.col_names != by], Negate(is.numeric)))) {
         stop("Parametercolumns must be numerical!", call. = FALSE)
       }
+      if (any(sapply(data[, private$.col_names != by], is.na))) {
+        stop("Parametercolumns contain NA Values!", call. = FALSE)
+      }
+      if (any(sapply(data[, private$.col_names != by], is.infinite))) {
+        stop("Parametercolumns contain NA Values!", call. = FALSE)
+      }
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+      private$.data_expansion[['id']] <- private$.data
       #Print progress
       print(private$.data[1:5, ])
       cat("...\n")
@@ -118,6 +125,7 @@ make_set <- R6Class(
       sigma_list <- as.list(rep(NA, times = private$.n_classes))
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
+      
     },
     
     #custom print function
@@ -130,29 +138,58 @@ make_set <- R6Class(
       if (private$.description != "") {
         cat(sprintf("Description: %s \n", private$.description))
       }
+      cat(sprintf("Number of classification Functions: %s \n", private$.n_func))
       #print short overview
       cat("\nNumer of Observations per Class:")
       print(private$.count)
+      if (length(private$.data_expansion)>0) {
+        cat("\nExpansions:\n") 
+        print(names(private$.data_expansion))
+      }
+      cat("\nData:\n")
       print(private$.data[1:5, ])
       invisible(self)
     },
     
-    set_function = function(func, type, desc) {
-      if (typeof(Value) != "closure") {
+    set_function = function(func, type, parameter) {
+      if (typeof(func) != "closure") {
         stop("No valid Input", call. = FALSE)
       }
       else{
-        stopifnot(length(name) == 1 && is.character(name))
-        if(is.null(desc['name'])==FALSE){
-          private$.function_list[type][desc["name"]] <- func
-          private$.function_info[type][desc["name"]] <- desc
-        }
-        else{
-          stop("desc has no name",call. = FALSE)
-        }
+        stopifnot(length(type) == 1 && is.character(type))
+        private$.n_func <- private$.n_func + 1
+        name <- sprintf("%s_%s",type,private$.n_func)
+        private$.function_list[[name]] <- func
+        private$.function_info[[name]] <- list(type=type, parameter=parameter)
+        return(invisible(list(name=name,func=func)))
+      }
+      
+    },
+    change_func_name = function(from,to){
+      stopifnot(is.character(from)&&is.character(to))
+      if(!any(names(private$.function_list)==from)){
+        stop(sprintf("%s is no function name",from))
+      }
+      if(any(names(private$.function_list)==to)){
+        stop(sprintf("%s is already taken",to))
+      }
+      private$.function_list[[to]] <- private$.function_list[[from]]
+      private$.function_info[[to]] <- private$.function_info[[from]]
+      private$.function_list[[from]] <- NULL
+      private$.function_info[[from]] <- NULL
+      return(invisible(to))
+    },
+    expansion = function(base){
+      stopifnot(is.character(base))
+      if(is.null(private$.data_expansion[[base]])){
+        h <- basis_exp(base)                            ##Gets the basis expansion function
+        private$.data_expansion[[base]] <- h(self$data)
+        return(private$.data_expansion[[base]])
+      }
+      else{
+        private$.data_expansion[[base]]
       }
     }
-    
   ),
   
   #Control
@@ -343,7 +380,7 @@ make_set <- R6Class(
         return(private$.function_list)
       }
       else{
-        stop("Use 'set_function'", call. = FALSE)
+        stop("Read only", call. = FALSE)
       }
     },
     func_info = function(Value) {
@@ -351,54 +388,19 @@ make_set <- R6Class(
         return(private$.function_info)
       }
       else{
-        stop("Use 'set_function'", call. = FALSE)
+        stop("read only", call. = FALSE)
       }
     }
   )
 )
-class(pi_est)
-#OOP Estimators
-pi_est <- function(set) {
-  stopifnot(class(set) == "data.set")
-  return(unlist(set$pi))
-}
-#'mue_est
-#'
-#'given a dataframe with Parameters of Observations and a second dataframe with the corresponding Classes
-#'mu_es returns a Matrix with the mean vectors of the classes as rows.
-#'
-#'@param set Object of Class 'data.set' see: \code{\link[graphics]{Problem}
-#'@return A List with the mean vectors of the parameters for each class
-mu_est <- function(set) {
-  stopifnot(is.data.set(set))
-  return(set$mean)
+
+make_set <- function(data,
+                     by,
+                     title,
+                     description){
+  data_set$new(data,by,title,description )
 }
 
-#'sigma_class
-#'
-#'@param set Object of Class 'data.set'
-#'@param class Name of a specific Class of 'set'
-#'@return The covariance matrix of the Class 'class'
-#'
-sigma_class <- function(set, class) {
-  stopifnot(is.data.set(set))
-  stopifnot(any(set$classnames == class))
-  return(set$sigma[[class]])
-}
-
-#'sigma_est
-#'
-#'@param set Object of Class 'data.set'
-#'@return Covariance Matrix over all Classes
-#'
-sigma_est <- function(set) {
-  stopifnot(is.data.set(set))
-  Bn <- Reduce(`+`, set$sigma)
-  Bn <- Bn * set$n_obs / (set$n_obs - set$n_classes)
-  return(Bn)
-}
-
-sigma_bet_est <- function(problem) {
-  stopifnot(is.data.set(set))
-  return(set$sigma_bet)
+is.data_set <- function(set){
+  any(class(set)=="data_set")
 }
