@@ -49,6 +49,13 @@ LD_function <- function(data, results, values) {
           results[i] * results[j] * exp((-values$g) * sum((data[i, ] - data[j, ])) ^ 2)
       }
     }
+#  } else if (values$kernel == 2) {
+ #   for (i in 1:length(results)) {
+  #    for (j in 1:i) {
+   #     cache[i, j] <-
+    #      results[i] * results[j] * exp(abs(-values$g) * sum(abs(data[i, ] - data[j, ])))
+     # }
+    #}
   } else{
     for (i in 1:length(results)) {
       for (j in 1:i) {
@@ -217,16 +224,30 @@ svm_two_classes <- function(data,
       h <- 0
       for (i in 1:nrow(data)) {
         h[i] <-
-          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(set$data[i, ])) ^ 2))
+          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(data[i, ])) ^ 2))
       }
       return(sum(h) + beta_Null)
     }
+#  } else if (values$kernel == 2) {
+ #   f <- function(x) {
+  #    h <- 0
+   #   for (i in 1:nrow(data)) {
+    #    h[i] <-
+     #     (alpha[i] * results[i]) * exp(-values$g * sum(abs(x - as.double(set$data[i, ]))))
+      #}
+      #return(sum(h) + beta_Null)
+    #}
   } else{
     warning("Wrong Parameter kernel! No Kernel used.", immediate. = TRUE)
     f <- function(x) {
       return(x %*% beta + beta_Null)
     }
   }
+  print(f)
+  print(f(c(1,1)))
+  print(f(c(-1,-1)))
+  print(f(c(0,0)))
+  print(f(c(0.1,-0.1)))
   return(f)
 }
 ###########################################################################
@@ -260,7 +281,7 @@ svm_two_classes_oop <- function(set,
       h <- 0
       for (i in 1:set$n_obs) {
         h[i] <-
-          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(set$data[i, ])) ^ 2))
+          (alpha[i] * results[i]) * exp(-values$g * sum(x - (as.double(set$data[i, ])) ^ 2))
       }
       return(sum(h) + beta_Null)
     }
@@ -349,10 +370,13 @@ svm_classify <- function(t, uresults) {
           break
         }
         else if (s == length(uresults) && a < 0) {
-          cla <- r + 1
+          cla <- s
+          tr <- TRUE
         }
-        if (a < 0)
+        if (a < 0) {
+          r <- s
           break
+        }
       }
       if (tr == TRUE)
         break
@@ -361,11 +385,14 @@ svm_classify <- function(t, uresults) {
   }
   return(f)
 }
+
+
+
 svm <- function(set,
                 C = 1,
                 kernel = 0,
                 d = 1,
-                g = 1){
+                g = 1) {
   ##The SVM classification function. A function factory
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -376,33 +403,40 @@ svm <- function(set,
       if (!is.null(l[["parameter"]][["C"]]) &&
           !is.null(l[["parameter"]][["kernel"]]) &&
           !is.null(l[["parameter"]][["d"]]) &&
-          !is.null(l[["parameter"]][["g"]])
-          ) {
+          !is.null(l[["parameter"]][["g"]])) {
         if (l[["parameter"]][["C"]] ==  C &&
             l[["parameter"]][["kernel"]] ==  kernel &&
             l[["parameter"]][["d"]] == d &&
-            l[["parameter"]][["g"]] ==  g
-            ) {
+            l[["parameter"]][["g"]] ==  g) {
           slot <<- l[["name"]]
         }
       }
     })
     if (length(slot) > 0) {
-      return(list(name=slot,func=set$func[[slot]]))
+      return(list(name = slot, func = set$func[[slot]]))
     }
   }
-  values <- list("C"=C,"kernel"=kernel,"d"=d,"g"=g)
-  t <- svm_classify_list(set,values)
-  f <- svm_classify(t,set$classes)
-  return(set$set_function(f, type = "SVM", list(
-    base = set$id,
-    dim = NULL,
-    omega = NULL,
-    C = C,
-    kernel = kernel,
-    d = d,
-    g = g
-  )))
+  values <- list(
+    "C" = C,
+    "kernel" = kernel,
+    "d" = d,
+    "g" = g
+  )
+  t <- svm_classify_list(set, values)
+  f <- svm_classify(t, set$classes)
+  return(set$set_function(
+    f,
+    type = "SVM",
+    list(
+      base = set$id,
+      dim = NULL,
+      omega = NULL,
+      C = C,
+      kernel = kernel,
+      d = d,
+      g = g
+    )
+  ))
 }
 
 
@@ -417,7 +451,7 @@ svm <- function(set,
 #test##########################
 test <- make_test(nclasses = 3)
 test <- make_set(test,"class","title",description = "description")
-dd <- svm(test,C=1,kernel = 0)
+dd <- svm(test,C = 1,kernel = 2,g=1)
 dd
 results <- test$results
 data <- test$data
