@@ -226,6 +226,14 @@ data_set <- R6Class(
         stop("col_names is read only", call. = FALSE)
       }
     },
+    parnames = function(Value) {
+      if (missing(Value)) {
+        return(private$.parnames)
+      }
+      else{
+        stop("parnames is read only", call. = FALSE)
+      }
+    },
     classes = function(Value) {
       if (missing(Value)) {
         return(private$.classes)
