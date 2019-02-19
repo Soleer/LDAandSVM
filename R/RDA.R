@@ -10,7 +10,7 @@ set.seed(0)
 #'
 #'@param data Dataframe of Parameters for all Observations
 #'@return The covariance matrix of the Data
-sigma_class <- function(data, mu = colMeans(data)) {
+sigma_class2 <- function(data, mu = colMeans(data)) {
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   apply(data, 1, function(x) {
@@ -21,21 +21,21 @@ sigma_class <- function(data, mu = colMeans(data)) {
 
 sigma_class <- function(data, mu = colMeans(data), alpha, gamma) {
   sigma_class <-
-    sigma_class(data, mu) * alpha + (1 - alpha) * sigma_est(data, results, gamma)
+    sigma_class2(data, mu) * alpha + (1 - alpha) * sigma_est(data, results, gamma)
   
   
-  return(sigmaClass)
+  return(sigma_class)
 }
 
 sigma_est <- function(data, results, gamma) {
   kleinSigma <- 1 #TODO
-  s <- sigma_est(data, results)
+  s <- sigma_est2(data, results)
   n <- ncol(s)
   sigma_est <-  s * gamma + (1 - gamma) * kleinSigma * kleinSigma * diag(n)
   return(sigma_est)
 }
 
-sigma_est <- function(data, results) {
+sigma_est2 <- function(data, results) {
   G <- unique(results)
   K <- length(G)
   N <- length(results)
@@ -54,10 +54,9 @@ sigma_est <- function(data, results) {
 
 alpha_gamma_crossFit <- function(data, results) {
   #splits data in K equal sized training/validation samples
-  data
+  #data
   K <- min(10, nrow(data))
-  split(data, sample(1:K, nrow(data), replace = T))
-  
+  data <- split(data, sample(1:K, nrow(data), replace = T))
   #creates parameters to choose from
   N <- 5
   v <- seq(from = 0,
@@ -97,18 +96,19 @@ alpha_gamma_crossFit <- function(data, results) {
 #'  best selection in the cross fitting
 #'@return total mean error rate
 validationErrorRate <- function(data, results, alpha, gamma) {
+
   
-  errors <- apply(seq_along(data), function(i){
+  errors <- sapply(seq_along(data) , FUN = function(i){
     #training
     
     training_data <- do.call(rbind, data[-i]) 
    
     #classifier <- RDA(training_data, results, alpha, gamma)%>%classify TODO
-    delta <- RDA(training_data, results, alpha, gamma)
+    delta <- RDA3(training_data, results, alpha, gamma)
     classifier <- classify(delta)
    
      #validation on block j
-    validation_data <- data[j]
+    validation_data <- data[[i]]
     current_error <- calc_error(validation_data, results, classifier)
     current_error
   })
@@ -127,6 +127,8 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 #'@return total error rate
 calc_error <- function(data, results, f) {
   G <- unique(results)
+  force(data)
+  force(f)
   estimated <- apply(data, 1, f)
   of_Data <- lapply(G, function(class) {
     c <- as.character(class)
@@ -266,7 +268,7 @@ getseperatorfun <- function(a,
 }
 
 #RDA
-RDA <- function(data, results, alpha, gamma) {
+RDA3 <- function(data, results, alpha, gamma) {
   G <- unique(results)
   K <- length(G)
   #set lamda 
@@ -294,14 +296,14 @@ RDA <- function(data, results, alpha, gamma) {
 #'
 #'@param data Dataframe of Parameters for all Observations
 #'@return the delta functions of the algorithms
-RDA <- function(data, results) {
+RDA2 <- function(data, results) {
   
   
   alpha_gamma <- alpha_gamma_crossFit(data, results)
   alpha <- alpha_gamma$alpha
   gamma <- alpha_gamma$gamma
   
-  delta <- RDA(data, results, alpha, gamma)
+  delta <- RDA3(data, results, alpha, gamma)
   
   return(delta)
 }
@@ -310,7 +312,8 @@ RDA <- function(data, results) {
 RDA <- function(data_set) {
   data <- data_set$data
   results <- data_set$results
-  return(RDA(data, results))
+  delta <- RDA2(data, results)
+  return(delta)
 }
 
 ###TEST
