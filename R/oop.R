@@ -1,29 +1,33 @@
-#Our Basic Object "Dataset":
+library(R6)
+
+#Our Basic Object "data_set":
+
+
 data_set <- R6Class(
   "data_set",
   private = list(
     #list of private slots
-    .data = NULL,
-    .data_expansion = list(),
-    .results = NULL,
-    .col_names = NULL,
-    .classes = NULL,
-    .classnames = NULL,
-    .parnames = NULL,
-    .n_classes = 0,
-    .count = 0,
-    .dim = 0,
-    .n_obs = 0,
-    .title = "",
-    .description = "",
-    .pi = 0,
-    .mean = 0,
-    .meantotal = 0,
-    .sigma = 0,
-    .sigma_bet = NA,
-    .n_func = 0,
-    .function_list = list(),
-    .function_info = list()
+    .data = NULL,            #dataframe with parameters
+    .data_expansion = list(),#list of dataframes for each parameter expansion
+    .results = NULL,         #vector of classvalues for .data
+    .col_names = NULL,       #colnames of data an results
+    .classes = NULL,         #vector with all possible classvalues
+    .classnames = NULL,      #vector of generated names for each class (used for subsetting)
+    .parnames = NULL,        #vector of parameternames
+    .n_classes = 0,          #number of different classes
+    .count = 0,              #number of observations per class in a vector
+    .dim = 0,                #number of parameters
+    .n_obs = 0,              #number of observations ( nrow(.data))
+    .title = "",             #title of data_set
+    .description = "",       #description
+    .pi = 0,                 #vector of possibilitys of each class
+    .mean = 0,               #list of parameter means of each class
+    .meantotal = 0,          #parameter means over all classes
+    .sigma = 0,              #list of covaraince matrices of each class
+    .sigma_bet = NA,         #between class covariance matrix
+    .n_func = 0,             #number of saved classification functions
+    .function_list = list(), #list of already calculated classification functions
+    .function_info = list()  #list of corresponding parameters for each function
   ),
   public = list(
     #init function
@@ -166,6 +170,7 @@ data_set <- R6Class(
       }
       
     },
+    
     change_func_name = function(from, to) {
       stopifnot(is.character(from) && is.character(to))
       if (!any(names(private$.function_list) == from)) {
@@ -174,22 +179,22 @@ data_set <- R6Class(
       if (any(names(private$.function_list) == to)) {
         stop(sprintf("%s is already taken", to))
       }
-      private$.function_list[[to]] <- private$.function_list[[from]]
-      private$.function_info[[to]] <- private$.function_info[[from]]
-      private$.function_list[[from]] <- NULL
-      private$.function_info[[from]] <- NULL
+      n <- names(private$.func_list)
+      names(private$.func_list)[n==from] <- to
+      names(private$.func_info)[n==from] <- to
       return(invisible(to))
     },
+    
     expansion = function(base) {
       stopifnot(is.character(base))
-      if (is.null(private$.data_expansion[[base]])) {
+      if (is.null(private$.data_expansion[[base]])) {    ##checks if expension already exists 
         h <-
-          basis_exp(base)                            ##Gets the basis expansion function
-        private$.data_expansion[[base]] <- h(self$data)
-        return(private$.data_expansion[[base]])
+          basis_exp(base)                                 ##Gets the basis expansion function
+        private$.data_expansion[[base]] <- h(self$data)   ##calculates and adds expanded data
+        return(private$.data_expansion[[base]])           
       }
       else{
-        private$.data_expansion[[base]]
+        private$.data_expansion[[base]]                   #no calculating 
       }
     }
   ),
@@ -382,7 +387,7 @@ data_set <- R6Class(
         return(private$.function_list)
       }
       else{
-        stop("Read only", call. = FALSE)
+        stop("read only", call. = FALSE)
       }
     },
     func_info = function(Value) {
@@ -392,10 +397,24 @@ data_set <- R6Class(
       else{
         stop("read only", call. = FALSE)
       }
+    },
+    func_names = function(Value){
+      if (missing(Value)) {
+        return(names(private$.function_list))
+      }
+      else{
+        stop("read only", call. = FALSE)
+      }
     }
   )
 )
-
+#usefull functions
+#'make_set
+#'
+#'\code{make_set} transforms a dataframe into a data_set 
+#'
+#'@parameter data a Dataframe
+#'@parameter by the name of a c
 make_set <- function(data,
                      by,
                      title,

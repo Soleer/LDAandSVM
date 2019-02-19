@@ -1,11 +1,18 @@
-library(ggplot2)
-library(gridExtra)
+
 library(quadprog)
+<<<<<<< HEAD
+=======
 library(R6)
+>>>>>>> 9dee89145dbf6917434513f517703de88b614c19
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
+<<<<<<< HEAD
+library(NlcOptim)
+library(shiny)
+=======
+>>>>>>> 9dee89145dbf6917434513f517703de88b614c19
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")
@@ -13,7 +20,11 @@ source("R/oop.R")
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
+<<<<<<< HEAD
 #source("R/svm_alt.R")
+=======
+source("R/svm_oop.R")
+>>>>>>> 90f5488f2d16edd344bf79260a26fa9feb647f86
 source("R/shinyplot.R")
 source("R/RDA.R")
 
@@ -33,6 +44,10 @@ set <-
            by = "class",
            title = "TEST",
            description = "Weil ich kann!")
+
+
+set
+
 ### Shiny-Interface
 classify_app( )
 ### PDA
@@ -43,6 +58,7 @@ testplot0 <-
   make_2D_plot(set,
                func_name0,
                ppu = 5,
+               project = FALSE,
                bg = FALSE)
 plotlist0 <- list(p0, testplot0)
 nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))
@@ -106,21 +122,19 @@ ggsave('RDA.png',
        dpi = 400)
 
 ###svm
-f4 <-
-  svm_classify(uresults = set$classes,
-               t = svm(set$data, set$results))
-liste4 <- plot_error(set, f4)
+func_name4 <-  SVM(set)[['name']]
+liste4 <- plot_error(set, func_name4)
 p4 <- do.call(grid.arrange, liste4)
 testplot4 <-
   make_2D_plot(set,
-               f4,
-               ppu = 5)
+               func_name4,
+               ppu = 5,
+               bg = FALSE)
 plotlist4 <- list(p4, testplot4)
+nice4 <- do.call("grid.arrange", c(plotlist4, ncol = 2, top = "SVM"))
 
-nice4 <-
-  do.call("grid.arrange", c(plotlist4, ncol = 2, top = "svm"))
-ggsave('svm.png',
-       plot = nice4,
+ggsave('SVM.png',
+       plot = nice0,
        device = 'png',
        dpi = 400)
 

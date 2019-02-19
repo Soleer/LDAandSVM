@@ -1,7 +1,12 @@
+#Plot functions
 library(ggplot2)
 library(gridExtra)
-#Plot functions
 
+#'maincomponent_analysis
+#'
+#'@param data Dataframe of Parameters
+#'@param results Vector with corresponding Classes to \code{data}
+#'@return A list with  the mean vectors of the classes as rows
 maincomponent_analysis <- function(data, results) {
   cov_matrix <- sigma_exp(data, results)
   ev <- eigen(cov_matrix)
@@ -12,6 +17,12 @@ maincomponent_analysis <- function(data, results) {
   return(list(D, main_matrix, cov_matrix))
 }
 
+#'make_projection
+#'
+#'@param data Dataframe of Parameters
+#'@param results Vector with corresponding Classes to \code{data}
+#'@param dim dimension of target space
+#'@return A list with a function that reduces to dim via maincomponent analysis and one
 make_projection <- function(data, results, dim = 2) {
   l <- maincomponent_analysis(data, results)
   U <- l[[2]][, 1:dim]
