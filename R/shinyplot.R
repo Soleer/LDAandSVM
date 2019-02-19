@@ -5,7 +5,12 @@ Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "Q
 Base <- selectInput("Base", "Select Basis Expansion  (only for PDA)", choices = c("id", "quad", "cube", "sqrt", "log", "abs"))      ##Dropdown menu where the basis expansion for PDA can be selected
 Background <- radioButtons("Background", "Plot classification Grid (greatly increases calculation time)", c("TRUE", "FALSE"))       ##Radio buttons with the option to print the background or not
 Calc_button <- actionButton("Calc_button", "Classifiy")                                                                             ##Button that starts the process of classifying
-Classify <- wellPanel(Classifier, Base, Background, Calc_button)                                                                    ##Merges all objects above into one big Object
+Kernel <- selectInput("Kernel", "Select the Kernel (only for SVM)", choices = c("id", "poly", "radial", "neural"))                  ##Dropdown menu for the Kernel to be used
+Margin <- numericInput("Margin", "Select how exact the support vector lines should be (only SVM)", value = 1, min = 0.1, max = 1000)
+Var_Pol <- numericInput("Var_pol", "Select the power of the polynomial (only SVM)", value = 2, min = 0.1, max = 15)
+Radial <- numericInput("Radial", "Select the factor of the radial basis (only SVM)", value = 1, min = 0.1, max = 50)
+
+Classify <- wellPanel(Classifier, Base, Background, Kernel, Calc_button)                                                            ##Merges all objects above into one big Object
 
 Load_test <- textInput("Load_test", "Load an R6 Dataset", value = "Name of the object")               ##Text input where the name of an object can be written. This object will then be loaded into shiny
 Load_button <- actionButton("Load_button", "Load Object")                                             ##Button that loads in th object specified above
@@ -72,6 +77,9 @@ server_LDA_SVM <- function(input, output){
     Classfun <- input$Classifier                                                          ##Function by which the set should be classified               
     BG <- input$Background                                                                ##Reading whether the plot should be with a background
     Base <- input$Base                                                                    ##Reading which basis expansion should be used (only PDA)
+    Kernel <- input$Kernel
+    Margin <- input$Margin
+    Var_Pol <- input$Var_pol
     print(paste("classifying with:", Classfun, "and basis expansion:", Base))             ##Console output for transparency
     print("Please wait for the calculations to finish")
     shiny_set <- shiny_env$shiny_set                                                      ##Reading the shiny set out of the environment
@@ -108,16 +116,19 @@ server_LDA_SVM <- function(input, output){
                                        project = FALSE)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
+    
     if(Classfun == "SVM"){
-      f <- svm_classify(unique(test_shiny$class), svm(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class))
-      Error_plot_shiny <- plot_error(test_shiny[1:(ncol(test_shiny)-1)], test_shiny$class, f)
-      Class_plot_shiny <-
-        make_2D_plot(test_shiny[1:(ncol(test_shiny)-1)],
-                     test_shiny$class,
-                     f,
-                     ppu = 5,
-                     bg = BG)
+      func_shiny <- SVM(shiny_set, C = Margin, kernel = "poly", d = Var_Pol, g = Radial)[['name']]
+      Error_plot_shiny <- plot_error(shiny_set, func_shiny)
+      Class_plot_shiny <- make_2D_plot(shiny_set,
+                                       func_shiny,
+                                       ppu = 5,
+                                       bg = BG,
+                                       project = FALSE)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
+      
+      # f <- test$func[[dd]]
+      # calc_error(test,dd)
     }
     
     if(Classfun == "RDA"){

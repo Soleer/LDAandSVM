@@ -15,7 +15,7 @@ source("R/oop.R")
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-source("R/svm.R")
+source("R/svm_oop.R")
 source("R/shinyplot.R")
 set.seed(0)
 
@@ -54,7 +54,7 @@ classify_app()
 set$parnames
 func_name0 <-  PDA(set, base = "quad")[['name']]
 plot_summary(set,func_name0)
-make_2D_plot(set,func_name0,project = c('b','a'))
+make_2D_plot(set,func_name0,project = c('a','b'))
 ### LDA
 func_name1 <- LDA(set)[['name']]
 plot_summary(set,func_name1)
