@@ -98,6 +98,7 @@ QDA <- function(set) {
                                                               "basic QDA function")))
 }
 
+<<<<<<< HEAD
 RDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -131,6 +132,9 @@ RDA <- function(set) {
                                                               "basic RDA function")))
 }
 
+=======
+set$func_info[[1]][['parameter']][['base']]=="quad"
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 PDA <- function(set, base, omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
@@ -142,10 +146,11 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
     }
     if (length(set$func) > 0) {                                 ##check if already calculated
       slot <- character(0)
-      sapply(set$func_info, function(l) {
-        if (!is.null(l[["parameter"]][["base"]]) && !is.null(l[["parameter"]][["omega"]])) {
-          if (l[["parameter"]][["base"]] == base && l[["parameter"]][["omega"]] == omega) {
-            slot <<- l[["name"]]
+      sapply(set$func_info, function(lis) {
+        l <- lis[['parameter']]
+        if (!is.null(l[["base"]]) && !is.null(l[["omega"]])) {
+          if (l[["base"]] == base && l[["omega"]] == omega) {
+            slot <<- lis[["name"]]
           }
         }
       })
@@ -170,6 +175,7 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
 
     Matrix <- lapply(sigma_list, function(x) solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse
     names(Matrix) <- set$classnames
+<<<<<<< HEAD
 
     delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
         result <- sapply(G, function(class) {
@@ -183,6 +189,15 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
     classify_func <- classify(set$classes, delta)
 
 =======
+=======
+    delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
+        result <- sapply(G, function(class) {
+          diff <- h(x) - mu[[class]] 
+          return(- 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff))
+        }) + p
+        return(result)
+    }
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
     
     classify_func <- classify(set$classes, delta) #from numbers to classes
     
