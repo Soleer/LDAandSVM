@@ -61,6 +61,7 @@ plot_summary(set,func_name1)
 ### QDA
 func_name2 <- QDA(set)[['name']]
 plot_summary(set,func_name2)
+
 ###svm
 f4 <-
   svm_classify(uresults = set$classes,
