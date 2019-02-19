@@ -39,7 +39,7 @@ LD_function <- function(data, results, values) {
   if (!is.na(values$kernel) && values$kernel == "poly") {
     for (i in 1:n) {
       for (j in 1:i) {
-        cache[i, j] <- results[i] * results[j] * (1 + data[i, ] %*% data[j, ]) ^
+        cache[i, j] <- results[i] * results[j] * (1 + (sum(data[i, ] * data[j, ]))) ^
           values$d
       }
     }
@@ -448,7 +448,7 @@ test <- make_set(test,"class","TITEL",description = "DEScription")
 test$func_names
 results <- test$results
 data <- test$data
-dd <- SVM(test,C = 1,kernel = "radial",d=2,g=-3)
+dd <- SVM(test,C = 1,kernel = "poly",d=2,g=1)
 dd$func(as.double(data[1,]))
 
 gg <- 0
