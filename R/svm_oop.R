@@ -142,21 +142,13 @@ alpha_svm_est <- function(data, results, values) {
         "\n Ändere Startwert zurück zu 1/sqrt(nrow(data)) und verwende keinen Kernel:"
       )
     )
-    values[] <- 0
-    LD <- LD_function(data, results, values)
-    x <- rep(1 / sqrt(nrow(data)), times = nrow(data))
-    a <- safety(solnl(
-      X = x,
-      objfun = LD,
-      confun = con,
-      lb = llb,
-      ub = uub
-    ))
+    return(NULL)
   }
+  
   if (is.null(a$result) || !is.null(a$error) || !is.null(a$warning)) {
     stop("Funktion kann vom verwendeten Paket nicht optimiert werden.")
   }
-  
+
   a <- as.double(a$result$par)
   issero <-
     sapply(1:nrow(data), function(i) {
@@ -203,10 +195,13 @@ svm_two_classes <- function(data,
     }
     return(-1)
   })
+  bool <- FALSE
   results <- res[]
   alpha <- alpha_svm_est(data, results, values)
+  if(is.null(alpha)){return(NULL)}
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha, data, results, beta)
+  print(list("values:",values))
   if (is.na(values$kernel)) {
    f <- function(x) {
       return(x %*% beta + beta_Null)
@@ -256,10 +251,11 @@ svm_two_classes_oop <- function(set,
     return(-1)
   })
   results <- res[]
-  alpha <- alpha_svm_est(set$data, results, values)
+  alpha_list <- alpha_svm_est(data, results, values)
+  alpha <- alpha_list$alpha[]
   beta <- beta_svm_est(alpha, set$data, results)
   beta_Null <- beta_svm_0(alpha, set$data, results, beta)
-  if (is.na(values$kernel)) {
+  if (is.na(values$kernel)||isTRUE(alpha_list$bool)) {
     f <- function(x) {
       return(x %*% beta + beta_Null)
     }
@@ -286,9 +282,6 @@ svm_two_classes_oop <- function(set,
       return(x %*% beta + beta_Null)
     }
   }
-  for (i in 1:100) {
-    print(f(as.double(set$data[i,])))
-  }
   return(f)
 }
 #more_classes###################################
@@ -298,13 +291,15 @@ fun_list <-
            set,
            values ,
            ob_mat) {
-    temp <- list()
+    temp_list <- list()
+    temp_vec <- 0
     for (s in (r + 1):set$n_classes) {
       dat <-
         rbind(set$data[ob_mat[1, r]:ob_mat[2, r], ], set$data[ob_mat[1, s]:ob_mat[2, s], ])
       res <-
         c(as.character(set$results[ob_mat[1, r]:ob_mat[2, r]]), as.character(set$results[ob_mat[1, s]:ob_mat[2, s]]))
-      temp[[s]] <-
+      print(list("res:",res))
+      temp <-
         svm_two_classes(
           dat,
           res,
@@ -312,8 +307,14 @@ fun_list <-
           j = r,
           set$classes
         )
+      temp_list[[s]] <- temp$fun
+      if(temp[[s]]$bool==TRUE && temp_vec=0){
+        values[names(values)!="C"] <- 0
+        temp_vec <- s
+      }
     }
-    return(temp)
+    print(temp_list)
+    return(list("fun"=temp_list,"bool_val"=temp_value))
   }
 
 # This function returns a vector of length 2 containing the rownumber where class i starts and ends.
@@ -325,12 +326,10 @@ fun_ob <- function(i, ob) {
 }
 
 svm_classify_list <- function(set, values) {
-  #unique_results <- unique(results)
-  #length_unique_results <- length(unique_results)
-  #ob <- table(results)
   if (set$n_classes == 2) {
     return(svm_two_classes_oop(set, values))
   }
+  
   ob_mat <-
     sapply(1:set$n_classes, fun_ob, ob = set$count) #this is a matrix with two rows, each colum i contains the row where class i starts and ends
   b <-
@@ -363,6 +362,7 @@ svm_classify <- function(t, uresults) {
     for (r in 1:(length(uresults) - 1)) {
       for (s in (r + 1):(length(uresults))) {
         a <- t[[r]][[s]](x)
+        print(list("a:",a,"r,s:",r,s))
         if (s == length(uresults) && a > 0) {
           cla <- r
           tr <- TRUE
@@ -384,7 +384,6 @@ svm_classify <- function(t, uresults) {
   }
   return(f)
 }
-
 
 
 SVM <- function(set,
@@ -439,25 +438,25 @@ SVM <- function(set,
 }
 
 
-isTRUE(all.equal("radial",kernel))
+
 
 
 
 
 
 #test##########################
+print("VORISCHT,TEST")
+test <- make_test(nclasses = 3,ninputs = 50)
+test <- make_set(test,"class","TITEL",description = "DEScription")
+results <- test$results
+data <- test$data
+dd <- SVM(test,C = 1,kernel = "radial",d=2,g=-1)
 
-# test <- make_test(nclasses = 2,ninputs = 50)
-# test <- make_set(test,"class","TITEL",description = "DEScription")
-# results <- test$results
-# data <- test$data
-# dd <- SVM(test,C = 1,kernel = 2,d=-2,g=-10)
-# 
-# gg <- 0
-# for (i in 1:100) {
-#   gg[i] <- (dd$func(as.double(data[i,])))
-# }
-# gg
+gg <- 0
+for (i in 1:150) {
+  gg[i] <- (dd$func(as.double(data[i,])))
+}
+gg
 
 
 

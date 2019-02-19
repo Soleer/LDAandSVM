@@ -31,7 +31,7 @@ data <- data.frame(results = d3$G1.x, absences = d3$absences.x, sex = d3$sex)
 data
 SAC_G1 <- make_set(data, by = "sex", title = "Student Alcohol consumption", description = "This is the student alcohol consumption for the G1 Test classified by sex")
 classify_app()
-
+set$func[['PDA_1']]
 ##Analyse
 sig <- c(1.5, 2, 2.5, 1.3, 1.1, 2.1, 1.8)
 dimension <- 2
@@ -63,7 +63,7 @@ ggsave('PDA.png',
        plot = nice0,
        device = 'png',
        dpi = 400)
-calc_error(set,func_name1)
+calc_error(set,func_name0)
 ### LDA
 func_name1 <- LDA(set)[['name']]
 liste1 <- plot_error(set, func_name1)
