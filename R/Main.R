@@ -1,18 +1,11 @@
-
 library(quadprog)
-<<<<<<< HEAD
-=======
 library(R6)
->>>>>>> 9dee89145dbf6917434513f517703de88b614c19
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
-<<<<<<< HEAD
 library(NlcOptim)
 library(shiny)
-=======
->>>>>>> 9dee89145dbf6917434513f517703de88b614c19
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")
