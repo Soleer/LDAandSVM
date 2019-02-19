@@ -39,10 +39,15 @@ LD_function <- function(data, results, values) {
   if (!is.na(values$kernel) && values$kernel == "poly") {
     for (i in 1:n) {
       for (j in 1:i) {
+<<<<<<< HEAD
         cache[i, j] <- results[i] * results[j] * (1 + sum(data[i, ] * data[j, ])) ^ values$d
         if(i==j){
           cache[i, i] <- 1/2*cache[i, i]
         }
+=======
+        cache[i, j] <- results[i] * results[j] * (1 + (sum(data[i, ] * data[j, ]))) ^
+          values$d
+>>>>>>> d0d8c175785a22aae52e76c8172baff51a071c59
       }
     }
   } else if (!is.na(values$kernel) && values$kernel == "radial") {
@@ -461,6 +466,22 @@ test <- make_set(test,"class","TITEL",description = "Description")
 test$func_names
 results <- test$results
 data <- test$data
+<<<<<<< HEAD
 dd <- SVM(test,C = 1,kernel = "poly",d=2,g=-3)[['name']]
 f <- test$func[[dd]]
 calc_error(test,dd)
+=======
+dd <- SVM(test,C = 1,kernel = "poly",d=2,g=1)
+dd$func(as.double(data[1,]))
+
+gg <- 0
+for (i in 1:150) {
+  gg[i] <- (dd$func(as.double(data[i,])))
+}
+gg
+
+
+
+
+#Vergleiche mit SVM aus Paket e1071
+>>>>>>> d0d8c175785a22aae52e76c8172baff51a071c59
