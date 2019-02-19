@@ -1,3 +1,6 @@
+library(rlang)
+library(shiny)
+
 Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA","SVM"))                                  ##Dropdown menu where the classifier functions can be selected
 Base <- selectInput("Base", "Select Basis Expansion  (only for PDA)", choices = c("id", "quad", "cube", "sqrt", "log", "abs"))      ##Dropdown menu where the basis expansion for PDA can be selected
 Background <- radioButtons("Background", "Plot classification Grid (greatly increases calculation time)", c("TRUE", "FALSE"))       ##Radio buttons with the option to print the background or not

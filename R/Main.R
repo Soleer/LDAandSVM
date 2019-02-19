@@ -31,7 +31,9 @@ data <- data.frame(results = d3$G1.x, absences = d3$absences.x, sex = d3$sex)
 data
 SAC_G1 <- make_set(data, by = "sex", title = "Student Alcohol consumption", description = "This is the student alcohol consumption for the G1 Test classified by sex")
 classify_app()
-set$func[['PDA_1']]
+LDA(SAC_G1)
+make_2D_plot(SAC_G1,"LDA_1",ppu=1)
+
 ##Analyse
 sig <- c(1.5, 2, 2.5, 1.3, 1.1, 2.1, 1.8)
 dimension <- 2
@@ -49,55 +51,18 @@ set <-
 ### Shiny-Interface
 classify_app()
 ### PDA
+set$parnames
 func_name0 <-  PDA(set, base = "quad")[['name']]
-liste0 <- plot_error(set, func_name0)
-p0 <- do.call(grid.arrange, liste0)
-testplot0 <-
-  make_2D_plot(set,
-               func_name0,
-               ppu = 5,
-               bg = FALSE)
-plotlist0 <- list(p0, testplot0)
-nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))
-ggsave('PDA.png',
-       plot = nice0,
-       device = 'png',
-       dpi = 400)
-calc_error(set,func_name0)
+plot_summary(set,func_name0)
+make_2D_plot(set,func_name0,project = c('b','a'))
 ### LDA
 func_name1 <- LDA(set)[['name']]
-liste1 <- plot_error(set, func_name1)
-p1 <- do.call(grid.arrange, liste1)
-testplot1 <-
-  make_2D_plot(set,
-               func_name1,
-               ppu = 5)
-plotlist1 <- list(p1, testplot1)
-
-nice1 <-
-  do.call("grid.arrange", c(plotlist1, ncol = 2, top = "LDA"))
-ggsave('LDA.png',
-       plot = nice1,
-       device = 'png',
-       dpi = 400)
+plot_summary(set,func_name1)
 
 
 ### QDA
 func_name2 <- QDA(set)[['name']]
-liste2 <- plot_error(set, func_name2)
-p2 <- do.call(grid.arrange, liste2)
-testplot2 <-
-  make_2D_plot(set,
-               func_name2,
-               ppu = 5)
-plotlist2 <- list(p2, testplot2)
-
-nice2 <-
-  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
-ggsave('QDA.png',
-       plot = nice2,
-       device = 'png',
-       dpi = 400)
+plot_summary(set,func_name2)
 
 ###svm
 f4 <-
@@ -117,3 +82,61 @@ ggsave('svm.png',
        plot = nice4,
        device = 'png',
        dpi = 400)
+
+
+
+## Motivating example
+set.seed(2)
+height_B <- rnorm(115, mean = 30, sd = 4)
+decibel_B <- rnorm(115, mean = 70, sd = 10)
+classes_B <- rep("Barock", 115)
+
+height_R <- rnorm(78, mean = 17, sd = 6)
+decibel_R <- rnorm(78, mean = 102, sd = 7)
+classes_R <- rep("Renaissance", 78)
+
+height_C <- rnorm(96, mean = 42, sd = 7)
+decibel_C <- rnorm(96, mean = 64, sd = 8)
+classes_C <- rep("Classic", 96)
+
+height <- c(height_B, height_R, height_C)
+decibel <- c(decibel_B, decibel_R, decibel_C)
+class <- c(classes_B, classes_R, classes_C)
+
+Rockets <- data.frame(height = height, decibel = decibel, class = class)
+
+Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets", description = "Rockets with their flight heigth")
+
+func_name1 <- LDA(Rocket_set)[['name']]
+liste1 <- plot_error(Rocket_set, func_name1)
+p1 <- do.call(grid.arrange, liste1)
+testplot1 <-
+  make_2D_plot(Rocket_set,
+               func_name1,
+               ppu = 2,
+               project = FALSE)
+plotlist1 <- list(p1, testplot1)
+
+func_name2 <- QDA(Rocket_set)[['name']]
+liste2 <- plot_error(Rocket_set, func_name2)
+p2 <- do.call(grid.arrange, liste2)
+
+testplot2 <-
+  make_2D_plot(Rocket_set,
+               func_name2,
+               ppu = 2,
+               project = FALSE)
+
+testplot2
+
+plotlist2 <- list(p1, testplot2)
+
+ggplot(mtcars, aes(x=hp, y=mpg)) + geom_point(aes(y=qsec), color="red") 
+testplot1 <- testplot1 + geom_point(aes(x = 60, y = -80))
+testplot1
+testplot2
+
+blub <- plot_summary(Rocket_set,func_name1)
+blub
+
+Rocket_set$func[[func_name1]](c(40, 103))
