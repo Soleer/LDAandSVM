@@ -28,7 +28,7 @@ d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","F
 str(d3)
 
 data <- data.frame(results = d3$G1.x, absences = d3$absences.x, sex = d3$sex)
-
+data
 SAC_G1 <- make_set(data, by = "sex", title = "Student Alcohol consumption", description = "This is the student alcohol consumption for the G1 Test classified by sex")
 classify_app()
 set$func[['PDA_1']]
@@ -38,7 +38,7 @@ dimension <- 2
 
 test <- make_test(100,
                   nparam = dimension,
-                  nclasses = 3,
+                  nclasses = 4,
                   sigma = sig)
 
 set <-

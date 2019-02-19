@@ -79,7 +79,8 @@ server_LDA_SVM <- function(input, output){
       Class_plot_shiny <- make_2D_plot(shiny_set,                                         ##Plotting the Classification results
                           func_shiny,
                           ppu = 5,
-                          bg = BG)
+                          bg = BG,
+                          project = FALSE)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)                         ##Arranging and saving the Error plot in an object 
     }
     
@@ -89,7 +90,8 @@ server_LDA_SVM <- function(input, output){
       Class_plot_shiny <- make_2D_plot(shiny_set,
                                        func_shiny,
                                        ppu = 5,
-                                       bg = BG)
+                                       bg = BG,
+                                       project = FALSE)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     
@@ -99,7 +101,8 @@ server_LDA_SVM <- function(input, output){
       Class_plot_shiny <- make_2D_plot(shiny_set,
                                        func_shiny,
                                        ppu = 5,
-                                       bg = BG)
+                                       bg = BG,
+                                       project = FALSE)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     if(Classfun == "SVM"){
