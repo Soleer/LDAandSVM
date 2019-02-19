@@ -1,8 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 library(ggplot2)
 library(gridExtra)
 =======
 >>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
+=======
+library(ggplot2)
+library(gridExtra)
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 library(quadprog)
 library(R6)
 library(MASS)
@@ -10,10 +15,15 @@ library(NlcOptim)
 library(e1071)
 library(shiny)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 library(NlcOptim)
 library(shiny)
 >>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
+=======
+library(NlcOptim)
+library(shiny)
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")
@@ -23,6 +33,7 @@ source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #source("R/svm_alt.R")
 =======
 source("R/svm_oop.R")
@@ -30,6 +41,9 @@ source("R/svm_oop.R")
 =======
 source("R/svm.R")
 >>>>>>> 197a68cc990a6b3782e9793271198364adca9dab
+=======
+source("R/svm.R")
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 source("R/shinyplot.R")
 source("R/RDA.R")
 

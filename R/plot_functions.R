@@ -113,7 +113,11 @@ calc_error <- function(set, name) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
   if(!any(set$func_names==name)){
+<<<<<<< HEAD
     stop(sprintf("%s is not in given  data_set",func_name), call. = FALSE)
+=======
+    stop(sprintf("%s is not in given  data_set",name), call. = FALSE)
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
   }
   info <- set$func_info[[name]][['parameter']]
   f <- set$func[[name]]
@@ -150,14 +154,19 @@ calc_error <- function(set, name) {
   miss <- round(miss, 2)
   return(list(probs_of_Data, probs_of_Results, miss))
 }
-
+set$func_names
+calc_error(set,)
 
 plot_error <- function(set, name) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
   if(!any(set$func_names==name)){
+<<<<<<< HEAD
     stop(sprintf("%s is not in given  data_set",func_name), call. = FALSE)
+=======
+    stop(sprintf("%s is not in given  data_set",name), call. = FALSE)
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
   }
   G <- set$classnames
   n <- set$n_classes
@@ -171,7 +180,11 @@ plot_error <- function(set, name) {
       # Create mistake plots for each Class
       
       probs_Data[paste0(class, 'label')] <-    #Labels in percent
+<<<<<<< HEAD
         paste0(probs_Data[, class]*100,'%')
+=======
+        paste0(round(probs_Data[, class],2)*100,'%')
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
       
       left <-
         ggplot(data = probs_Data[1:n, ]) +            #make plot mit aesthetics
@@ -192,7 +205,11 @@ plot_error <- function(set, name) {
         ) +
         labs(title = paste0('f(x=', class, ')'))             #
       
+<<<<<<< HEAD
       probs_Results[paste0(class, 'label')] <- paste0(probs_Results[, class]*100,'%')#Labels in percent
+=======
+      probs_Results[paste0(class, 'label')] <- paste0(round(probs_Results[, class],2)*100,'%')#Labels in percent
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
       
       right <-
         ggplot(data = probs_Results[1:n, ]) +         #make plot mit aesthetics
@@ -242,5 +259,8 @@ plot_error <- function(set, name) {
   return(charts)
 }
 
+<<<<<<< HEAD
 vec <- c("a","b","c")
 paste0(vec,"%")
+=======
+>>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595

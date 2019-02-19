@@ -165,7 +165,7 @@ data_set <- R6Class(
         name <- sprintf("%s_%s", type, private$.n_func)
         private$.function_list[[name]] <- func
         private$.function_info[[name]] <-
-          list(type = type, parameter = parameter)
+          list(name=name,type = type, parameter = parameter)
         return(invisible(list(name = name, func = func)))
       }
       
