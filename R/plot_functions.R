@@ -67,7 +67,7 @@ make_2D_plot <- function(set,
   }
   else{
     proj_in <- function(x)
-      c(x, rep(0, times = (info[['dim']] - 2)))
+      c(x, rep(0, times = (set$dim - 2)))
     proj_data <- set$data
   }
   
@@ -141,11 +141,17 @@ calc_error <- function(set, name) {
   
   of_Data <- lapply(G, function(class) {                    # calc missclassifications of dataset
     t <- table(estimated[set$results == set$classes[class]])
-    number <- sum(t)
+    if(sum(t)!=0){
+      number <- sum(t)
+    }
+    else{
+      number <- 1
+    }
     order <- t[G]
+    names(order) <- G
     order[is.na(order)] <- 0
     classresults <- as.list(order / number)
-    right <- t[class] / number
+    right <- order[class] / number
     wrong <- (1 - right)
     col <- unlist(list(classresults, right, wrong))
     return(col)
@@ -153,11 +159,17 @@ calc_error <- function(set, name) {
   
   of_Results <- lapply(G, function(class) {                 # mistake of f^-1(class)
     t <- table(set$results[estimated == set$classes[class]])
-    number <- sum(t)
+    if(sum(t)!=0){
+      number <- sum(t)
+    }
+    else{
+      number <- 1
+    }
     order <- t[G]
+    names(order) <- G
     order[is.na(order)] <- 0
     classresults <- as.list(order / number)
-    right <- t[class] / number
+    right <- order[class] / number
     wrong <- (1 - right)
     col <- unlist(list(classresults, right, wrong))
     return(col)
@@ -264,3 +276,16 @@ plot_error <- function(set, name) {
   return(charts)
 }
 
+plot_summary <- function(set,name){
+  liste0 <- plot_error(set, name)
+  error_list <- do.call(grid.arrange, liste0)
+  plot <-
+    make_2D_plot(set,
+               name,
+               ppu = 5,
+               bg = FALSE,
+               project = FALSE)
+  plotlist <- list(error_list, plot)
+  niceplot <- do.call("grid.arrange", c(plotlist, ncol = 2, top = sprintf("%s %s",set$title,name)))
+  return(niceplot)
+}

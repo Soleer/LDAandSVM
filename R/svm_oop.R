@@ -39,8 +39,15 @@ LD_function <- function(data, results, values) {
   if (!is.na(values$kernel) && values$kernel == "poly") {
     for (i in 1:n) {
       for (j in 1:i) {
-        cache[i, j] <- results[i] * results[j] * (1 + data[i, ] %*% data[j, ]) ^
+<<<<<<< HEAD
+        cache[i, j] <- results[i] * results[j] * (1 + sum(data[i, ] * data[j, ])) ^ values$d
+        if(i==j){
+          cache[i, i] <- 1/2*cache[i, i]
+        }
+=======
+        cache[i, j] <- results[i] * results[j] * (1 + (sum(data[i, ] * data[j, ]))) ^
           values$d
+>>>>>>> d0d8c175785a22aae52e76c8172baff51a071c59
       }
     }
   } else if (!is.na(values$kernel) && values$kernel == "radial") {
@@ -48,6 +55,9 @@ LD_function <- function(data, results, values) {
       for (j in 1:i) {
         cache[i, j] <-
           results[i] * results[j] * exp(-(values$g) * sum((data[i, ] - data[j, ])^2))
+        if(i==j){
+          cache[i, i] <- 1/2*cache[i, i]
+        }
       }
     }
 #  } else if (values$kernel == 2) {
@@ -58,9 +68,12 @@ LD_function <- function(data, results, values) {
      # }
     #}
   } else{
-    for (i in 1:length(results)) {
+    for (i in 1:n) {
       for (j in 1:i) {
         cache[i, j] <- results[i] * results[j] * (sum(data[i, ] * data[j, ]))
+        if(i==j){
+          cache[i, i] <- 1/2*cache[i, i]
+        }
       }
     }
   }
@@ -91,9 +104,16 @@ con_fun <- function(results) {
 #parameters##########################################
 
 alpha_svm_est <- function(data, results, values) {
+  C<- values$C
+  N <- length(results)
   LD <- LD_function(data, results, values)
   con <- con_fun(results)
-  x <- rep(1 / sqrt(nrow(data)), times = nrow(data))
+  n <- length(results[results==-1])
+  pos <- min(which(results==1))
+  neg <- min(which(results==-1))
+  x <- rep(0, times = nrow(data))
+  x[pos] <- C^2/(2*C) 
+  x[neg] <- C^2/(2*C)
   llb <- rep(0, times = nrow(data))
   uub <- rep(values$C, times = nrow(data))
   a <- safety(solnl(
@@ -150,11 +170,11 @@ alpha_svm_est <- function(data, results, values) {
     stop("Funktion kann vom verwendeten Paket nicht optimiert werden.")
   }
   a <- as.double(a$result$par)
-  issero <-
+  is_zero <-
     sapply(1:nrow(data), function(i) {
       isTRUE(all.equal(a, 0))
     })
-  a[issero] <- 0
+  a[is_zero] <- 0
   return(a)
 }
 
@@ -166,6 +186,7 @@ beta_svm_est <- function(alpha, data, results) {
     sum(h[, i])
   })
 }
+
 beta_svm_0 <- function(alpha, data, results, beta) {
   data <- data[alpha != 0, ]
   results <- results[alpha != 0]
@@ -204,21 +225,18 @@ svm_two_classes <- function(data,
    f <- function(x) {
       return(x %*% beta + beta_Null)
     }
-  } else if (!is.na(values$kernel) && values$kernel == "poly") {
+  } else if (values$kernel == "poly") {
     f <- function(x) {
-      h <- 0
-      for (i in 1:nrow(data)) {
-        h[i] <- (alpha[i] * results[i]) * (1 + x %*% as.double(data[i, ])) ^ values$d
-      }
+      h <- sapply(1:nrow(data), function(i){
+        alpha[i] * results[i] * (1 + x %*% as.double(data[i, ])) ^ values$d
+      })
       return(sum(h) + beta_Null)
     }
-  } else if (!is.na(values$kernel) && values$kernel == "radial") {
+  } else if (values$kernel == "radial") {
     f <- function(x) {
-      h <- 0
-      for (i in 1:nrow(data)) {
-        h[i] <-
-          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(data[i, ])) ^ 2))
-      }
+      h <- sapply(1:nrow(data), function(i){
+          alpha[i] * results[i] * exp(-values$g * sum((x - as.double(data[i, ])) ^ 2))
+      })
       return(sum(h) + beta_Null)
     }
 #  } else if (values$kernel == 2) {
@@ -444,11 +462,16 @@ SVM <- function(set,
 #test##########################
 print("VORISCHT,TEST")
 test <- make_test(nclasses = 3,ninputs = 50)
-test <- make_set(test,"class","TITEL",description = "DEScription")
+test <- make_set(test,"class","TITEL",description = "Description")
 test$func_names
 results <- test$results
 data <- test$data
-dd <- SVM(test,C = 1,kernel = "radial",d=2,g=-3)
+<<<<<<< HEAD
+dd <- SVM(test,C = 1,kernel = "poly",d=2,g=-3)[['name']]
+f <- test$func[[dd]]
+calc_error(test,dd)
+=======
+dd <- SVM(test,C = 1,kernel = "poly",d=2,g=1)
 dd$func(as.double(data[1,]))
 
 gg <- 0
@@ -461,3 +484,4 @@ gg
 
 
 #Vergleiche mit SVM aus Paket e1071
+>>>>>>> d0d8c175785a22aae52e76c8172baff51a071c59
