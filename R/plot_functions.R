@@ -7,8 +7,8 @@ library(gridExtra)
 #'@param data Dataframe of Parameters
 #'@param results Vector with corresponding Classes to \code{data}
 #'@return A list with  the mean vectors of the classes as rows
-maincomponent_analysis <- function(data, results) {
-  cov_matrix <- sigma_exp(data, results)
+maincomponent_analysis <- function(set) {
+  cov_matrix <- set$sigma_bet
   ev <- eigen(cov_matrix)
   values <- ev$values
   n <- length(values)
@@ -23,8 +23,8 @@ maincomponent_analysis <- function(data, results) {
 #'@param results Vector with corresponding Classes to \code{data}
 #'@param dim dimension of target space
 #'@return A list with a function that reduces to dim via maincomponent analysis and one
-make_projection <- function(data, results, dim = 2) {
-  l <- maincomponent_analysis(data, results)
+make_projection <- function(set, dim = 2) {
+  l <- maincomponent_analysis(set)
   U <- l[[2]][, 1:dim]
   proj <- function(x) {
     t(U) %*% x
@@ -35,13 +35,21 @@ make_projection <- function(data, results, dim = 2) {
   return(list(proj, i_proj))
 }
 
+#'make_2D_plot
+#'
+#'@param set A data_set
+#'@param func_name Functionname of the data_set function to plot
+#'@param ppu points per unit 
 make_2D_plot <- function(set,
                          func_name,
                          ppu = 10,
                          project = TRUE,
                          bg = TRUE) {
   if (!is.data_set(set)) {
-    stop("Input must be of class 'data_set' (?make_set)")
+    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
+  }
+  if(!any(set$func_names==func_name)){
+    stop(sprintf("%s is not in given  data_set",func_name), call. = FALSE)
   }
   #prama
   info <- set$func_info[[func_name]][['parameter']]
@@ -50,11 +58,11 @@ make_2D_plot <- function(set,
   n <- set$n_classes
   #Project on first two parameter or maincomponents
   if (project == TRUE) {
-    proj <- make_projection(set$expansion(info[['base']]), set$results)
+    proj <- make_projection(set)
     proj_to <- proj[[1]]
     proj_in <- proj[[2]]
     proj_data <-
-      as.data.frame(t(apply(set$expansion(info[['base']]), 1, proj_to)))
+      as.data.frame(t(apply(set$data, 1, proj_to)))
   }
   else{
     proj_in <- function(x)
@@ -107,7 +115,10 @@ make_2D_plot <- function(set,
 
 calc_error <- function(set, name) {
   if (!is.data_set(set)) {
-    stop("Input must be of class 'data_set' (?make_set)")
+    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
+  }
+  if(!any(set$func_names==name)){
+    stop(sprintf("%s is not in given  data_set",name), call. = FALSE)
   }
   info <- set$func_info[[name]][['parameter']]
   f <- set$func[[name]]
@@ -145,10 +156,12 @@ calc_error <- function(set, name) {
   return(list(probs_of_Data, probs_of_Results, miss))
 }
 
-
 plot_error <- function(set, name) {
   if (!is.data_set(set)) {
-    stop("Input must be of class 'data_set' (?make_set)")
+    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
+  }
+  if(!any(set$func_names==name)){
+    stop(sprintf("%s is not in given  data_set",name), call. = FALSE)
   }
   G <- set$classnames
   n <- set$n_classes
@@ -162,7 +175,7 @@ plot_error <- function(set, name) {
       # Create mistake plots for each Class
       
       probs_Data[paste0(class, 'label')] <-    #Labels in percent
-        scales::percent(probs_Data[, class])
+        paste0(round(probs_Data[, class],2)*100,'%')
       
       left <-
         ggplot(data = probs_Data[1:n, ]) +            #make plot mit aesthetics
@@ -183,9 +196,7 @@ plot_error <- function(set, name) {
         ) +
         labs(title = paste0('f(x=', class, ')'))             #
       
-      probs_Results[paste0(class, 'label')] <-
-        #Labels in percent
-        scales::percent(probs_Results[, class])
+      probs_Results[paste0(class, 'label')] <- paste0(round(probs_Results[, class],2)*100,'%')#Labels in percent
       
       right <-
         ggplot(data = probs_Results[1:n, ]) +         #make plot mit aesthetics
@@ -234,3 +245,4 @@ plot_error <- function(set, name) {
     mi                                  #add last Plot
   return(charts)
 }
+
