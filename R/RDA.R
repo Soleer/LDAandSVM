@@ -1,5 +1,8 @@
 library(ggplot2)
 library(gridExtra)
+source("R/oop.R")
+source("R/Classifier_funs.R")
+
 set.seed(0)
 #Regular Discriminant analysis from 4.3.1
 
@@ -10,9 +13,19 @@ alpha_gamma_crossFit <- function(data_set) {
   results <- data_set$results
   #splits data in K equal sized training/validation samples
   #data
-  K <- min(10, nrow(data))
-  data <- split(data, sample(1:K, nrow(data), replace = T))
-  #creates parameters to choose from
+  n<- nrow(data) 
+
+  K <- min(10, n)
+  partition<-split(1:n, sample(1:K, n, replace = T)) #TODO ?equally sized
+  
+  results <- lapply(partition, FUN = function(x){
+    results[x]
+  })
+  data <- lapply(partition, FUN = function(x){
+    data[x, ]
+  })
+   
+  #creates parameters to choose from in cross fitting
   N <- 5
   v <- seq(from = 0,
            to = 1,
@@ -55,13 +68,21 @@ alpha_gamma_crossFit <- function(data_set) {
 #'  best selection in the cross fitting
 #'@return total mean error rate
 validationErrorRate <- function(data, results, alpha, gamma) {
-
-  
+  results
   errors <- sapply(seq_along(data) , FUN = function(i){
     #training
-    
+
     training_data <- do.call(rbind, data[-i]) 
-    data_set <- make_set(data = training_data, by = ) #TODO
+    results <- unlist(results[-i])
+
+    
+    training_dataframe <- cbind(results, training_data) #TODO kontrollieren, ob zusammenpassen
+    
+    print("training_dataframe:")
+    print(training_dataframe)
+    is.data.frame(training_dataframe)
+    
+    data_set <- make_set(data = training_dataframe, by = "results") 
     #TODO source(Classifier_funs), OOP
 
     classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)
@@ -119,9 +140,7 @@ calc_error <- function(data_set, results, f) {
 
 
 ###TEST
-source("R/oop.R")
-source("R/Classifier_funs.R")
-data_set <- make_testset(N=3, G = 3)
-data_set$results
-RDA(test_set)
 
+data_set <- make_testset(N=3, G = 3)
+
+RDA(test_set)
