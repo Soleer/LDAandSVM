@@ -336,7 +336,6 @@ data_set <- R6Class(
           return(private$.sigma)
         }
         else{
-          cat("\nCalculating Variances ...\n")
           n <- self$dim
           #calculate matrix for each class (iterating over classnames for subsetting)
           sapply(self$classnames, function(class) {
