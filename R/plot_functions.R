@@ -37,45 +37,55 @@ make_projection <- function(set, dim = 2) {
 
 #'make_2D_plot
 #'
-#'@param set A data_set
-#'@param func_name Functionname of the data_set function to plot
-#'@param ppu points per unit 
+#'@param set a data_set
+#'@param func_name Functionname of the data_set function to plot as string. If equals FALSE
+#'just the first two columns of the data will be plotted as points 
+#'@param ppu points per unit of the backgound grid as integer
+#'@param project logical or a character vector with names of two data columns, defines if maincomponent analysis should be used if logical.
+#'@param bg logical, defines if a background grid should be generated
 #'@return A 2 dimensional plot of the data_set with the function as 
 make_2D_plot <- function(set,
-                         func_name,
+                         func_name=FALSE,
                          ppu = 10,
                          project = TRUE,
                          bg = TRUE) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
-  if(!any(set$func_names==func_name)){
+  if(is.logical(func_name)&&!func_names){
+    project <- FALSE
+    bg <- FALSE
+  }
+  else if(!any(set$func_names==func_name)){
     stop(sprintf("%s is not in given  data_set",func_name), call. = FALSE)
   }
   #prama
-  info <- set$func_info[[func_name]][['parameter']]
   classfunc <- set$func[[func_name]]
   uresults <- set$classes
   n <- set$n_classes
   #Project on first two parameter or maincomponents
-  if (project == TRUE) {
+  if (is.logical(project)&&project) {
     proj <- make_projection(set)
     proj_to <- proj[[1]]
     proj_in <- proj[[2]]
     proj_data <-
       as.data.frame(t(apply(set$data, 1, proj_to)))
   }
+  else if(is.character(project)){
+    proj_data <- set$data[project]
+    proj_in <- function(x){
+      vec <- rep(0, times = (set$dim))
+      vec[set$param==project[1]] <- x[1]
+      vec[set$param==project[2]] <- x[2]
+    }
+  }
   else{
     proj_in <- function(x)
       c(x, rep(0, times = (set$dim - 2)))
     proj_data <- set$data
   }
-  
   x <- c(floor(min(proj_data[, 1])), ceiling(max(proj_data[, 1])))
   y <- c(floor(min(proj_data[, 2])), ceiling(max(proj_data[, 2])))
-  xtimes <- (x[2] - x[1]) * ppu
-  ytimes <- (y[2] - y[1]) * ppu
-  d <- set$dim
   #prepare plot data
   #input
   input_data <-
@@ -94,9 +104,18 @@ make_2D_plot <- function(set,
       height = 0,
       width = 0
     )
-  
+  if(project){
+    xtimes <- (x[2] - x[1]) * ppu
+    ytimes <- (y[2] - y[1]) * ppu
+    mainplot + theme(axis.title.x=element_blank(),
+                     axis.text.x=element_blank(),
+                     axis.ticks.x=element_blank(),
+                     axis.title.y=element_blank(),
+                     axis.text.y=element_blank(),
+                     axis.ticks.y=element_blank())
+  }
   #3. colored background
-  if (bg == TRUE) {
+  if (bg) {
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
                  y = rep(seq(y[1], y[2], length.out = ytimes),  each = xtimes))
@@ -254,7 +273,7 @@ plot_error <- function(set, name) {
     c(paste0(miss * 100, '%', ' wrong'), paste0((1 - miss) * 100, '%', ' right')) #Labels in percent
   
   mistake <-
-    data.frame(i = mistake_lable, per = c(miss, 1 - miss),color=c('red1','green1'))  #combine labels and data
+    data.frame(i = mistake_lable, per = c(miss, 1 - miss),color=c('red1','green3'))  #combine labels and data
   
   mi <-
     ggplot(data = mistake) +                             #make plot
