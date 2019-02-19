@@ -3,14 +3,14 @@ library(gridExtra)
 set.seed(0)
 #Regular Discriminant analysis from 4.3.1
 
-#'sigma_class
+#'sigma_classAlphaGamma
 #'
-#'given a dataframe with parameters of Observations of one Class sigma_class returns the
+#'given a dataframe with parameters of Observations of one Class sigma_classAlphaGamma returns the
 #'covariance matrix of the Data.
 #'
 #'@param data Dataframe of Parameters for all Observations
 #'@return The covariance matrix of the Data
-sigma_class2 <- function(data, mu = colMeans(data)) {
+sigma_class <- function(data, mu = colMeans(data)) {
   n <- dim(data)[2]
   Bn <- diag(0, ncol = n, nrow = n)
   apply(data, 1, function(x) {
@@ -19,12 +19,12 @@ sigma_class2 <- function(data, mu = colMeans(data)) {
   return(Bn / (dim(data)[1] - 1))
 }
 
-sigma_class <- function(data, mu = colMeans(data), alpha, gamma) {
-  sigma_class <-
-    sigma_class2(data, mu) * alpha + (1 - alpha) * sigma_est(data, results, gamma)
+sigma_classAlphaGamma <- function(data, mu = colMeans(data), alpha, gamma) {
+  sigma_classAlphaGamma <-
+    sigma_class(data, mu) * alpha + (1 - alpha) * sigma_est(data, results, gamma)
   
   
-  return(sigma_class)
+  return(sigma_classAlphaGamma)
 }
 
 sigma_est <- function(data, results, gamma) {
@@ -104,7 +104,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     training_data <- do.call(rbind, data[-i]) 
    
     #classifier <- RDA(training_data, results, alpha, gamma)%>%classify TODO
-    delta <- RDA3(training_data, results, alpha, gamma)
+    delta <- RDA_AlphaGamma(training_data, results, alpha, gamma)
     classifier <- classify(delta)
    
      #validation on block j
@@ -130,11 +130,16 @@ calc_error <- function(data, results, f) {
   force(data)
   force(f)
   estimated <- apply(data, 1, f)
+  
   of_Data <- lapply(G, function(class) {
     c <- as.character(class)
     t <- table(estimated[results == class])
     number <- sum(t)
-    classresults <- as.list(t[as.character(G)] / number)
+
+    order <- t[G]
+    order[is.na(order)] <- 0
+    classresults <- as.list(order / number)
+    
     right <- t[c] / number
     wrong <- (1 - right)
     
@@ -268,14 +273,14 @@ getseperatorfun <- function(a,
 }
 
 #RDA
-RDA3 <- function(data, results, alpha, gamma) {
+RDA_AlphaGamma <- function(data, results, alpha, gamma) {
   G <- unique(results)
   K <- length(G)
   #set lamda 
   p <- log(pi_est(results))
   mu <- mu_est(data, results)
   sigma_list <- lapply(1:K, function(k) {
-    sigma_class(data[results == G[k],], mu[k], alpha, gamma)
+    sigma_classAlphaGamma(data[results == G[k],], mu[k], alpha, gamma)
   })
   sigma_inv <- lapply(sigma_list, solve)
   sigma_log_det <- lapply(sigma_list, function(x) {
@@ -303,7 +308,7 @@ RDA2 <- function(data, results) {
   alpha <- alpha_gamma$alpha
   gamma <- alpha_gamma$gamma
   
-  delta <- RDA3(data, results, alpha, gamma)
+  delta <- RDA_AlphaGamma(data, results, alpha, gamma)
   
   return(delta)
 }
