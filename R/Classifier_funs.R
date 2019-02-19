@@ -98,6 +98,38 @@ QDA <- function(set) {
                                                               "basic QDA function")))
 }
 
+RDA <- function(set) {
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
+  if (length(set$func) > 0) {
+    slot <- character(0)
+    sapply(set$func_info, function(l) {
+      if (!is.null(l[["type"]])) {
+        if (l[["type"]] == "RDA") {
+          slot <<- l[["name"]]
+        }
+      }
+    })
+    if (length(slot) > 0) {
+      return(list(name=slot,func=set$func[[slot]]))
+    }
+  }
+  G <- set$classes
+  K <- set$n_classes
+  p <- log(unlist(set$pi))
+  mu <- set$mean
+  sigma_inv <- lapply(set$sigma, solve)
+  delta <- function(x) {
+    result <- sapply(1:K, function(k) {
+      -1 / 2 * log(det(set$sigma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
+    }) + p
+    return(result)
+  }
+  classify_func <- classify(set$classes, delta)
+  return(set$set_function(classify_func, type = "RDA", list(base='id',description =
+                                                              "basic RDA function")))
+}
 
 PDA <- function(set, base, omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
@@ -135,19 +167,19 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
     sigma_list <- lapply(G, function(class) {      ##Calculating expanded Covariances
         sigma_class_exp(data_exp[set$results == set$classes[class],], mu[[class]])
       })
-    
+
     Matrix <- lapply(sigma_list, function(x) solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse
     names(Matrix) <- set$classnames
-    
+
     delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
         result <- sapply(G, function(class) {
           diff <- h(x) - mu[[class]] - 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff)
         }) + p
         return(result)
     }
-    
+
     classify_func <- classify(set$classes, delta)
-    
+
     return(set$set_function(classify_func, type = "PDA", list(
       base = base,
       dim = d,

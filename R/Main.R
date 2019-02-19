@@ -13,8 +13,10 @@ source("R/oop.R")
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-source("R/svm.R")
+#source("R/svm_alt.R")
 source("R/shinyplot.R")
+source("R/RDA.R")
+
 set.seed(0)
 
 ##Analyse
@@ -32,7 +34,7 @@ set <-
            title = "TEST",
            description = "Weil ich kann!")
 ### Shiny-Interface
-classify_app()
+classify_app( )
 ### PDA
 func_name0 <-  PDA(set, base = "quad")[['name']]
 liste0 <- plot_error(set, func_name0)
@@ -86,6 +88,23 @@ ggsave('QDA.png',
        device = 'png',
        dpi = 400)
 
+### RDA
+func_name3 <- RDA(set)[['name']]
+liste3 <- plot_error(set, func_name3)
+p3 <- do.call(grid.arrange, liste3)
+testplot3 <-
+  make_2D_plot(set,
+               func_name3,
+               ppu = 5)
+plotlist3 <- list(p3, testplot3)
+
+nice3 <-
+  do.call("grid.arrange", c(plotlist3, ncol = 2, top = "RDA"))
+ggsave('RDA.png',
+       plot = nice3,
+       device = 'png',
+       dpi = 400)
+
 ###svm
 f4 <-
   svm_classify(uresults = set$classes,
@@ -104,3 +123,4 @@ ggsave('svm.png',
        plot = nice4,
        device = 'png',
        dpi = 400)
+
