@@ -52,57 +52,15 @@ set <-
 classify_app()
 ### PDA
 func_name0 <-  PDA(set, base = "quad")[['name']]
-liste0 <- plot_error(set, func_name0)
-p0 <- do.call(grid.arrange, liste0)
-testplot0 <-
-  make_2D_plot(set,
-               func_name0,
-               ppu = 5,
-               bg = FALSE,
-               project = FALSE)
-plotlist0 <- list(p0, testplot0)
-nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))
-ggsave('PDA.png',
-       plot = nice0,
-       device = 'png',
-       dpi = 400)
-calc_error(set,func_name0)
+plot_summary(set,func_name0)
 ### LDA
 func_name1 <- LDA(set)[['name']]
-liste1 <- plot_error(set, func_name1)
-p1 <- do.call(grid.arrange, liste1)
-testplot1 <-
-  make_2D_plot(set,
-               func_name1,
-               ppu = 5,
-               project = FALSE)
-plotlist1 <- list(p1, testplot1)
-
-nice1 <-
-  do.call("grid.arrange", c(plotlist1, ncol = 2, top = "LDA"))
-ggsave('LDA.png',
-       plot = nice1,
-       device = 'png',
-       dpi = 400)
+plot_summary(set,func_name1)
 
 
 ### QDA
 func_name2 <- QDA(set)[['name']]
-liste2 <- plot_error(set, func_name2)
-p2 <- do.call(grid.arrange, liste2)
-testplot2 <-
-  make_2D_plot(set,
-               func_name2,
-               ppu = 5)
-plotlist2 <- list(p2, testplot2)
-
-nice2 <-
-  do.call("grid.arrange", c(plotlist2, ncol = 2, top = "QDA"))
-ggsave('QDA.png',
-       plot = nice2,
-       device = 'png',
-       dpi = 400)
-
+plot_summary(set,func_name2)
 ###svm
 f4 <-
   svm_classify(uresults = set$classes,
