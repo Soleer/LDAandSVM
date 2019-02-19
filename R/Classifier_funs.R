@@ -30,7 +30,7 @@ classify <- function(classes, delta) {
 }
 
 
-## LDA, QDA, PDA
+## LDA, QDA, PDA, RDA
 
 LDA <- function(set) {
   if (!is.data_set(set)) {
@@ -153,4 +153,61 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
       dim = d,
       omega = omega
     )))
+}
+
+#RDA
+RDA <- function(set, alpha, gamma){
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)")
+  }
+  
+  if (length(set$func) > 0) { #TODO could cause trouble in cross validation
+    slot <- character(0)
+    sapply(set$func_info, function(l) {
+      if (!is.null(l[["type"]])) {
+        if (l[["type"]] == "RDA") {
+          slot <<- l[["name"]]
+        }
+      }
+    })
+    if (length(slot) > 0) {
+      return(list(name=slot,func=set$func[[slot]]))
+    }
+  }
+  G <- set$classes
+  K <- set$n_classes
+  p <- log(unlist(set$pi))
+  mu <- set$mean
+  
+  if(missing(alpha) | missing(gamma)){
+    #TODO source 
+    alpha_gamma <- alpha_gamma_crossFit(set) #TODO perhaps identical copy of set
+    alpha <<- alpha_gamma$alpha
+    gamma <<- alpha_gamma$gamma
+  }
+  
+  kleinesSigma <- 1 #TODO
+  sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ 
+    #TODO Formel
+    sigma_est <- sigma_est(set)
+    n <- ncol(sigma_est)
+    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * kleinSigma * kleinSigma * diag(n)
+    
+    sigma_classAlphaGamma <-
+      sigma_class*alpha + (1 - alpha) * sigma_estGamma
+    
+  })
+  
+  sigma_inv <- lapply(sigmaAlphaGamma, solve)
+  
+  delta <- function(x) {
+    result <- sapply(1:K, function(k) {
+      -1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
+    }) + p
+    return(result)
+  }
+  
+  classify_func <- classify(set$classes, delta)
+  return(set$set_function(classify_func, type = "RDA", list(base='id',description =
+                                                              "basic RDA function")))
 }

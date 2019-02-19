@@ -226,6 +226,14 @@ data_set <- R6Class(
         stop("col_names is read only", call. = FALSE)
       }
     },
+    parnames = function(Value) {
+      if (missing(Value)) {
+        return(private$.parnames)
+      }
+      else{
+        stop("parnames is read only", call. = FALSE)
+      }
+    },
     classes = function(Value) {
       if (missing(Value)) {
         return(private$.classes)
@@ -420,9 +428,58 @@ make_set <- function(data,
                      by,
                      title="",
                      description="") {
+  print("data:")
+  print(is.data.frame(data))
+  print(data)
+  
   data_set$new(data, by, title, description)
 }
 
 is.data_set <- function(set) {
   any(class(set) == "data_set")
+}
+
+#usefull functions
+#'make_testset
+#'
+#'\code{make_set} transforms a dataframe into a data_set 
+#'
+#'@param N number of observations per class
+#'@param G number of classes
+make_testset <- function(N = 10, G = 3) {
+  force(N)
+  force(G)
+  
+  make_test <- function(ninputs = 10,
+                        nparam = 2,
+                        nclasses = 3,
+                        sigma = 0.8,
+                        cube = c(-5, 5)) {
+    nsigma <- length(sigma)
+    center <- sapply(1:nparam, function(p) {
+      sample(cube[1]:cube[2], nclasses, replace = TRUE)
+    })
+    data <- lapply(0:(nclasses - 1), function(i) {
+      class <- LETTERS[i + 1]
+      inputs <- sapply(1:nparam, function(p) {
+        return(rnorm(ninputs, center[i + 1, p], sigma[i %% nsigma + 1]))
+      })
+      inputs <- data.frame(inputs, rep(class, times = ninputs))
+      return(inputs)
+    })
+    result <- data[[1]]
+    sapply(2:nclasses, function(r) {
+      result <<- rbind(result, data[[r]])
+    })
+    colnames(result) <- c(letters[1:nparam], 'class')
+    return(result)
+  }
+  
+  test <- make_test(N, nclasses = G)
+  
+  set <-
+    make_set(test,
+             by = "class",
+             title = "TEST",
+             description = "Weil ich kann!")
 }

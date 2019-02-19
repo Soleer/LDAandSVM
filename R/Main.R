@@ -53,6 +53,7 @@ classify_app()
 ### PDA
 func_name0 <-  PDA(set, base = "quad")[['name']]
 plot_summary(set,func_name0)
+make_2D_plot(set,func_name0)
 ### LDA
 func_name1 <- LDA(set)[['name']]
 plot_summary(set,func_name1)
@@ -118,11 +119,15 @@ plotlist1 <- list(p1, testplot1)
 func_name2 <- QDA(Rocket_set)[['name']]
 liste2 <- plot_error(Rocket_set, func_name2)
 p2 <- do.call(grid.arrange, liste2)
+
 testplot2 <-
   make_2D_plot(Rocket_set,
                func_name2,
                ppu = 2,
                project = FALSE)
+
+testplot2
+
 plotlist2 <- list(p1, testplot2)
 
 ggplot(mtcars, aes(x=hp, y=mpg)) + geom_point(aes(y=qsec), color="red") 
