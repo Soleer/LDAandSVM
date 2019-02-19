@@ -39,15 +39,10 @@ LD_function <- function(data, results, values) {
   if (!is.na(values$kernel) && values$kernel == "poly") {
     for (i in 1:n) {
       for (j in 1:i) {
-<<<<<<< HEAD
         cache[i, j] <- results[i] * results[j] * (1 + sum(data[i, ] * data[j, ])) ^ values$d
         if(i==j){
           cache[i, i] <- 1/2*cache[i, i]
         }
-=======
-        cache[i, j] <- results[i] * results[j] * (1 + (sum(data[i, ] * data[j, ]))) ^
-          values$d
->>>>>>> d0d8c175785a22aae52e76c8172baff51a071c59
       }
     }
   } else if (!is.na(values$kernel) && values$kernel == "radial") {
@@ -60,8 +55,18 @@ LD_function <- function(data, results, values) {
         }
       }
     }
+  } else if (!is.na(values$kernel) && values$kernel == "neural") {
+    for (i in 1:n) {
+      for (j in 1:i) {
+        cache[i, j] <-
+          results[i] * results[j] * tanh(values$d*sum(data[i, ] * data[j, ]) + values$g)
+        if(i == j){
+          cache[i, i] <- 1/2*cache[i, i]
+        }
+      }
+    }
 #  } else if (values$kernel == 2) {
- #   for (i in 1:length(results)) {
+ #   for (i in 1:n) {
   #    for (j in 1:i) {
    #     cache[i, j] <-
     #      results[i] * results[j] * exp(abs(-values$g) * sum(abs(data[i, ] - data[j, ])))
@@ -79,7 +84,7 @@ LD_function <- function(data, results, values) {
   }
   f <- function(a) {
     g <- 0
-    for (i in 1:length(results)) {
+    for (i in 1:n) {
       for (j in 1:i) {
         g <- g + a[i] * a[j] * cache[i, j]
       }
@@ -104,18 +109,17 @@ con_fun <- function(results) {
 #parameters##########################################
 
 alpha_svm_est <- function(data, results, values) {
-  C<- values$C
+  C <- values$C
   N <- length(results)
   LD <- LD_function(data, results, values)
   con <- con_fun(results)
-  n <- length(results[results==-1])
-  pos <- min(which(results==1))
-  neg <- min(which(results==-1))
-  x <- rep(0, times = nrow(data))
-  x[pos] <- C^2/(2*C) 
-  x[neg] <- C^2/(2*C)
-  llb <- rep(0, times = nrow(data))
-  uub <- rep(values$C, times = nrow(data))
+  pos_first <- min(which(results == 1))
+  neg_first <- min(which(results == -1))
+  x <- rep(0, times = N)
+  x[pos_first] <- C^2/(2*C) 
+  x[neg_first] <- C^2/(2*C)
+  llb <- rep(0, times = N)
+  uub <- rep(C, times = N)
   a <- safety(solnl(
     X = x,
     objfun = LD,
@@ -124,8 +128,11 @@ alpha_svm_est <- function(data, results, values) {
     ub = uub
   ))
   if (is.null(a$result) || !is.null(a$warning)) {
-    warning(c(a$error, "\n Ändere Startwert zu 0:"),immediate. = TRUE)
-    x <- rep(0, times = nrow(data))
+    warning(c(a$error, "\n Ändere Startwert!"),immediate. = TRUE)
+    pos_last <- max(which(results == 1))
+    neg_last <- max(which(results == -1))
+    x[pos_last] <- C^2/(2*C) 
+    x[neg_last] <- C^2/(2*C)
     a <- safety(solnl(
       X = x,
       objfun = LD,
@@ -135,8 +142,9 @@ alpha_svm_est <- function(data, results, values) {
     ))
   }
   if (is.null(a$result) || !is.null(a$warning)) {
-    warning(c(a$error, "\n Ändere Startwert zu 1/C:"),immediate. = TRUE)
-    x <- rep(1 / values$C, times = nrow(data))
+    warning(c(a$error, "\n Ändere Startwert erneut!"),immediate. = TRUE)
+    x[pos_first] <- 0
+    x[neg_first] <- 0
     a <- safety(solnl(
       X = x,
       objfun = LD,
@@ -146,9 +154,10 @@ alpha_svm_est <- function(data, results, values) {
     ))
   }
   if (is.null(a$result) || !is.null(a$warning)) {
-    warning(c(a$error, "\n Ändere Startwert zu (C^2)/(2*C):"),immediate. = TRUE)
-    x <- rep(((values$C)^2)/(2*values$C), times = nrow(data))
-    a <- safety(solnl(
+    warning(c(a$error, "\n Ändere Startwert zu 0"),immediate. = TRUE)
+      x[pos_last] <- 0 
+      x[neg_last] <- 0
+      a <- safety(solnl(
       X = x,
       objfun = LD,
       confun = con,
@@ -160,7 +169,7 @@ alpha_svm_est <- function(data, results, values) {
     warning(
       c(
         a$error,
-        "\n Ändere Startwert zurück zu 1/sqrt(nrow(data)) und verwende keinen Kernel:"
+        "\n Ändere Startwert zurück zum ersten Startwert und verwende keinen Kernel:"
       ),immediate. = TRUE
     )
     return(NA)
@@ -171,7 +180,7 @@ alpha_svm_est <- function(data, results, values) {
   }
   a <- as.double(a$result$par)
   is_zero <-
-    sapply(1:nrow(data), function(i) {
+    sapply(1:N, function(i) {
       isTRUE(all.equal(a, 0))
     })
   a[is_zero] <- 0
@@ -237,7 +246,7 @@ svm_two_classes <- function(data,
       h <- sapply(1:nrow(data), function(i){
           alpha[i] * results[i] * exp(-values$g * sum((x - as.double(data[i, ])) ^ 2))
       })
-      return(sum(h) + beta_Null)
+      return(sum(h))
     }
 #  } else if (values$kernel == 2) {
  #   f <- function(x) {
@@ -248,6 +257,13 @@ svm_two_classes <- function(data,
       #}
       #return(sum(h) + beta_Null)
     #}
+  } else if (values$kernel == "neural") {
+    f <- function(x) {
+      h <- sapply(1:nrow(data), function(i){
+        alpha[i] * results[i] * tanh(values$d*sum(x * data[j, ]) + values$g)
+      })
+      return(sum(h) + beta_Null)
+    }
   } else{
     warning("Wrong Parameter kernel! No Kernel used.", immediate. = TRUE)
     f <- function(x) {
@@ -290,6 +306,13 @@ svm_two_classes_oop <- function(set,
         h[i] <-
           alpha[i] * results[i] * exp(-(values$g) * sum((x - as.double(set$data[i, ])) ^ 2))
       }
+      return(sum(h))
+    }
+  } else if (values$kernel == "neural") {
+    f <- function(x) {
+      h <- sapply(1:nrow(data), function(i){
+        alpha[i] * results[i] * tanh(values$d*sum(x * data[j, ]) + values$g)
+      })
       return(sum(h) + beta_Null)
     }
   } else{
@@ -335,7 +358,12 @@ fun_ob <- function(i, ob) {
 
 svm_classify_list <- function(set, values) {
   if (set$n_classes == 2) {
-    return(svm_two_classes_oop(set, values))
+    b <- svm_two_classes_oop(set, values)
+    if(class(b) != "function" &&is.na(b)){
+      values$kernel <- NA_character_
+      b <- svm_two_classes_oop(set, values)
+    }
+    return(b)
   }
   
   ob_mat <-
@@ -461,22 +489,20 @@ SVM <- function(set,
 
 #test##########################
 print("VORISCHT,TEST")
-test <- make_test(nclasses = 3,ninputs = 50)
+test <- make_test(nclasses = 3,ninputs = 100)
 test <- make_set(test,"class","TITEL",description = "Description")
 test$func_names
 results <- test$results
 data <- test$data
-<<<<<<< HEAD
-dd <- SVM(test,C = 1,kernel = "poly",d=2,g=-3)[['name']]
+dd <- SVM(test,C = 1,kernel = "radial",d=1,g=1)[['name']]
 f <- test$func[[dd]]
 calc_error(test,dd)
-=======
-dd <- SVM(test,C = 1,kernel = "poly",d=2,g=1)
-dd$func(as.double(data[1,]))
+
+
 
 gg <- 0
-for (i in 1:150) {
-  gg[i] <- (dd$func(as.double(data[i,])))
+for (i in 1:100) {
+  gg[i] <- (f(as.double(data[i,])))
 }
 gg
 
@@ -484,4 +510,5 @@ gg
 
 
 #Vergleiche mit SVM aus Paket e1071
->>>>>>> d0d8c175785a22aae52e76c8172baff51a071c59
+#svm_two_classes_oop:hier stimmt noch was nicht mit dem kernel-Wechsel
+#make 2D plot Fertig machen, Niklas
