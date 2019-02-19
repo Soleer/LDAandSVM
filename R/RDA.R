@@ -1,21 +1,130 @@
-
 library(ggplot2)
 library(gridExtra)
 set.seed(0)
 #Regular Discriminant analysis from 4.3.1
-source("R/LDA_QDA.R")
 
-alpha_gamma_crossFit <-function( ){
-  #TODO
-  
-  if(missing()){
-    res <- list(alpha = 1, gamma = 1)
-    return(res) 
-  }
-  
-  optim(par = c(1,1),test, x=, y=y, lower=c(0,1),upper=c(0,1), method="L-BFGS-B")
+#'sigma_class
+#'
+#'given a dataframe with parameters of Observations of one Class sigma_class returns the
+#'covariance matrix of the Data.
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@return The covariance matrix of the Data
+sigma_class <- function(data, mu = colMeans(data)) {
+  n <- dim(data)[2]
+  Bn <- diag(0, ncol = n, nrow = n)
+  apply(data, 1, function(x) {
+    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+  })
+  return(Bn / (dim(data)[1] - 1))
 }
 
+sigma_class <- function(data, mu = colMeans(data), alpha, gamma) {
+  sigma_class <-
+    sigma_class(data, mu) * alpha + (1 - alpha) * sigma_est(data, results, gamma)
+  
+  
+  return(sigmaClass)
+}
+
+sigma_est <- function(data, results, gamma) {
+  kleinSigma <- 1 #TODO
+  s <- sigma_est(data, results)
+  n <- ncol(s)
+  sigma_est <-  s * gamma + (1 - gamma) * kleinSigma * kleinSigma * diag(n)
+  return(sigma_est)
+}
+
+sigma_est <- function(data, results) {
+  G <- unique(results)
+  K <- length(G)
+  N <- length(results)
+  mu <- mu_est(data, results)
+  n <- dim(data)[2]
+  Bn <- diag(0, ncol = n, nrow = n)
+  sapply(1:K, function(k) {
+    apply(data[results == G[k],], 1, function(x) {
+      Bn <<- Bn + ((x - mu[k,]) %*% t(x - mu[k,]))
+    })
+  })
+  return(Bn / (N - K))
+}
+
+####cross validation/ tuning parameters
+
+alpha_gamma_crossFit <- function(data, results) {
+  #splits data in K equal sized training/validation samples
+  data
+  K <- min(10, nrow(data))
+  split(data, sample(1:K, nrow(data), replace = T))
+  
+  #creates parameters to choose from
+  N <- 5
+  v <- seq(from = 0,
+           to = 1,
+           length.out = N) #TODO aequidistant?
+  
+  alpha_gamma <- array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
+  
+  #
+  alpha_gamma_error <- matrix(nrow = N, ncol = N)
+  
+  #iterates all
+  for (i in 1:N) { #TODO apply
+    for (j in 1:N) {
+      alpha <- alpha_gamma[i, j, "alpha"]
+      gamma <- alpha_gamma[i, j, "gamma"]
+      
+      alpha_gamma_error[i, j] <-
+        validationErrorRate(data, results, alpha, gamma)
+      
+    }
+  }
+  
+  #finds best
+  coordinates <-
+    which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)
+  
+  alpha <- alpha_gamma[c(coordinates, 1)]
+  gamma <- alpha_gamma[c(coordinates, 2)]
+  
+  return(list(alpha, gamma)) #TODO Format
+}
+
+#'validationErrorRate
+#'
+#'calculates the mean total error rate of RDA for given alpha, gamma to determin 
+#'  best selection in the cross fitting
+#'@return total mean error rate
+validationErrorRate <- function(data, results, alpha, gamma) {
+  
+  errors <- apply(seq_along(data), function(i){
+    #training
+    
+    training_data <- do.call(rbind, data[-i]) 
+   
+    #classifier <- RDA(training_data, results, alpha, gamma)%>%classify TODO
+    delta <- RDA(training_data, results, alpha, gamma)
+    classifier <- classify(delta)
+   
+     #validation on block j
+    validation_data <- data[j]
+    current_error <- calc_error(validation_data, results, classifier)
+    current_error
+  })
+  
+  return(mean(errors))
+}
+
+
+#'calc_error
+#'
+#'calculates the total error rate of of a classifaction function on a dataset
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@param results correct classes
+#'@param f classification function
+#'@return total error rate
 calc_error <- function(data, results, f) {
   G <- unique(results)
   estimated <- apply(data, 1, f)
@@ -26,54 +135,20 @@ calc_error <- function(data, results, f) {
     classresults <- as.list(t[as.character(G)] / number)
     right <- t[c] / number
     wrong <- (1 - right)
-    col <- unlist(list(classresults, right, wrong))
+    
     return(col)
   })
   
-  of_Results <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(results[estimated == class])
-    number <- sum(t)
-    classresults <- as.list(t[as.character(G)] / number)
-    right <- t[c] / number
-    wrong <- (1 - right)
-    col <- unlist(list(classresults, right, wrong))
-    return(col)
-  })
   probs_of_Data <-
     data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
-  probs_of_Results <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Results)
-  colnames(probs_of_Data) <- c('class', as.character(G))
-  colnames(probs_of_Results) <- c('class', as.character(G))
+
   miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G)+1]) / length(G)
-  miss <- round(miss,2)
-  return(list(probs_of_Data, probs_of_Results, miss))
-}
-
-
-sigma_class <- function(data, mu = colMeans(data), alpha = 1, gamma = 1) {
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
   
-  sigma_class <- sigma_class(data, mu)* alpha + (1-alpha)*sigma_est(data, results, gamma) 
-  #TODO super sigma_class, 
-  #not recursive
-  return(sigmaClass) 
+  return(miss)
 }
 
-sigma_est <-function(data, results, gamma = 1){
-  kleinSigma<- 1 #TOO
-  s<-sigma_est(data, results)
-  n<-ncol(s)
-  sigma_est <-  s* gamma + (1-gamma)* kleinSigma*kleinSigma*diag(n)
-  return(sigma_est)
-}
-
-##kopiert, aber löschen
-library(ggplot2)
-library(gridExtra)
-set.seed(0)
-#estimators of chapter 4.3
+###### not RDA specific
 
 pi_est <- function(results) {
   classes <- unique(results)
@@ -97,38 +172,153 @@ mu_est <- function(data, results) {
   data <- as.data.frame(data)
   classes <- unique(results)
   mu <- sapply(classes, function(class) {
-    colMeans(data[results == class, ])
+    colMeans(data[results == class,])
   })
   mu <- t(mu)
   return(mu)
 }
-#'sigma_class
-#'
-#'given a dataframe with parameters of Observations of one Class sigma_class returns the
-#'covariance matrix of the Data.
-#'
-#'@param data Dataframe of Parameters for all Observations
-#'@return The covariance matrix of the Data
-sigma_class <- function(data, mu = colMeans(data)) {
-  n <- dim(data)[2]
-  Bn <- diag(0, ncol = n, nrow = n)
-  apply(data, 1, function(x) {
-    Bn <<- Bn + ((x - mu) %*% t(x - mu))
+
+
+targets <- function(vector) {
+  n <- length(vector)
+  En <- diag(1, n, n)
+  V <- matrix(vector,
+              nrow = n,
+              ncol = n,
+              byrow = TRUE)
+  D <- En - V
+  results <- sapply(1:n, function(i) {
+    D[i,] %*% D[i,]
   })
-  return(Bn / (dim(data)[1] - 1))
+  return(results)
 }
 
-sigma_est <- function(data, results) {
+#return closest target
+class_by_targets <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.min(targets(f(x)))])
+  }
+  return(classfunction)
+}
+#return max
+classify <- function(uresults, f) {
+  classfunction <- function(x) {
+    return(uresults[which.max(f(x))])
+  }
+  return(classfunction)
+}
+
+#seperating lines test not working
+
+create_id <- function(a, b, rf) {
+  getzero <- function(x) {
+    rf(x)[a] - rf(x)[b]
+  }
+  return(getzero)
+}
+
+get_Y_Value <- function(z, ploty) {
+  upper = max(ploty)
+  lower = min(ploty)
+  if (z(lower) * z(upper) <= 0) {
+    return(uniroot(z, ploty)$root)
+  }
+  else{
+    return(NA)
+  }
+}
+
+# classification functions -> G
+#helpfunction
+getseperatorfun <- function(a,
+                            b,
+                            rf,
+                            y = c(-5, 5),
+                            inv = FALSE) {
+  getzero <- create_id(a, b, rf)
+  sep <- function(x) {
+    inverse <- inv
+    z <- function(y) {
+      if (inverse == FALSE) {
+        getzero(c(x, y))
+      }
+      else{
+        getzero(c(y, x))
+      }
+    }
+    y <- get_Y_Value(z, y)
+    if (inverse == FALSE) {
+      if (is.na(y) || which.max(rf(c(x, y))) == a ||
+          which.max(rf(c(x, y))) == b) {
+        return(y)
+      }
+      return(NA)
+    }
+    else{
+      if (is.na(y) || which.max(rf(c(y, x))) == a ||
+          which.max(rf(c(y, x))) == b) {
+        return(y)
+      }
+      return(NA)
+    }
+  }
+  return(sep)
+}
+
+#RDA
+RDA <- function(data, results, alpha, gamma) {
   G <- unique(results)
   K <- length(G)
-  N <- length(results)
+  #set lamda 
+  p <- log(pi_est(results))
   mu <- mu_est(data, results)
-  n <- dim(data)[2]
-  Bn <- diag(0, ncol = n, nrow = n)
-  sapply(1:K, function(k) {
-    apply(data[results == G[k],], 1, function(x) {
-      Bn <<- Bn + ((x - mu[k,]) %*% t(x - mu[k,]))
-    })
+  sigma_list <- lapply(1:K, function(k) {
+    sigma_class(data[results == G[k],], mu[k], alpha, gamma)
   })
-  return(Bn / (N - K))
+  sigma_inv <- lapply(sigma_list, solve)
+  sigma_log_det <- lapply(sigma_list, function(x) {
+    log(det(x))
+  })
+  delta <- function(x) {
+    result <- sapply(1:K, function(k) {
+      -1 / 2 * sigma_log_det[[k]] - 1 / 2 * t(x - mu[k, ]) %*% sigma_inv[[k]] %*% (x - mu[k, ])
+    }) + p
+    return(result)
+  }
+  return(delta)
 }
+
+#'RDA
+#'
+#'implements the RDA classification (mix from LDA and QDA) by cross validation for the parameters alpha and gamma
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@return the delta functions of the algorithms
+RDA <- function(data, results) {
+  
+  
+  alpha_gamma <- alpha_gamma_crossFit(data, results)
+  alpha <- alpha_gamma$alpha
+  gamma <- alpha_gamma$gamma
+  
+  delta <- RDA(data, results, alpha, gamma)
+  
+  return(delta)
+}
+
+
+RDA <- function(data_set) {
+  data <- data_set$data
+  results <- data_set$results
+  return(RDA(data, results))
+}
+
+###TEST
+source("R/oop.R")
+data_set <- make_testset(N=3)
+"data <- data_set$data
+data
+K <- min(10, nrow(data))
+split(data, sample(1:K, nrow(data), replace = T))"
+RDA(test_set)
+
