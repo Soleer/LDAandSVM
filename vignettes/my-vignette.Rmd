@@ -50,6 +50,13 @@ class <- c(classes_B, classes_R, classes_C)
 Rockets <- data.frame(height = height, decibel = decibel, class = class)
 ```
 
+Suppose we have a dataset of 289 observations of skyrockets for sylvester where we have measured both the heigth and the volume of our rckets. There are 115 rockets of the type "Barock", 78 of the type "Renaissance" and 96 of the type "Classic". This allows us to Classify the data with this package. First, we need to create a data_set object out of our data-frame. We do this by typing:
+
+```{r Creation}
+Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets", description = "Rockets with their flight heigth")
+```
+Here we load in our Rockets data-frame and name the columns by which we want to classify with the parameter "by".
+
 ```{r Classification example}
 func_name1 <- LDA(Rocket_set)[['name']]
 liste1 <- plot_error(Rocket_set, func_name1)
@@ -62,14 +69,9 @@ plotlist1 <- list(p1, testplot1)
 plotlist1
 ```
 
-Suppose we have a dataset of 289 observations of skyrockets for sylvester where we have measured both the heigth and the volume of our rckets. There are 115 rockets of the type "Barock", 78 of the type "Renaissance" and 96 of the type "Classic". This allows us to Classify the data with this package. First, we need to create a data_set object out of our data-frame. We do this by typing:
-
-```{r Creation}
-Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets", description = "Rockets with their flight heigth")
+```{r seed setting, echo = FALSE}
+set.seed(2)
 ```
-Here we load in our Rockets data-frame and name the columns by which we want to classify with the parameter "by".
-
-
 
 ## Linear Disciminent Analysis (LDA)
 
