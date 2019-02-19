@@ -413,8 +413,10 @@ data_set <- R6Class(
 #'
 #'\code{make_set} transforms a dataframe into a data_set 
 #'
-#'@parameter data a Dataframe
-#'@parameter by the name of a c
+#'@param data a Dataframe
+#'@param by the name of a column of data to classify by
+#'@param title title of the data
+#'@param description description of the data
 make_set <- function(data,
                      by,
                      title="",

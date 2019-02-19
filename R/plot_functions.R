@@ -7,8 +7,8 @@ library(gridExtra)
 #'@param data Dataframe of Parameters
 #'@param results Vector with corresponding Classes to \code{data}
 #'@return A list with  the mean vectors of the classes as rows
-maincomponent_analysis <- function(data, results) {
-  cov_matrix <- sigma_exp(data, results)
+maincomponent_analysis <- function(set) {
+  cov_matrix <- set$sigma_bet
   ev <- eigen(cov_matrix)
   values <- ev$values
   n <- length(values)
@@ -23,8 +23,8 @@ maincomponent_analysis <- function(data, results) {
 #'@param results Vector with corresponding Classes to \code{data}
 #'@param dim dimension of target space
 #'@return A list with a function that reduces to dim via maincomponent analysis and one
-make_projection <- function(data, results, dim = 2) {
-  l <- maincomponent_analysis(data, results)
+make_projection <- function(set, dim = 2) {
+  l <- maincomponent_analysis(set)
   U <- l[[2]][, 1:dim]
   proj <- function(x) {
     t(U) %*% x
@@ -35,6 +35,11 @@ make_projection <- function(data, results, dim = 2) {
   return(list(proj, i_proj))
 }
 
+#'make_2D_plot
+#'
+#'@param set A data_set
+#'@param func_name Functionname of the data_set function to plot
+#'@param ppu points per unit 
 make_2D_plot <- function(set,
                          func_name,
                          ppu = 10,
@@ -53,11 +58,11 @@ make_2D_plot <- function(set,
   n <- set$n_classes
   #Project on first two parameter or maincomponents
   if (project == TRUE) {
-    proj <- make_projection(set$expansion(info[['base']]), set$results)
+    proj <- make_projection(set)
     proj_to <- proj[[1]]
     proj_in <- proj[[2]]
     proj_data <-
-      as.data.frame(t(apply(set$expansion(info[['base']]), 1, proj_to)))
+      as.data.frame(t(apply(set$data, 1, proj_to)))
   }
   else{
     proj_in <- function(x)
@@ -150,8 +155,6 @@ calc_error <- function(set, name) {
   miss <- round(miss, 2)
   return(list(probs_of_Data, probs_of_Results, miss))
 }
-set$func_names
-calc_error(set,)
 
 plot_error <- function(set, name) {
   if (!is.data_set(set)) {

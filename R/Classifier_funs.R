@@ -98,7 +98,6 @@ QDA <- function(set) {
                                                               "basic QDA function")))
 }
 
-set$func_info[[1]][['parameter']][['base']]=="quad"
 PDA <- function(set, base, omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
