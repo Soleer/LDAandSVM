@@ -38,6 +38,10 @@ set <-
            by = "class",
            title = "TEST",
            description = "Weil ich kann!")
+
+
+set
+
 ### Shiny-Interface
 classify_app()
 ### PDA

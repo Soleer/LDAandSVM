@@ -7,8 +7,6 @@ data_set <- R6Class(
   "data_set",
   private = list(
     #list of private slots
-    
-    
     .data = NULL,            #dataframe with parameters
     .data_expansion = list(),#list of dataframes for each parameter expansion
     .results = NULL,         #vector of classvalues for .data
@@ -172,6 +170,7 @@ data_set <- R6Class(
       }
       
     },
+    
     change_func_name = function(from, to) {
       stopifnot(is.character(from) && is.character(to))
       if (!any(names(private$.function_list) == from)) {
@@ -180,22 +179,22 @@ data_set <- R6Class(
       if (any(names(private$.function_list) == to)) {
         stop(sprintf("%s is already taken", to))
       }
-      private$.function_list[[to]] <- private$.function_list[[from]]
-      private$.function_info[[to]] <- private$.function_info[[from]]
-      private$.function_list[[from]] <- NULL
-      private$.function_info[[from]] <- NULL
+      n <- names(private$.func_list)
+      names(private$.func_list)[n==from] <- to
+      names(private$.func_info)[n==from] <- to
       return(invisible(to))
     },
+    
     expansion = function(base) {
       stopifnot(is.character(base))
-      if (is.null(private$.data_expansion[[base]])) {
+      if (is.null(private$.data_expansion[[base]])) {    ##checks if expension already exists 
         h <-
-          basis_exp(base)                            ##Gets the basis expansion function
-        private$.data_expansion[[base]] <- h(self$data)
-        return(private$.data_expansion[[base]])
+          basis_exp(base)                                 ##Gets the basis expansion function
+        private$.data_expansion[[base]] <- h(self$data)   ##calculates and adds expanded data
+        return(private$.data_expansion[[base]])           
       }
       else{
-        private$.data_expansion[[base]]
+        private$.data_expansion[[base]]                   #no calculating 
       }
     }
   ),
@@ -388,12 +387,20 @@ data_set <- R6Class(
         return(private$.function_list)
       }
       else{
-        stop("Read only", call. = FALSE)
+        stop("read only", call. = FALSE)
       }
     },
     func_info = function(Value) {
       if (missing(Value)) {
         return(private$.function_info)
+      }
+      else{
+        stop("read only", call. = FALSE)
+      }
+    },
+    func_names = function(Value){
+      if (missing(Value)) {
+        return(names(private$.function_list))
       }
       else{
         stop("read only", call. = FALSE)
