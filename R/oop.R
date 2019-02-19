@@ -420,6 +420,10 @@ make_set <- function(data,
                      by,
                      title="",
                      description="") {
+  print("data:")
+  print(is.data.frame(data))
+  print(data)
+  
   data_set$new(data, by, title, description)
 }
 

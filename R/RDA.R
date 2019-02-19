@@ -78,12 +78,15 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     
     training_dataframe <- cbind(results, training_data) #TODO kontrollieren, ob zusammenpassen
     
+
+
+    source("R/oop.R")
     print("training_dataframe:")
+    print(is.data.frame(training_dataframe))
     print(training_dataframe)
-    is.data.frame(training_dataframe)
     
     data_set <- make_set(data = training_dataframe, by = "results") 
-    #TODO source(Classifier_funs), OOP
+
 
     classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)
     
