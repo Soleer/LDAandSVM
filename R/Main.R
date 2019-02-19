@@ -20,7 +20,7 @@ source("R/oop.R")
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-source("R/svm.R")
+source("R/svm_oop.R")
 source("R/shinyplot.R")
 set.seed(0)
 
@@ -99,20 +99,18 @@ ggsave('QDA.png',
        dpi = 400)
 
 ###svm
-f4 <-
-  svm_classify(uresults = set$classes,
-               t = svm(set$data, set$results))
-liste4 <- plot_error(set, f4)
+func_name4 <-  SVM(set)[['name']]
+liste4 <- plot_error(set, func_name4)
 p4 <- do.call(grid.arrange, liste4)
 testplot4 <-
   make_2D_plot(set,
-               f4,
-               ppu = 5)
+               func_name4,
+               ppu = 5,
+               bg = FALSE)
 plotlist4 <- list(p4, testplot4)
+nice4 <- do.call("grid.arrange", c(plotlist4, ncol = 2, top = "SVM"))
 
-nice4 <-
-  do.call("grid.arrange", c(plotlist4, ncol = 2, top = "svm"))
-ggsave('svm.png',
-       plot = nice4,
+ggsave('SVM.png',
+       plot = nice0,
        device = 'png',
        dpi = 400)

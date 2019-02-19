@@ -35,20 +35,27 @@ safety <- function(expr) {
 #This is the function that has to be maximised.
 LD_function <- function(data, results, values) {
   cache <- matrix(0, ncol = length(results), nrow = length(results))
-  if (values$kernel == 1) {
+  if (!is.na(values$kernel) && values$kernel == "poly") {
     for (i in 1:length(results)) {
       for (j in 1:i) {
         cache[i, j] <- results[i] * results[j] * (1 + sum(data[i, ] * data[j, ])) ^
           values$d
       }
     }
-  } else if (values$kernel == 2) {
+  } else if (!is.na(values$kernel) && values$kernel == "radial") {
     for (i in 1:length(results)) {
       for (j in 1:i) {
         cache[i, j] <-
-          results[i] * results[j] * exp((-values$g) * sum((data[i, ] - data[j, ])) ^ 2)
+          results[i] * results[j] * exp(-(values$g) * sum((data[i, ] - data[j, ])^2))
       }
     }
+#  } else if (values$kernel == 2) {
+ #   for (i in 1:length(results)) {
+  #    for (j in 1:i) {
+   #     cache[i, j] <-
+    #      results[i] * results[j] * exp(abs(-values$g) * sum(abs(data[i, ] - data[j, ])))
+     # }
+    #}
   } else{
     for (i in 1:length(results)) {
       for (j in 1:i) {
@@ -200,11 +207,11 @@ svm_two_classes <- function(data,
   alpha <- alpha_svm_est(data, results, values)
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha, data, results, beta)
-  if (values$kernel == 0) {
-    f <- function(x) {
+  if (is.na(values$kernel)) {
+   f <- function(x) {
       return(x %*% beta + beta_Null)
     }
-  } else if (values$kernel == 1) {
+  } else if (!is.na(values$kernel) && values$kernel == "poly") {
     f <- function(x) {
       h <- 0
       for (i in 1:nrow(data)) {
@@ -212,15 +219,24 @@ svm_two_classes <- function(data,
       }
       return(sum(h) + beta_Null)
     }
-  } else if (values$kernel == 2) {
+  } else if (!is.na(values$kernel) && values$kernel == "radial") {
     f <- function(x) {
       h <- 0
       for (i in 1:nrow(data)) {
         h[i] <-
-          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(set$data[i, ])) ^ 2))
+          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(data[i, ])) ^ 2))
       }
       return(sum(h) + beta_Null)
     }
+#  } else if (values$kernel == 2) {
+ #   f <- function(x) {
+  #    h <- 0
+   #   for (i in 1:nrow(data)) {
+    #    h[i] <-
+     #     (alpha[i] * results[i]) * exp(-values$g * sum(abs(x - as.double(set$data[i, ]))))
+      #}
+      #return(sum(h) + beta_Null)
+    #}
   } else{
     warning("Wrong Parameter kernel! No Kernel used.", immediate. = TRUE)
     f <- function(x) {
@@ -243,11 +259,11 @@ svm_two_classes_oop <- function(set,
   alpha <- alpha_svm_est(set$data, results, values)
   beta <- beta_svm_est(alpha, set$data, results)
   beta_Null <- beta_svm_0(alpha, set$data, results, beta)
-  if (values$kernel == 0) {
+  if (is.na(values$kernel)) {
     f <- function(x) {
       return(x %*% beta + beta_Null)
     }
-  } else if (values$kernel == 1) {
+  } else if (!is.na(values$kernel) && values$kernel == "poly") {
     f <- function(x) {
       h <- 0
       for (i in 1:set$n_obs) {
@@ -255,12 +271,12 @@ svm_two_classes_oop <- function(set,
       }
       return(sum(h) + beta_Null)
     }
-  } else if (values$kernel == 2) {
+  } else if (!is.na(values$kernel) && values$kernel == "radial") {
     f <- function(x) {
       h <- 0
       for (i in 1:set$n_obs) {
         h[i] <-
-          (alpha[i] * results[i]) * exp(-values$g * sum((x - as.double(set$data[i, ])) ^ 2))
+          alpha[i] * results[i] * exp(-(values$g) * sum((x - as.double(set$data[i, ])) ^ 2))
       }
       return(sum(h) + beta_Null)
     }
@@ -269,6 +285,9 @@ svm_two_classes_oop <- function(set,
     f <- function(x) {
       return(x %*% beta + beta_Null)
     }
+  }
+  for (i in 1:100) {
+    print(f(as.double(set$data[i,])))
   }
   return(f)
 }
@@ -284,18 +303,19 @@ fun_list <-
       dat <-
         rbind(set$data[ob_mat[1, r]:ob_mat[2, r], ], set$data[ob_mat[1, s]:ob_mat[2, s], ])
       res <-
-      c(as.character(set$results[ob_mat[1, r]:ob_mat[2, r]]), as.character(set$results[ob_mat[1, s]:ob_mat[2, s]]))#!#!#!#!#!#!#!#!#?!?!?!?
+        c(as.character(set$results[ob_mat[1, r]:ob_mat[2, r]]), as.character(set$results[ob_mat[1, s]:ob_mat[2, s]]))
       temp[[s]] <-
         svm_two_classes(
-          data = dat,
-          results = res,
+          dat,
+          res,
           values,
           j = r,
-          classes = set$classes
+          set$classes
         )
     }
     return(temp)
   }
+
 # This function returns a vector of length 2 containing the rownumber where class i starts and ends.
 fun_ob <- function(i, ob) {
   if (i == 1) {
@@ -349,10 +369,13 @@ svm_classify <- function(t, uresults) {
           break
         }
         else if (s == length(uresults) && a < 0) {
-          cla <- r + 1
+          cla <- s
+          tr <- TRUE
         }
-        if (a < 0)
+        if (a < 0) {
+          r <- s
           break
+        }
       }
       if (tr == TRUE)
         break
@@ -361,11 +384,14 @@ svm_classify <- function(t, uresults) {
   }
   return(f)
 }
-svm <- function(set,
+
+
+
+SVM <- function(set,
                 C = 1,
-                kernel = 0,
+                kernel = NA_character_,
                 d = 1,
-                g = 1){
+                g = 1) {
   ##The SVM classification function. A function factory
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -376,75 +402,62 @@ svm <- function(set,
       if (!is.null(l[["parameter"]][["C"]]) &&
           !is.null(l[["parameter"]][["kernel"]]) &&
           !is.null(l[["parameter"]][["d"]]) &&
-          !is.null(l[["parameter"]][["g"]])
-          ) {
+          !is.null(l[["parameter"]][["g"]])) {
         if (l[["parameter"]][["C"]] ==  C &&
-            l[["parameter"]][["kernel"]] ==  kernel &&
+            isTRUE(all.equal(l[["parameter"]][["kernel"]],kernel)) &&
             l[["parameter"]][["d"]] == d &&
-            l[["parameter"]][["g"]] ==  g
-            ) {
+            l[["parameter"]][["g"]] ==  g) {
           slot <<- l[["name"]]
         }
       }
     })
     if (length(slot) > 0) {
-      return(list(name=slot,func=set$func[[slot]]))
+      return(list(name = slot, func = set$func[[slot]]))
     }
   }
-  values <- list("C"=C,"kernel"=kernel,"d"=d,"g"=g)
-  t <- svm_classify_list(set,values)
-  f <- svm_classify(t,set$classes)
-  return(set$set_function(f, type = "SVM", list(
-    base = set$id,
-    dim = NULL,
-    omega = NULL,
-    C = C,
-    kernel = kernel,
-    d = d,
-    g = g
-  )))
+  values <- list(
+    "C" = C,
+    "kernel" = kernel,
+    "d" = d,
+    "g" = g
+  )
+  t <- svm_classify_list(set, values)
+  f <- svm_classify(t, set$classes)
+  return(set$set_function(
+    f,
+    type = "SVM",
+    list(
+      base = 'id',
+      dim = NULL,
+      omega = NULL,
+      C = C,
+      kernel = kernel,
+      d = d,
+      g = g
+    )
+  ))
 }
 
 
-
-
-
+isTRUE(all.equal("radial",kernel))
 
 
 
 
 
 #test##########################
-test <- make_test(nclasses = 3)
-test <- make_set(test,"class","title",description = "description")
-dd <- svm(test,C=1,kernel = 0)
-dd
-results <- test$results
-data <- test$data
-gg <- 0
-for (i in 1:300) {
-  gg[i] <- (dd$func(as.double(data[i,])))
-}
-gg
-dd(as.double(data[201,]))
-liste4 <- plot_error(test, "SVM")
-p4 <- do.call(grid.arrange, liste4)
-testplot4 <-
-  make_2D_plot(test[1:2],
-               test$class,
-               dd,
-               ppu = 5)
-plotlist4 <- list(p4, testplot4)
 
-nice4 <-
-  do.call("grid.arrange", c(plotlist4, ncol = 2, top = "svm"))
-ggsave('svm.png',
-       plot = nice4,
-       device = 'png',
-       dpi = 400)
-
-
-
+# test <- make_test(nclasses = 2,ninputs = 50)
+# test <- make_set(test,"class","TITEL",description = "DEScription")
+# results <- test$results
+# data <- test$data
+# dd <- SVM(test,C = 1,kernel = 2,d=-2,g=-10)
+# 
+# gg <- 0
+# for (i in 1:100) {
+#   gg[i] <- (dd$func(as.double(data[i,])))
+# }
+# gg
 
 
 
