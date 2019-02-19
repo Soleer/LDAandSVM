@@ -275,16 +275,27 @@ plot_error <- function(set, name) {
     mi                                  #add last Plot
   return(charts)
 }
-
-plot_summary <- function(set,name){
+#'plot_summary
+#'
+#'summarizes a function of a data_set in one plot
+#'
+#'@param set a data_set
+#'@param name the name of the function to summarize
+#'@param background logical, decides if the data plot should have a background grid
+#'@param project logical, decides if maincomponent analyse should be used to make the data plot
+#'@example 
+#'plot_summary(set,"LDA_1")
+#'
+plot_summary <- function(set,name,background=TRUE,project=TRUE){
   liste0 <- plot_error(set, name)
   error_list <- do.call(grid.arrange, liste0)
   plot <-
     make_2D_plot(set,
                name,
                ppu = 5,
-               bg = FALSE,
-               project = FALSE)
+               background,
+               project
+               )
   plotlist <- list(error_list, plot)
   niceplot <- do.call("grid.arrange", c(plotlist, ncol = 2, top = sprintf("%s %s",set$title,name)))
   return(niceplot)
