@@ -177,6 +177,7 @@ RDA <- function(set, alpha, gamma){
   G <- set$classes
   K <- set$n_classes
   p <- log(unlist(set$pi))
+  N <- set$n_obs
   mu <- set$mean
   
   if(missing(alpha) | missing(gamma)){
@@ -186,7 +187,8 @@ RDA <- function(set, alpha, gamma){
     gamma <<- alpha_gamma$gamma
   }
   
-  kleinesSigma <- 1 #TODO
+  kleinesSigma <- small_sigma_est(set)
+  
   source("R/Estimators.R")
   sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ 
     #TODO Formel
