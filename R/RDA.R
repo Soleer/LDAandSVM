@@ -52,7 +52,6 @@ sigma_est <- function(data, results) {
 
 ####cross validation/ tuning parameters
 
-
 alpha_gamma_crossFit <- function(data, results) {
   #splits data in K equal sized training/validation samples
   K <- 10
@@ -62,7 +61,7 @@ alpha_gamma_crossFit <- function(data, results) {
   N <- 20
   v <- seq(from = 0,
            to = 1,
-           length.out = N)
+           length.out = N) #TODO aequidistant?
   
   alpha_gamma <- array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
   
@@ -101,7 +100,8 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   for (i in seq_along(data)) {
     #training
-    training_data <- unite(data[-j]) #TODO unite?
+    
+    training_data <- do.call(rbind, data[-j]) #TODO unite?
     classifier <- RDA(training_data, results, alpha, gamma)%>%classify
     
     #validation on block j
@@ -302,10 +302,15 @@ RDA <- function(data, results) {
   return(delta)
 }
 
+
 RDA <- function(data_set) {
-  data <- data_set
-  
-  return(delta)
+  data <- data_set$data()
+  results <- data_set$results()
+  return(RDA(data, results))
 }
 
+###TEST
+source("R/oop.R")
+test_set <- make_testset(3)
+RDA(test_set)
 
