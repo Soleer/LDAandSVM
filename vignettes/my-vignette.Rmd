@@ -237,4 +237,4 @@ What happens when neither LDA or QDA sufficently classify but PDA is too complex
 
 ## Support Vector Machines (SVM)
 
-A different approach to the whole problem is the Support Vector Machines
+A different approach to the whole problem is the Support Vector Machines. We first try to randomly seperate the classes with on straight line. This obviously won't classify great so by introducing a margin of error from which we demand that no vector lies further into the wrong class than said margin, we force the line to be bend. All points within the margin of error and only these points are therefore relevant for the seperation of the classes. Theoretically there need not be any assumptions towards the underlying distribution so SVM are generally applicable. For further informations into the mathematics behind SVMs see Hastie et al. "The Elements of Statistical Learning" (2008) pp. 417-438. 

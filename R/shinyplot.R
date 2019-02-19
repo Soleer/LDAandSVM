@@ -10,7 +10,7 @@ Margin <- numericInput("Margin", "Select how exact the support vector lines shou
 Var_Pol <- numericInput("Var_pol", "Select the power of the polynomial (only SVM)", value = 2, min = 0.1, max = 15)
 Radial <- numericInput("Radial", "Select the factor of the radial basis (only SVM)", value = 1, min = 0.1, max = 50)
 
-Classify <- wellPanel(Classifier, Base, Background, Kernel, Calc_button)                                                            ##Merges all objects above into one big Object
+Classify <- wellPanel(Classifier, Base, Background, Kernel, Margin, Var_Pol, Radial, Calc_button)                                                            ##Merges all objects above into one big Object
 
 Load_test <- textInput("Load_test", "Load an R6 Dataset", value = "Name of the object")               ##Text input where the name of an object can be written. This object will then be loaded into shiny
 Load_button <- actionButton("Load_button", "Load Object")                                             ##Button that loads in th object specified above
@@ -80,6 +80,7 @@ server_LDA_SVM <- function(input, output){
     Kernel <- input$Kernel
     Margin <- input$Margin
     Var_Pol <- input$Var_pol
+    Radial <- input$Radial
     print(paste("classifying with:", Classfun, "and basis expansion:", Base))             ##Console output for transparency
     print("Please wait for the calculations to finish")
     shiny_set <- shiny_env$shiny_set                                                      ##Reading the shiny set out of the environment
@@ -118,7 +119,7 @@ server_LDA_SVM <- function(input, output){
     }
     
     if(Classfun == "SVM"){
-      func_shiny <- SVM(shiny_set, C = Margin, kernel = "poly", d = Var_Pol, g = Radial)[['name']]
+      func_shiny <- SVM(shiny_set, C = Margin, kernel = Kernel, d = Var_Pol, g = Radial)[['name']]
       Error_plot_shiny <- plot_error(shiny_set, func_shiny)
       Class_plot_shiny <- make_2D_plot(shiny_set,
                                        func_shiny,
@@ -126,9 +127,6 @@ server_LDA_SVM <- function(input, output){
                                        bg = BG,
                                        project = FALSE)
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
-      
-      # f <- test$func[[dd]]
-      # calc_error(test,dd)
     }
     
     if(Classfun == "RDA"){
