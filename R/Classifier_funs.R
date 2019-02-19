@@ -108,7 +108,7 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
     if (missing(omega)) {                                       ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
-    if (length(set$func) > 0) {
+    if (length(set$func) > 0) {                                 ##check if already calculated
       slot <- character(0)
       sapply(set$func_info, function(l) {
         if (!is.null(l[["parameter"]][["base"]]) && !is.null(l[["parameter"]][["omega"]])) {
@@ -141,12 +141,13 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
     
     delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
         result <- sapply(G, function(class) {
-          diff <- h(x) - mu[[class]] - 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff)
+          diff <- h(x) - mu[[class]] 
+          - 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff)
         }) + p
         return(result)
     }
     
-    classify_func <- classify(set$classes, delta)
+    classify_func <- classify(set$classes, delta) #from numbers to classes
     
     return(set$set_function(classify_func, type = "PDA", list(
       base = base,

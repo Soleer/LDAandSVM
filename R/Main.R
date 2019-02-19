@@ -1,11 +1,19 @@
+<<<<<<< HEAD
 library(ggplot2)
 library(gridExtra)
+=======
+>>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
 library(quadprog)
 library(R6)
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
+<<<<<<< HEAD
+=======
+library(NlcOptim)
+library(shiny)
+>>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")

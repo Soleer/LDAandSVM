@@ -417,8 +417,8 @@ data_set <- R6Class(
 #'@parameter by the name of a c
 make_set <- function(data,
                      by,
-                     title,
-                     description) {
+                     title="",
+                     description="") {
   data_set$new(data, by, title, description)
 }
 
