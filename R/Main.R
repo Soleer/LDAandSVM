@@ -51,9 +51,10 @@ set <-
 ### Shiny-Interface
 classify_app()
 ### PDA
+set$parnames
 func_name0 <-  PDA(set, base = "quad")[['name']]
 plot_summary(set,func_name0)
-make_2D_plot(set,func_name0)
+make_2D_plot(set,func_name0,project = c('b','a'))
 ### LDA
 func_name1 <- LDA(set)[['name']]
 plot_summary(set,func_name1)
