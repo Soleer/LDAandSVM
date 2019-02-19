@@ -161,7 +161,7 @@ RDA <- function(set, alpha, gamma){
     stop("Input must be of class 'data_set' (?make_set)")
   }
   
-  if (length(set$func) > 0) {
+  if (length(set$func) > 0) { #TODO could cause trouble in cross validation
     slot <- character(0)
     sapply(set$func_info, function(l) {
       if (!is.null(l[["type"]])) {
@@ -181,7 +181,7 @@ RDA <- function(set, alpha, gamma){
   
   if(missing(alpha) | missing(gamma)){
     #TODO source 
-    alpha_gamma <- alpha_gamma_crossFit(set) 
+    alpha_gamma <- alpha_gamma_crossFit(set) #TODO perhaps identical copy of set
     alpha <<- alpha_gamma$alpha
     gamma <<- alpha_gamma$gamma
   }
