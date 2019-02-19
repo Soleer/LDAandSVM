@@ -1,3 +1,7 @@
+```{r, echo=FALSE}
+set.seed(0)
+```
+
 ---
 title: "LDA & SVM"
 author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
@@ -11,11 +15,48 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This package is an implementation of different discriminent analyses and support vector machines as described in Hastie et al. "The Elements of Statistical Learning" (2008). The implemented algorithms are different methods for solving classification problems. The underlying principle is the the same for all algorithms. Suppose we have a dataset with different observations and can match every such observation to a distinct class. We also assume that the classes cover all possible options any object can be in. What is now the optimal way of partitioning our observation space and assigning any part of it a class that best reflects the observation data. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+A simpler way to put it is to suppose we have our dataset with oberservations and their associated classes and one extra observation that has not been classed yet. Given our observations what is the class the extra point will most likely be in. 
+
+**fett**
+
+## Motivation
+
+Here comes the real data example
+
+## Linear Disciminent Analysis
+
+Linear Discriminant Analyisis (from now on LDA) is the simplest of the algorithms in this package but has the most presumptions. We suppose that the underlying datat is multivariate normal distributed where every class has **the same** covariance matrix. This is a very strong persumption but still shows very good results in practice. It was among the top three classifiers for 7 out of 22 datasets in the STATLOG project (see Hastie et al. "The Elements of Statistical Learning" (2008) p. 111). The power of LDA comes from its relative simple calculations: Because of the assumption that every class has the same covariance matrix the distance formula is simplyfied to be linear as opposed to qudratic although the underlying distribution is gaussian. This gives LDA its name and shows itself in the classification plot where the classes are seperated by straights. 
+
+```{r LDA}
+set.seed(0)
+
+sig <- c(1.5, 2, 2.5, 1.3, 1.1, 2.1, 1.8)
+dimension <- 2
+
+test <- make_test(100,
+                  nparam = dimension,
+                  nclasses = 4,
+                  sigma = sig)
+
+set <- make_set(test,
+           by = "class",
+           title = "R Markdown ",
+           description = "R Markdown presentation file")
+
+func_name1 <- LDA(set)[['name']]
+testplot1 <-
+  make_2D_plot(set,
+               func_name1,
+               ppu = 5)
+testplot1
+```
+
+
+## Code
 
 ```{r cars}
 summary(cars)

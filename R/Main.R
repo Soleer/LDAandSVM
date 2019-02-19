@@ -1,19 +1,13 @@
-<<<<<<< HEAD
 library(ggplot2)
 library(gridExtra)
-=======
->>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
 library(quadprog)
 library(R6)
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
-<<<<<<< HEAD
-=======
 library(NlcOptim)
 library(shiny)
->>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")
@@ -34,7 +28,7 @@ d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","F
 str(d3)
 
 data <- data.frame(results = d3$G1.x, absences = d3$absences.x, sex = d3$sex)
-
+data
 SAC_G1 <- make_set(data, by = "sex", title = "Student Alcohol consumption", description = "This is the student alcohol consumption for the G1 Test classified by sex")
 classify_app()
 
@@ -44,7 +38,7 @@ dimension <- 2
 
 test <- make_test(100,
                   nparam = dimension,
-                  nclasses = 3,
+                  nclasses = 4,
                   sigma = sig)
 
 set <-
