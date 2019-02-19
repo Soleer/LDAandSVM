@@ -187,11 +187,12 @@ RDA <- function(set, alpha, gamma){
   }
   
   kleinesSigma <- 1 #TODO
+  source("R/Estimators.R")
   sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ 
     #TODO Formel
     sigma_est <- sigma_est(set)
     n <- ncol(sigma_est)
-    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * kleinSigma * kleinSigma * diag(n)
+    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
     
     sigma_classAlphaGamma <-
       sigma_class*alpha + (1 - alpha) * sigma_estGamma
