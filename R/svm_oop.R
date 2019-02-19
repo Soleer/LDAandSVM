@@ -36,7 +36,7 @@ safety <- function(expr) {
 LD_function <- function(data, results, values) {
   n <- length(results)
   cache <- matrix(0, ncol = n, nrow = n)
-  if (!is.na(values$kernel) && values$kernel == "poly") {
+  if (values$kernel == "poly") {
     for (i in 1:n) {
       for (j in 1:i) {
         cache[i, j] <- results[i] * results[j] * (1 + sum(data[i, ] * data[j, ])) ^ values$d
@@ -45,7 +45,7 @@ LD_function <- function(data, results, values) {
         }
       }
     }
-  } else if (!is.na(values$kernel) && values$kernel == "radial") {
+  } else if (values$kernel == "radial") {
     for (i in 1:length(results)) {
       for (j in 1:i) {
         cache[i, j] <-
@@ -55,7 +55,7 @@ LD_function <- function(data, results, values) {
         }
       }
     }
-  } else if (!is.na(values$kernel) && values$kernel == "neural") {
+  } else if (values$kernel == "neural") {
     for (i in 1:n) {
       for (j in 1:i) {
         cache[i, j] <-
@@ -165,7 +165,7 @@ alpha_svm_est <- function(data, results, values) {
       ub = uub
     ))
   }
-  if ((is.null(a$result) || !is.null(a$warning)) && values$kernel != 0) {
+  if ((is.null(a$result) || !is.null(a$warning)) && values$kernel != "id") {
     warning(
       c(
         a$error,
@@ -230,7 +230,7 @@ svm_two_classes <- function(data,
   if(is.na(alpha[1])){return(NA)}
   beta <- beta_svm_est(alpha, data, results)
   beta_Null <- beta_svm_0(alpha, data, results, beta)
-  if (is.na(values$kernel)) {
+  if (values$kernel=="id") {
    f <- function(x) {
       return(x %*% beta + beta_Null)
     }
@@ -287,11 +287,11 @@ svm_two_classes_oop <- function(set,
   if(is.na(alpha[1])){return(NA)}
   beta <- beta_svm_est(alpha, set$data, results)
   beta_Null <- beta_svm_0(alpha, set$data, results, beta)
-  if (is.na(values$kernel)) {
+  if (values$kernel=="id") {
     f <- function(x) {
       return(x %*% beta + beta_Null)
     }
-  } else if (!is.na(values$kernel) && values$kernel == "poly") {
+  } else if (values$kernel == "poly") {
     f <- function(x) {
       h <- 0
       for (i in 1:set$n_obs) {
@@ -299,7 +299,7 @@ svm_two_classes_oop <- function(set,
       }
       return(sum(h) + beta_Null)
     }
-  } else if (!is.na(values$kernel) && values$kernel == "radial") {
+  } else if (values$kernel == "radial") {
     f <- function(x) {
       h <- 0
       for (i in 1:set$n_obs) {
@@ -360,7 +360,7 @@ svm_classify_list <- function(set, values) {
   if (set$n_classes == 2) {
     b <- svm_two_classes_oop(set, values)
     if(class(b) != "function" &&is.na(b)){
-      values$kernel <- NA_character_
+      values$kernel <- "id"
       b <- svm_two_classes_oop(set, values)
     }
     return(b)
@@ -376,7 +376,7 @@ svm_classify_list <- function(set, values) {
              values = values,
              ob_mat = ob_mat)
     if(is.na(b[[r]][1])){
-      values$kernel <- NA_character_
+      values$kernel <- "id"
       bool <- TRUE
       break
     }
@@ -430,7 +430,7 @@ svm_classify <- function(t, uresults) {
 
 SVM <- function(set,
                 C = 1,
-                kernel = NA_character_,
+                kernel = "id",
                 d = 1,
                 g = 1) {
   ##The SVM classification function. A function factory
