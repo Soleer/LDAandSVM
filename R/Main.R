@@ -31,7 +31,9 @@ data <- data.frame(results = d3$G1.x, absences = d3$absences.x, sex = d3$sex)
 data
 SAC_G1 <- make_set(data, by = "sex", title = "Student Alcohol consumption", description = "This is the student alcohol consumption for the G1 Test classified by sex")
 classify_app()
-set$func[['PDA_1']]
+LDA(SAC_G1)
+make_2D_plot(SAC_G1,"LDA_1",ppu=1)
+
 ##Analyse
 sig <- c(1.5, 2, 2.5, 1.3, 1.1, 2.1, 1.8)
 dimension <- 2
@@ -56,7 +58,8 @@ testplot0 <-
   make_2D_plot(set,
                func_name0,
                ppu = 5,
-               bg = FALSE)
+               bg = FALSE,
+               project = FALSE)
 plotlist0 <- list(p0, testplot0)
 nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))
 ggsave('PDA.png',
@@ -71,7 +74,8 @@ p1 <- do.call(grid.arrange, liste1)
 testplot1 <-
   make_2D_plot(set,
                func_name1,
-               ppu = 5)
+               ppu = 5,
+               project = FALSE)
 plotlist1 <- list(p1, testplot1)
 
 nice1 <-

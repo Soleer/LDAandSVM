@@ -67,7 +67,7 @@ make_2D_plot <- function(set,
   }
   else{
     proj_in <- function(x)
-      c(x, rep(0, times = (info[['dim']] - 2)))
+      c(x, rep(0, times = (set$dim - 2)))
     proj_data <- set$data
   }
   
@@ -276,3 +276,16 @@ plot_error <- function(set, name) {
   return(charts)
 }
 
+plot_summary <- function(set,name){
+  liste0 <- plot_error(set, name)
+  error_list <- do.call(grid.arrange, liste0)
+  plot <-
+    make_2D_plot(set,
+               name,
+               ppu = 5,
+               bg = FALSE,
+               project = FALSE)
+  plotlist <- list(error_list, plot)
+  niceplot <- do.call("grid.arrange", c(plotlist, ncol = 2, top = sprintf("%s %s",set$title,name)))
+  return(niceplot)
+}
