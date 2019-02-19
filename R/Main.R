@@ -1,29 +1,13 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 library(ggplot2)
 library(gridExtra)
-=======
->>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
-=======
-library(ggplot2)
-library(gridExtra)
->>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 library(quadprog)
 library(R6)
 library(MASS)
 library(NlcOptim)
 library(e1071)
 library(shiny)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 library(NlcOptim)
 library(shiny)
->>>>>>> 7dd01097c0997b80792bc41ecd21b0833b24002c
-=======
-library(NlcOptim)
-library(shiny)
->>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 library(rlang)
 source("R/Basis_expansion.R")
 source("R/Test.R")
@@ -31,22 +15,8 @@ source("R/oop.R")
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-#source("R/svm_alt.R")
-=======
-source("R/svm_oop.R")
->>>>>>> 90f5488f2d16edd344bf79260a26fa9feb647f86
-=======
 source("R/svm.R")
->>>>>>> 197a68cc990a6b3782e9793271198364adca9dab
-=======
-source("R/svm.R")
->>>>>>> 35d72d5f568c109c6cd3552f738ab6c8cf066595
 source("R/shinyplot.R")
-source("R/RDA.R")
-
 set.seed(0)
 
 ##Real Data
@@ -77,7 +47,7 @@ set <-
            title = "TEST",
            description = "Weil ich kann!")
 ### Shiny-Interface
-classify_app( )
+classify_app()
 ### PDA
 func_name0 <-  PDA(set, base = "quad")[['name']]
 liste0 <- plot_error(set, func_name0)
@@ -129,23 +99,6 @@ ggsave('QDA.png',
        device = 'png',
        dpi = 400)
 
-### RDA
-func_name3 <- RDA(set)[['name']]
-liste3 <- plot_error(set, func_name3)
-p3 <- do.call(grid.arrange, liste3)
-testplot3 <-
-  make_2D_plot(set,
-               func_name3,
-               ppu = 5)
-plotlist3 <- list(p3, testplot3)
-
-nice3 <-
-  do.call("grid.arrange", c(plotlist3, ncol = 2, top = "RDA"))
-ggsave('RDA.png',
-       plot = nice3,
-       device = 'png',
-       dpi = 400)
-
 ###svm
 f4 <-
   svm_classify(uresults = set$classes,
@@ -164,4 +117,3 @@ ggsave('svm.png',
        plot = nice4,
        device = 'png',
        dpi = 400)
-
