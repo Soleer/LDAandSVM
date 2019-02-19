@@ -1,0 +1,87 @@
+```{r source, echo=FALSE, warning = FALSE}
+#source("R/Basis_expansion.R")
+source("../R/Test.R")
+source("../R/oop.R")
+source("../R/Estimators.R")
+source("../R/Classifier_funs.R")
+source("../R/plot_functions.R")
+#source("R/svm.R")
+#source("R/shinyplot.R")
+set.seed(0)
+
+```
+
+---
+title: "LDA & SVM"
+author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
+date: "February 22, 2019"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LDA & SVM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+This package is an implementation of different discriminent analyses and support vector machines as described in Hastie et al. "The Elements of Statistical Learning" (2008). The implemented algorithms are different methods for solving classification problems. The underlying principle is the the same for all algorithms. Suppose we have a dataset with different observations and can match every such observation to a distinct class. We also assume that the classes cover all possible options any object can be in. What is now the optimal way of partitioning our observation space and assigning any part of it a class that best reflects the observation data. 
+
+A simpler way to put it is to suppose we have our dataset with oberservations and their associated classes and one extra observation that has not been classed yet. Given our observations what is the class the extra point will most likely be in. 
+
+**fett**
+
+## Motivation
+
+Here comes the real data example
+
+## Linear Disciminent Analysis (LDA)
+
+Linear Discriminant Analyisis (short LDA) is the simplest of the algorithms in this package but has the most presumptions. We suppose that the underlying datat is multivariate normal distributed where every class has **the same** covariance matrix. This is a very strong persumption but still shows very good results in practice. It was among the top three classifiers for 7 out of 22 datasets in the STATLOG project (see Hastie et al. "The Elements of Statistical Learning" (2008) p. 111). The power of LDA comes from its relative simple calculations: Because of the assumption that every class has the same covariance matrix the distance formula is simplyfied to be linear as opposed to qudratic although the underlying distribution is gaussian. This gives LDA its name and shows itself in the classification plot where the classes are seperated by straights:
+
+```{r LDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with LDA, where each color is associated with one class A,B,C or D as is specified in the legend"}
+sig <- c(1.5, 2, 2.5, 1.3)  ##Creating a vector of standard deviations for the the make_test() function
+dimension <- 2   ##Number of dimensions the test should have. 2 for simlicity
+  
+test <- make_test(100, ##Creating a random test where each class has 100 observations
+                  nparam = dimension, ##in 2 Dimensions
+                  nclasses = 4, ##with 4 classes
+                  sigma = sig) ##That are distributed as specified above
+  
+set <- make_set(test, ##Creating a R6 dataset object with the generated data
+                by = "class", ##Column in which the classes of the observations are listed
+                title = "R Markdown ",
+                description = "R Markdown presentation file")
+  
+func_name1 <- LDA(set)[['name']] ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
+testplot1 <- make_2D_plot(set, ##Creating a ggplot object where the classification image is saved in
+                          func_name1, ##Function by which should be classified
+                          ppu = 5) ##Resolution of the background
+  
+testplot1 ##Actual plotting
+```
+
+The above test data was generated using the ``` make_test() ``` function. It randomly generates 100 oberservation of each class with randomly generated expeted values and settable standard deviations. Although the standard deviations for this test were ``` 1.5, 2, 2.5, 1.3 ``` (note that these values are used for each class in both x and y direction) which is far from beeing the same LDA shows quite good results as we can see in the error plot below:
+
+```{r Error, echo = FALSE, warning=FALSE, results='hide', fig.keep='none'}
+liste1 <- plot_error(set, func_name1) ##Saving the Errorplot into an object
+```
+
+```{r Errorplot, echo = FALSE, warning=FALSE, results='hide', fig.cap="\\label{fig:figs} Error in the LDA function where f(x=A) means that objects of class A has been classified to what percentage in the classes shown in the barplot below and f^-1(x=A) means that objects classified to class A are actually to what percentage in the  classes shown in the barplot below. The data plot shows the overall error of the classification"}
+do.call(grid.arrange, liste1) ##Plotting the Error
+```
+
+Now we can try to make our model more accurate by leaving out some of the assumption. This is what gives us Quadratic Discriminant Analysis.
+
+## Quadratic Discriminant Analysis (QDA)
+
+Since we want to keep assuming that the underlying distribution is gaussian we have to kick the "pooled" covariance matrix and calculate a different one for each given class. These don't cancel each other out as was the case in LDA so the distance function is quadratic in x. This is where the name comes from. 
+
+```{r QDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with QDA. The data is the same as in LDA above. The syntax of the call remains almost identical"}
+func_name2 <- QDA(set)[['name']] ##Setting the Classifier function as QDA
+testplot2 <- make_2D_plot(set, ##Creating a plot object for the classification plot
+               func_name2,
+               ppu = 5)
+
+testplot2 ##Plotting the image
+```
+
