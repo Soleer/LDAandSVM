@@ -59,13 +59,11 @@ testplot0 <-
                bg = FALSE)
 plotlist0 <- list(p0, testplot0)
 nice0 <- do.call("grid.arrange", c(plotlist0, ncol = 2, top = "PDA"))
-
 ggsave('PDA.png',
        plot = nice0,
        device = 'png',
        dpi = 400)
-
-
+calc_error(set,func_name1)
 ### LDA
 func_name1 <- LDA(set)[['name']]
 liste1 <- plot_error(set, func_name1)
