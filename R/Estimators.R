@@ -74,3 +74,21 @@ sigma_bet_exp <- function(data, results) {
     Reduce(`+`, B_i) / (length(results) - N) ##Adding all parts, which are in one big list, together and dividing by a standarizing factor
   return(B)
 }
+
+small_sigma_est <- function(set){ #TODO kontrollieren
+  data <- set$data
+  results <- set$results
+  mu <- set$mean
+  K <- set$n_classes
+  N <- set$n_obs
+  classes <- set$classes
+  
+  small_sigma <- sum(sapply(classes, FUN = function(k){
+    sum(sapply(data[where(results == k), ], FUN2 = function(x){
+      mean((x-mu$class) ^2)
+    }))
+  })) * 1/(N-K)
+  
+  small_sigma
+    
+}

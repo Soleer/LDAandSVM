@@ -76,7 +76,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     training_results <- unlist(results[-i])
 
     training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
-    
+    print(colnames(training_dataframe))
     data_set <- make_set(data = training_dataframe, by = "training_results") 
 
 
