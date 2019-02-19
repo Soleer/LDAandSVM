@@ -34,11 +34,12 @@ safety <- function(expr) {
 #LD############################################
 #This is the function that has to be maximised.
 LD_function <- function(data, results, values) {
-  cache <- matrix(0, ncol = length(results), nrow = length(results))
+  n <- length(results)
+  cache <- matrix(0, ncol = n, nrow = n)
   if (!is.na(values$kernel) && values$kernel == "poly") {
-    for (i in 1:length(results)) {
+    for (i in 1:n) {
       for (j in 1:i) {
-        cache[i, j] <- results[i] * results[j] * (1 + sum(data[i, ] * data[j, ])) ^
+        cache[i, j] <- results[i] * results[j] * (1 + data[i, ] %*% data[j, ]) ^
           values$d
       }
     }
