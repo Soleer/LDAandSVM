@@ -117,3 +117,51 @@ ggsave('svm.png',
        plot = nice4,
        device = 'png',
        dpi = 400)
+
+
+
+## Motivating example
+set.seed(2)
+height_B <- rnorm(115, mean = 30, sd = 4)
+decibel_B <- rnorm(115, mean = 70, sd = 10)
+classes_B <- rep("Barock", 115)
+
+height_R <- rnorm(78, mean = 17, sd = 6)
+decibel_R <- rnorm(78, mean = 102, sd = 7)
+classes_R <- rep("Renaissance", 78)
+
+height_C <- rnorm(96, mean = 42, sd = 7)
+decibel_C <- rnorm(96, mean = 64, sd = 8)
+classes_C <- rep("Classic", 96)
+
+height <- c(height_B, height_R, height_C)
+decibel <- c(decibel_B, decibel_R, decibel_C)
+class <- c(classes_B, classes_R, classes_C)
+
+Rockets <- data.frame(height = height, decibel = decibel, class = class)
+
+Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets", description = "Rockets with their flight heigth")
+
+func_name1 <- LDA(Rocket_set)[['name']]
+liste1 <- plot_error(Rocket_set, func_name1)
+p1 <- do.call(grid.arrange, liste1)
+testplot1 <-
+  make_2D_plot(Rocket_set,
+               func_name1,
+               ppu = 2)
+plotlist1 <- list(p1, testplot1)
+
+func_name2 <- QDA(Rocket_set)[['name']]
+liste2 <- plot_error(Rocket_set, func_name2)
+p2 <- do.call(grid.arrange, liste2)
+testplot2 <-
+  make_2D_plot(Rocket_set,
+               func_name2,
+               ppu = 2)
+plotlist2 <- list(p1, testplot2)
+
+ggplot(mtcars, aes(x=hp, y=mpg)) + geom_point(aes(y=qsec), color="red") 
+testplot1 <- testplot1 + geom_point(aes(x = 60, y = -80))
+testplot1
+testplot2
+?aes
