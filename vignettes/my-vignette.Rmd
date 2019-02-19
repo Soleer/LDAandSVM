@@ -52,22 +52,44 @@ Rockets <- data.frame(height = height, decibel = decibel, class = class)
 
 Suppose we have a dataset of 289 observations of skyrockets for sylvester where we have measured both the heigth and the volume of our rckets. There are 115 rockets of the type "Barock", 78 of the type "Renaissance" and 96 of the type "Classic". This allows us to Classify the data with this package. First, we need to create a data_set object out of our data-frame. We do this by typing:
 
-```{r Creation}
+```{r Creation, results='hide'}
 Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets", description = "Rockets with their flight heigth")
 ```
-Here we load in our Rockets data-frame and name the columns by which we want to classify with the parameter "by".
+Here we load in our Rockets data-frame and name the columns by which we want to classify with the parameter "by". We now want to see how our classification looks like so we first create a classification function:
 
-```{r Classification example}
-func_name1 <- LDA(Rocket_set)[['name']]
-liste1 <- plot_error(Rocket_set, func_name1)
-p1 <- do.call(grid.arrange, liste1)
-testplot1 <-
-  make_2D_plot(Rocket_set,
-               func_name1,
-               ppu = 2)
-plotlist1 <- list(p1, testplot1)
-plotlist1
+```{r Classification function creation}
+func_example1 <- LDA(Rocket_set)[['name']]
 ```
+
+and finally create the plot
+
+```{r LDA example plot, results='hide'}
+exampleplot1 <- make_2D_plot(Rocket_set,
+               func_example1,
+               ppu = 2)
+```
+
+which we will disply with:
+
+```{r displaying plot}
+exampleplot1
+```
+
+If we want to see how good the function has classified the data we create another plot object
+
+```{r Classification example, results='hide', fig.keep='none'}
+example_error <- plot_error(Rocket_set, func_example1)
+```
+
+and call it:
+
+```{r calling error}
+do.call(grid.arrange, example_error)
+```
+
+So we see that for this data set LDA is to 89% rigth.
+
+It is now 0:01 in the morning on January 1st and we see that our neighbour has a rocket that's really loud and we are interested if it one of the now banned rocket of the type Classic. We have observed, that the rocket 
 
 ```{r seed setting, echo = FALSE}
 set.seed(2)

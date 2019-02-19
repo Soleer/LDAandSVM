@@ -126,4 +126,5 @@ ggplot(mtcars, aes(x=hp, y=mpg)) + geom_point(aes(y=qsec), color="red")
 testplot1 <- testplot1 + geom_point(aes(x = 60, y = -80))
 testplot1
 testplot2
-?aes
+
+Rocket_set$func[[func_name2]](c(60, -80))
