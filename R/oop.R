@@ -481,7 +481,7 @@ is.data_set <- function(set) {
 #'@examples
 #'set <- make_testset(N = 50, K= 2)
 #'@export
-make_testset <- function(N = 10, K = 3, P = 2) {
+make_testset <- function(N = 3, K = 3, P = 2) {
   test <- make_test(ninputs = N, nclasses = K, nparam = P)
   set <-
     make_set(test,

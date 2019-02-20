@@ -14,9 +14,10 @@ alpha_gamma_crossFit <- function(data_set) {
   #data
   n<- nrow(data) 
 
-  K <- min(10, n)
+  K <- min(3, n)
   partition<-split(1:n, sample(1:K, n, replace = T)) #TODO ?equally sized
   
+  #splits results and data according to chosen partition with corresponding rows
   results <- lapply(partition, FUN = function(x){
     results[x]
   })
@@ -25,14 +26,15 @@ alpha_gamma_crossFit <- function(data_set) {
   })
    
   #creates parameters to choose from in cross fitting
-  N <- 5
+  N <- 5 #how many parameters shall be considered
   v <- seq(from = 0,
            to = 1,
            length.out = N) #TODO aequidistant?
   
+  #array of all parameters for alpha and gamma
   alpha_gamma <- array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
 
-  #iterates all
+  #iterates thrue all possible parameters and saves there error rate in a matrix (to choose the minimum later)
   alpha_gamma_error <- matrix(nrow = N, ncol = N)
   for (i in 1:N) { 
     for (j in 1:N) {
@@ -45,18 +47,19 @@ alpha_gamma_crossFit <- function(data_set) {
     }
   }
   
-  "alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){ #TODO kontrollieren
+  #alternative implementation with apply
+  "alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){ 
     alpha <- x$alpha
     gamma <- x$gamma
     return(validationErrorRate(data, results, alpha, gamma))
   })"
   
-  #finds best
+  #finds best option of alpha and gamma
   coordinates <-
-    which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)
+    which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)[1, ]
   
-  alpha <- alpha_gamma[c(coordinates, 1)]
-  gamma <- alpha_gamma[c(coordinates, 2)]
+  alpha <- alpha_gamma[coordinates[1], coordinates[2],"alpha"]
+  gamma <- alpha_gamma[coordinates[1], coordinates[2],"gamma"]
   
   return(list(alpha, gamma)) 
 }
@@ -71,30 +74,32 @@ alpha_gamma_crossFit <- function(data_set) {
 #'@param gamma gamma to be evaluated
 #'@return total mean error rate of all validations
 validationErrorRate <- function(data, results, alpha, gamma) {
-  results
-  errors <- sapply(seq_along(data) , FUN = function(i){
-    #training
 
+  #vector of error rates on a single validation slot
+  errors <- sapply(seq_along(data) , FUN = function(i){
+    
+    #training on all data parts except the validation slot
     training_data <- do.call(rbind, data[-i]) 
     training_results <- unlist(results[-i])
-
-    training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
-    print(colnames(training_dataframe))
-    
-
+    training_dataframe <- cbind(training_results, training_data) 
     data_set <- make_set(data = training_dataframe, by = "training_results") 
-
-
-    classifier_set <- RDA(set = data_set, alpha = alpha, gamma = gamma)$func
+      #in order to generate a RDA object for it
+      classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)$func
     
-    #validation on block j
+    #validation on block i
     validation_data_set <- data[[i]]
     validation_results <- results[[i]]
     
-    current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
+    current_error <- calc_miss(validation_data_set, validation_results, classifier)
     
     return(current_error)
   })
   
   return(mean(errors))
 }
+
+test_cross <- function(){
+  test_data <- make_testset()
+  alpha_gamma_crossFit(test_data)
+}
+test_cross()
