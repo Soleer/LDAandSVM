@@ -134,7 +134,7 @@ QDA <- function(set) {
 #' @examples
 #' PDA(Rockets_set, "quad", diag(2, nrow = 5))
 #' func_name <- PDA(SAC_G1)[['name']]
-PDA <- function(set, base, omega) {                             ##The PDA classification function. A function factory
+PDA <- function(set, base = "id", omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
     }
