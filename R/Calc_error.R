@@ -81,6 +81,12 @@ calc_totalMiss <- function(set, name){
   errors<-calc_error(set, name)
   return(errors$total_miss)
 }
+
+calc_miss <- function(data, results, f){
+  estimations <- apply(data,1,f)
+  n <- length(results)
+  sum(results==estimations)/n
+}
 #' 
 #' 
 #' 

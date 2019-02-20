@@ -142,7 +142,6 @@ make_2D_plot <- function(set,
   }
   return(mainplot)
 }
-<<<<<<< HEAD
 
 #'calc_error
 #'
@@ -221,8 +220,6 @@ calc_error <- function(set, name) {
   miss <- round(miss, 2)
   return(list(probs_of_Data,probs_of_Results,miss=miss))
 }
-=======
->>>>>>> e9a32dbb3694dcac07e15734e3317d9cf9e1e4f7
 
 plot_error <- function(set, name) {
   if (!is.data_set(set)) {
