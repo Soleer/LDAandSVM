@@ -3,25 +3,33 @@ source("R/Calc_error.R")
 
 #RDA test 
 testRDA <- function() {
-  N <- 50
-  G<- 5
+  N <- 2
+  G<- 3
   P<- 2
   test_set <- make_testset(N, G, P )
   validation_set <- make_testset(N, G, P)
   
   #TODO complete
   test_that("RDA works at all", {
-    RDA3_function <- RDA(test_set)$func # uses cross validation 
+    RDA_object <- RDA(test_set$clone())
+    RDA_function <- RDA_object$func
+    print(RDA_function)
+    
+  })
+  
+  test_that("RDA has valuable results, works with maximum failure rate", {
+    maximum_failure <- 0.5
+    RDA_function <- RDA(test_set$clone())$func # uses cross validation 
     
     calc_errorRDA3Train <- calc_miss(test_set$data , test_set$results,RDA3_function)
     calc_errorRDA3Val <- calc_miss(validation_set$data , validation_set$results,RDA3_function)
-  
+    
 
     #RDA better in training
     expect_lte(calc_errorRDA3Train, calc_errorQDATrain)
     
     #RDA better in validation
-    expect_lte(calc_errorRDA3Val, 0.5)
+    expect_lte(calc_errorRDA3Val, maximum_failure)
     
     #Training performance better than validation
     expect_lte(calc_errorRDA3Train, calc_errorRDA3Val)
@@ -74,7 +82,7 @@ testRDA <- function() {
   
   #Test performance win
   test_that("RDA better than LDA and QDA", {
-    RDA3_function <- RDA(test_set)$func # uses cross validation 
+    RDA3_function <- RDA(test_set$clone())$func # uses cross validation 
 
     calc_errorRDA3Train <- calc_miss(test_set$data , test_set$results,RDA3_function)
     calc_errorRDA3Val <- calc_miss(validation_set$data , validation_set$results,RDA3_function)
