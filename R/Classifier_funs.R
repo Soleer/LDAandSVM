@@ -1,5 +1,6 @@
 # classification functions -> G
 #helpfunction
+source("R/Estimators.R")
 targets <- function(vector) {
   n <- length(vector)
   En <- diag(1, n, n)
@@ -189,6 +190,84 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
       omega = omega
     )))
 }
+#'SVM
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+SVM <- function(set,
+                C = 1,
+                kernel = "id",
+                d = 1,
+                g = 1) {
+  ##The SVM classification function. A function factory
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
+  }
+  if (!is.double(C) && C <= 0) {
+    stop("Input 'C' must be a positive double", call. = FALSE)
+  }  
+  if (!is.character(kernel) && length(kernel) != 1) { 
+    stop("Input 'kernel' must be a string with length one.")
+  }  
+  if (!is.double(d) && d <= 0) {
+    stop("Input 'd' must be a positive double", call. = FALSE)
+  }
+  if (!is.double(g) && g <= 0) {
+    stop("Input 'g' must be a positive double", call. = FALSE)
+  }
+  if (length(set$func) > 0) {
+    slot <- character(0)
+    sapply(set$func_info, function(lis) {
+      l <- lis[['parameter']]
+      if (!is.null(l[["C"]]) &&
+          !is.null(l[["kernel"]]) &&
+          !is.null(l[["d"]]) &&
+          !is.null(l[["g"]])) {
+        if (l[["C"]] ==  C &&
+            isTRUE(all.equal(l[["kernel"]],kernel)) &&
+            l[["d"]] == d &&
+            l[["g"]] == g) {
+          slot <<- lis[["name"]]
+        }
+      }
+    })
+    if (length(slot) > 0) {
+      return(list(name = slot, func = set$func[[slot]]))
+    }
+  }
+  values <- list(
+    "C" = C,
+    "kernel" = kernel,
+    "d" = d,
+    "g" = g
+  )
+  t <- svm_classify_list(set, values)
+  f <- svm_classify(t, set$classes)
+  return(set$set_function(
+    f,
+    type = "SVM",
+    parameter = list(
+      base = 'id',
+      dim = NULL,
+      omega = NULL,
+      C = C,
+      kernel = kernel,
+      d = d,
+      g = g
+    )
+  ))
+}
 
 #RDA
 RDA <- function(set, alpha, gamma){
@@ -221,9 +300,6 @@ RDA <- function(set, alpha, gamma){
     alpha <<- alpha_gamma$alpha
     gamma <<- alpha_gamma$gamma
   }
-  
-
-  source("R/Estimators.R")
 
   kleinesSigma <- small_sigma_est(set)
   sigma_est <- sigma_est(set)
@@ -255,52 +331,4 @@ RDA <- function(set, alpha, gamma){
                                                               "basic RDA function")))
 }
 
-#RDA test 
-testRDA <- function() {
-  library(testthat)
-  N <- 5
-  G<- 2
-  test_set <- make_testset(N, G )
-  validation_set <- make_testset(N, G)
-  
-  #TODO complete
-  test_that("LDA equals RDA", {
-    
-    RDA1_function <- RDA(test_set, alpha = 1, gamma =1)$func
-    print("")
-    print("RDA1:")
-    print(RDA1_function)
-    
-    LDA_function <- LDA(test_set)$func
-    print(LDA_function)
-    typeof(LDA_function)
-    
-    resultLDA <- apply(validation_set$data, 1, LDA_function)
-    resultRDA1 <- apply(validation_set$data, 1, RDA1_function)
-    
-      expect_equivalent(resultRDA1, resultLDA)
-  })
-  
-  test_that("QDA equals RDA", { 
-    RDA2_function <- RDA(test_set, alpha = 0, gamma = 1)$func
-    QDA_function <- QDA(test_set)$func
-    
-    resultRDA1 <- RDA2_function(validation_set$data)
-    resultQDA <- QDA_function(validation_set$data)
-    
-    expect_equivalent(resultRDA1, resultQDA)
-  })
-  
-  test_that("RDA better that LDA and QDA", {
-    RDA3_function <- RDA(test_set)$func # uses cross validation 
-    resultRDA3 <- RDA3_function(validation_set$data)
-    
-    expect_gte(resultRDA3, resultQDA)
-    expect_gte(resultRDA3, resultLDA)
-  })
-}
 
-# N <- 5
-# G<- 2
-# test_set <- make_testset(N, G )
-# testRDA()

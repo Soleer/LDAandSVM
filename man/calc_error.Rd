@@ -22,17 +22,21 @@ calc_error(set, name)
 \value{
 total error rate
 
-A list with 3 entrys:
+A list with 3 entrys. Entry [[1]] and [[2]] are matrixes and contain the values as described in the description.
+[[3]] is the propability of missclassification.
 }
 \description{
 calculates the total error rate of of a classifaction function on a dataset
 
-Calculates the following percentages for a function of a data_set:
-an observation of a class 'A' classified to a class 'B'
-class 'A' classified to 'A'
-class 'A' not classified to 'A' 
-classified to class 'A' actually was class 'B'
-classified to class 'A' and also was 'A'
-classified to class 'A' but was not 'A'
-total missclassification of the data
+Calculates the following propabilitys for a classificationfunction of a data_set:
+[[1]]                                                        #accessed over: 
+prop. of: class 'A' to be classified to a class 'B'          # ['B','A']
+prop. of: class 'A' to be classified to 'A'                  # ['right','A']
+prop. of: class 'A' to be not classified to 'A'              # ['wrong','A']
+[[2]]
+prop. of: classified to class 'A' and actually was class 'B' #['B','A']
+prop. of: classified to class 'A' and also was 'A'           #['right','A']
+prop. of: classified to class 'A' but was not 'A'            #['wrong','A']
+[[3]]
+prop. of: missclassification                                 #['miss']
 }

@@ -18,3 +18,6 @@ plot_summary(set, name, background = TRUE, project = TRUE)
 \description{
 summarizes a function of a data_set in one plot
 }
+\examples{
+plot_summary(set,"LDA_1")
+}

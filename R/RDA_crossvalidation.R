@@ -85,7 +85,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     training_data <- do.call(rbind, data[-i]) 
     training_results <- unlist(results[-i])
 
-    training_dataframe <- cbind(training_results, training_data) 
+    training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
     print(colnames(training_dataframe))
     
 
@@ -100,7 +100,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     
     #TODO call correctly
     calc_totalMiss <- function(set, name)
-    current_error <- calc_miss(validation_data_set, validation_results, classifier)
+    current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
     
     return(current_error)
   })
@@ -108,7 +108,3 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   return(mean(errors))
 }
 
-
-#test
-#test_set <- make_testset()
-#alpha_gamma_crossFit(test_set)
