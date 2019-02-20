@@ -303,7 +303,7 @@ RDA <- function(set, alpha, gamma){
   mu <- set$mean
   
   if(missing(alpha) | missing(gamma)){
-    #TODO source 
+    
     alpha_gamma <- alpha_gamma_crossFit(set) #TODO perhaps identical copy of set
     alpha <<- alpha_gamma$alpha
     gamma <<- alpha_gamma$gamma
@@ -313,7 +313,7 @@ RDA <- function(set, alpha, gamma){
   sigma_est <- sigma_est(set)
   n <- ncol(sigma_est)
 
-  sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ #TODO check dimensions
+  sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){
 
 
     sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
@@ -335,8 +335,18 @@ RDA <- function(set, alpha, gamma){
   }
   
   classify_func <- classify(set$classes, delta)
-  return(set$set_function(classify_func, type = "RDA", list(base='id',description =
-                                                              "basic RDA function")))
+  
+  return(set$set_function(
+    classify_func,
+    type = "RDA",
+    parameter = list(
+      base = 'id',
+      description =
+        "basic RDA function",
+      alpha = alpha,
+      gamma = gamma
+    )
+  ))
 }
 
 

@@ -476,12 +476,13 @@ is.data_set <- function(set) {
 #'Creates a simple data_set with random data. 
 #'
 #'@param N number of observations per class
-#'@param G number of classes
-make_testset <- function(N = 10, G = 3) {
+#'@param K number of classes
+#'@param  nparam
+make_testset <- function(N = 10, K = 3) {
   force(N)
-  force(G)
+  force(K)
   
-  test <- make_test(N, nclasses = G)
+  test <- make_test(N, nclasses = K)
   
   set <-
     make_set(test,
