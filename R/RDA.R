@@ -100,7 +100,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     
     #TODO call correctly
     calc_totalMiss <- function(set, name)
-    current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
+    current_error <- calc_miss(validation_data_set, validation_results, classifier)
     
     return(current_error)
   })
