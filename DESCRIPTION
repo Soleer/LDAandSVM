@@ -1,4 +1,4 @@
-Package: lda_svm
+Package: LDA.SVM
 Title: LDA_SVM
 Version: 1.1
 Authors@R: 
