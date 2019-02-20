@@ -59,7 +59,7 @@ alpha_gamma_crossFit <- function(data_set) {
   })"
   
   #finds best
-  coordinates <-
+coordinates <-
     which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)
   
   alpha <- alpha_gamma[c(coordinates, 1)]
@@ -107,8 +107,3 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   return(mean(errors))
 }
-
-
-#test
-#test_set <- make_testset()
-#alpha_gamma_crossFit(test_set)

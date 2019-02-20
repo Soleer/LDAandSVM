@@ -1,10 +1,10 @@
 ---
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
+  word_document: default
+  pdf_document: default
 ---
-```{r source, echo=FALSE, warning = FALSE}
+```{r source, echo=FALSE, warning = FALSE, results='hide'}
 source("../R/Basis_expansion.R")
 source("../R/Test.R")
 source("../R/oop.R")

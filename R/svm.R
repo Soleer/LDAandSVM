@@ -369,6 +369,7 @@ svm_classify_list <- function(set, values) {
 ######################################################################################
 # The svm_classify function returns a function that actually classifies an observation.
 svm_classify <- function(t, uresults) {
+  # t is a list of functions, uresults are the names of the classes.
   # If the input contains only two classes, then length(t) == 1.
   if (length(t) == 1) {
     # In this case the decision depend only on the sign of function t.

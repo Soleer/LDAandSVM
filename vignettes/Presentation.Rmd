@@ -1,0 +1,87 @@
+---
+title: "Presentation"
+author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
+date: "February 20, 2019"
+output:
+  ioslides_presentation: default
+  beamer_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+source("../R/Basis_expansion.R")
+source("../R/Test.R")
+source("../R/oop.R")
+source("../R/Estimators.R")
+source("../R/Classifier_funs.R")
+source("../R/plot_functions.R")
+source("../R/shinyplot.R")
+set.seed(2)
+height_B <- rnorm(115, mean = 30, sd = 4)
+decibel_B <- rnorm(115, mean = 70, sd = 10)
+classes_B <- rep("Barock", 115)
+
+height_R <- rnorm(78, mean = 17, sd = 6)
+decibel_R <- rnorm(78, mean = 102, sd = 7)
+classes_R <- rep("Renaissance", 78)
+
+height_C <- rnorm(96, mean = 42, sd = 7)
+decibel_C <- rnorm(96, mean = 64, sd = 8)
+classes_C <- rep("Classic", 96)
+
+height <- c(height_B, height_R, height_C)
+decibel <- c(decibel_B, decibel_R, decibel_C)
+class <- c(classes_B, classes_R, classes_C)
+
+Rockets <- data.frame(decibel = decibel, height = height, class = class)
+set.seed(2)
+```
+
+## R Markdown
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Slide with Bullets
+1. Item 1
+2. Item 2
+    a. Item 2a
+    b. Item 2b
+
+- Bullet 1
+    - Bullet 2
+- Bullet 3
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+str(Rockets)
+summary(Rockets)
+```
+
+## Creating a set
+
+```{r Creating a set, results='hide', echo = TRUE}
+Rocket_set <- 
+  make_set(Rockets, 
+           by = 'class', 
+           title = "Rockets", 
+           description = "Rockets with their flight heigth")
+```
+
+```{r creating the classfun, echo = TRUE}
+func_example1 <- LDA(Rocket_set)[['name']]
+```
+
+```{r Creating a plot, results='hide', echo = TRUE}
+exampleplot1 <- make_2D_plot(Rocket_set,
+               func_example1,
+               ppu = 1,
+               project = FALSE)
+```
+
+## Plotting the test
+```{r displaying plot}
+exampleplot1
+```

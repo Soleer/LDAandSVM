@@ -12,5 +12,5 @@ make_testset(N = 10, G = 3)
 \item{G}{number of classes}
 }
 \description{
-\code{make_set} transforms a dataframe into a data_set
+Creates a simple data_set with random data.
 }

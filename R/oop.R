@@ -1,6 +1,6 @@
 library(R6)
 
-#Our Basic Object "data_set":
+#Basic R6-Object "data_set":
 
 
 data_set <- R6Class(
@@ -30,8 +30,10 @@ data_set <- R6Class(
     .function_info = list()  #list of corresponding parameters for each function
   ),
   public = list(
+    
     #init function
-    initialize = function(data,
+#######################################################################################################    
+initialize = function(data,
                           by,
                           title = "",
                           description = "") {
@@ -129,11 +131,11 @@ data_set <- R6Class(
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
-    },
-    
+},
+#######################################################################################################
     #custom print function
     
-    print = function(...) {
+print = function(...) {
       #print given title and description
       if (private$.title != "") {
         cat(sprintf("Title: %s \n", private$.title))
@@ -152,9 +154,10 @@ data_set <- R6Class(
       cat("\nData:\n")
       print(private$.data[1:5,])
       invisible(self)
-    },
-    
-    set_function = function(func, type, parameter) {
+},
+#######################################################################################################
+    #add a classification function to the set
+set_function = function(func, type, parameter) {
       if (typeof(func) != "closure") {
         stop("No valid Input", call. = FALSE)
       }
@@ -168,9 +171,10 @@ data_set <- R6Class(
         return(invisible(list(name = name, func = func)))
       }
       
-    },
-    
-    change_func_name = function(from, to) {
+},
+#######################################################################################################  
+    #change name of a function in the set
+change_func_name = function(from, to) {
       stopifnot(is.character(from) && is.character(to))
       if (!any(names(private$.function_list) == from)) {
         stop(sprintf("%s is no function name", from))
@@ -182,9 +186,10 @@ data_set <- R6Class(
       names(private$.func_list)[n==from] <- to
       names(private$.func_info)[n==from] <- to
       return(invisible(to))
-    },
-    
-    expansion = function(base) {
+},
+#######################################################################################################
+    #expand the data with a basisexpansion
+expansion = function(base) {
       stopifnot(is.character(base))
       if (is.null(private$.data_expansion[[base]])) {    ##checks if expension already exists 
         h <-
@@ -195,12 +200,14 @@ data_set <- R6Class(
       else{
         private$.data_expansion[[base]]                   #no calculating 
       }
-    },
-    
-    get_data_by_class = function(class){
+},
+####################################################################################################### 
+    #get observations of one class
+get_data_by_class = function(class){
       return(data[private$.results == self$classes[class],])
-    }
-  ),
+}
+#######################################################################################################
+),
   
   #Control
   activ = list(
@@ -350,8 +357,9 @@ data_set <- R6Class(
         stop("meantotal is read only", call. = FALSE)
       }
     },
+#######################################################################################################
     #calculate the covariance matrix of each class
-    sigma = function(Value) {
+sigma = function(Value) {
       if (missing(Value)) {
         if (is.na(private$.sigma[1]) == FALSE) {
           return(private$.sigma)
@@ -378,11 +386,10 @@ data_set <- R6Class(
       else{
         stop("sigma is read only", call. = FALSE)
       }
-    },
-    
+},
+#######################################################################################################
     #Between Classes Variance
-    
-    sigma_bet = function(Value) {
+sigma_bet = function(Value) {
       if (missing(Value)) {
         if (is.na(private$.sigma_bet[1]) == FALSE) {
           return(private$.sigma_bet)
@@ -401,8 +408,10 @@ data_set <- R6Class(
       else{
         stop("sigma_bet is read only", call. = FALSE)
       }
-    },
-    func = function(Value) {
+},
+#######################################################################################################
+    #access to all classificationfunctions in the set
+func = function(Value) {
       if (missing(Value)) {
         return(private$.function_list)
       }
@@ -410,6 +419,7 @@ data_set <- R6Class(
         stop("read only", call. = FALSE)
       }
     },
+#######################################################################################################
     func_info = function(Value) {
       if (missing(Value)) {
         return(private$.function_info)
@@ -418,6 +428,7 @@ data_set <- R6Class(
         stop("read only", call. = FALSE)
       }
     },
+#######################################################################################################
     func_names = function(Value){
       if (missing(Value)) {
         return(names(private$.function_list))
@@ -428,15 +439,20 @@ data_set <- R6Class(
     }
   )
 )
+
+#######################################################################################################
 #usefull functions
+
 #'make_set
 #'
-#'\code{make_set} transforms a dataframe into a data_set 
+#'\code{make_set} transforms a dataframe into an R6 object of class 'data_set'.
 #'
 #'@param data a Dataframe
 #'@param by the name of a column of data to classify by
-#'@param title title of the data
-#'@param description description of the data
+#'@param title optional title of the data
+#'@param description optional description of the data
+#'@return A data_set
+#'
 make_set <- function(data,
                      by,
                      title="",
@@ -444,15 +460,22 @@ make_set <- function(data,
   
   data_set$new(data, by, title, description)
 }
-
+#'is.data_set
+#'
+#'Checks if the input is an Object of class data_set.
+#'@param set An R Object
+#'@return TRUE if set is a data_set, else FALSE
+#'@examples
+#'is.data_set(NULL)
+#'
+#'#FALSE
 is.data_set <- function(set) {
   any(class(set) == "data_set")
 }
 
-#usefull functions
 #'make_testset
 #'
-#'\code{make_set} transforms a dataframe into a data_set 
+#'Creates a simple data_set with random data. 
 #'
 #'@param N number of observations per class
 #'@param K number of classes
