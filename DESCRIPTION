@@ -6,17 +6,14 @@ Authors@R:
            family = "Stein",
            role = c("aut", "cre"),
            email = "stein.henning74@gmail.com")
-           
     person(given = "Daniel",
            family = "Fridljand",
            role = c("aut", "cre"),
            email = "daniel.fridljand@stud.uni-heidelberg.de")
-           
     person(given = "Benedikt",
            family = "Lauer",
            role = c("aut", "cre"),
            email = "benedikt.lauer@gmx.de")
-           
     person(given = "Niklas",
            family = "Wünstel",
            role = c("aut", "cre",),
