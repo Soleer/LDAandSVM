@@ -2,18 +2,20 @@
 
 #' make_test
 #'
-#' Generates a Dataframe with three cloumns 'x','y','class'.
-#' Every Class has a normal distribution around a random centers between the given x and y Boundaries.
-#' The Result can be used to train classification methods to sort a 2D Vectors to Class of 'class'.
+#' Generates a Dataframe with ninputs many columns and a 'class' column. Every Class has
+#' uncorrelated parameters around a random center within the given cube
+#' boundaries. The Output can be used to create a data_set.
 #' @param ninputs Number of generated Observations per Class
-#' @param nclasses Number of Classes.
-#' @param simga Numeric Vector of sigma Values for the gaussian Distribution to generate the Observations. Will be recycled if shorter than nclass.
-#' @param x Vector of length 2 with Boundaries for x
-#' @param y Vector of length 2 with Boundaries for y
-#' @return A Dataframe
+#' @param nparam Number of generated parameter columns 
+#' @param nclasses Number of Classes to create.
+#' @param simga Numeric Vector of sigma Values for the gaussian distribution togenerate the Observations. Will be recycled if shorter than nclasses.
+#' @param cube Vector of length 2 with lower and upper boundaries for the parameter centers
+#' @return A Dataframe with nparam many columns with gaussian data and a columns 'class'
 #' @examples
-#' make_test(10)
-#' make_test(80,5,sigma=c(1,2,0.8,1.5),x=c(-10,10),y=c(-10,10)))
+#' test <- make_test()
+#' set <- make_set(test, by = class, title="test")
+#' 
+#' make_test(ninputs = 80, nparam = 4, nclasses = 4, sigma = c(1,2,0.8,1.5), cube = c(-10,10))
 make_test <- function(ninputs = 100,
                       nparam = 2,
                       nclasses = 2,

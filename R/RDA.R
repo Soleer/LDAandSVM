@@ -2,12 +2,18 @@ library(ggplot2)
 library(gridExtra)
 source("R/oop.R")
 source("R/Classifier_funs.R")
+source("R/Calc_error.R")
 
 set.seed(0)
 #Regular Discriminant analysis from 4.3.1
 
 ####cross validation/ tuning parameters
 
+#'alpha_gamma_crossFit
+#'
+#'cross validates for the best alpha and gamma
+#'#'@param data_set to be trained on for cross validation
+#'@return alpha, gamma
 alpha_gamma_crossFit <- function(data_set) {
   data <- data_set$data
   results <- data_set$results
@@ -66,7 +72,11 @@ alpha_gamma_crossFit <- function(data_set) {
 #'
 #'calculates the mean total error rate of RDA for given alpha, gamma to determin 
 #'  best selection in the cross fitting
-#'@return total mean error rate
+#'#'@param data Dataframe of Parameters for all Observations
+#'@param results correct classes
+#'@param alpha alpha to be evaluated
+#'@param gamma gamma to be evaluated
+#'@return total mean error rate of all validations
 validationErrorRate <- function(data, results, alpha, gamma) {
   results
   errors <- sapply(seq_along(data) , FUN = function(i){
@@ -76,16 +86,20 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     training_results <- unlist(results[-i])
 
     training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
+    print(colnames(training_dataframe))
     
+    source("R/oop.R")
     data_set <- make_set(data = training_dataframe, by = "training_results") 
 
 
-    classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)
+    classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)$func
     
     #validation on block j
     validation_data_set <- data[[i]]
     validation_results <- results[[i]]
-    current_error <- calc_error(validation_data_set, validation_results, classifier)
+    
+    
+    current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
     
     current_error
   })
@@ -93,50 +107,4 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   return(mean(errors))
 }
 
-
-#'calc_error
-#'
-#'calculates the total error rate of of a classifaction function on a dataset
-#'
-#'@param data Dataframe of Parameters for all Observations
-#'@param results correct classes
-#'@param f classification function
-#'@return total error rate
-calc_error <- function(data_set, results, f) {
-  data <- data_set$data
-  G <- unique(results)
-  
-  force(f)
-  estimated <- apply(data, 1, f)
-  
-  of_Data <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(estimated[results == class])
-    number <- sum(t)
-
-    order <- t[G]
-    order[is.na(order)] <- 0
-    classresults <- as.list(order / number)
-    
-    right <- t[c] / number
-    wrong <- (1 - right)
-    
-    return(col)
-  })
-  
-  probs_of_Data <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
-
-  miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
-  
-  return(miss)
-}
-
-
-
 ###TEST
-
-data_set <- make_testset(N=3, G = 3)
-
-RDA(test_set)

@@ -1,31 +1,27 @@
 #Plot functions
 library(ggplot2)
 library(gridExtra)
+source("R/Calc_error.R")
 
 #'maincomponent_analysis
 #'
-#'@param data Dataframe of Parameters
-#'@param results Vector with corresponding Classes to \code{data}
-#'@return A list with  the mean vectors of the classes as rows
+#'@param set a data_set
+#'@return matrix whose columns contain the eigenvectors of set$sigma_bet.
+#' The vectors are normalized to unit length and sorted by decreasing eigenvalues. 
 maincomponent_analysis <- function(set) {
   cov_matrix <- set$sigma_bet
   ev <- eigen(cov_matrix)
-  values <- ev$values
-  n <- length(values)
   main_matrix <- ev$vectors
-  D <- diag(values, nrow = n, ncol = n)
-  return(list(D, main_matrix, cov_matrix))
+  return(main_matrix)
 }
 
 #'make_projection
 #'
-#'@param data Dataframe of Parameters
-#'@param results Vector with corresponding Classes to \code{data}
+#'@param set a data_set
 #'@param dim dimension of target space
-#'@return A list with a function that reduces to dim via maincomponent analysis and one
+#'@return A list with a function that reduces to dim via maincomponent analysis and one that projects back by setting all other dimensions to zero.
 make_projection <- function(set, dim = 2) {
-  l <- maincomponent_analysis(set)
-  U <- l[[2]][, 1:dim]
+  U <- maincomponent_analysis(set)[, 1:dim]
   proj <- function(x) {
     t(U) %*% x
   }
@@ -37,19 +33,28 @@ make_projection <- function(set, dim = 2) {
 
 #'make_2D_plot
 #'
+#'Takes a data_set and creates a 2 dimensional plot
 #'@param set a data_set
 #'@param func_name Functionname of the data_set function to plot as string. If equals FALSE
-#'just the first two columns of the data will be plotted as points 
-#'@param ppu points per unit of the backgound grid as integer
-#'@param project logical or a character vector with names of two data columns, defines if maincomponent analysis should be used if logical.
+#'just the first two columns or the the columns defined with project will be plotted as points in a plane. 
+#'@param ppu points per unit of the backgoundgrid as integer 
+#'@param project logical or vector with a selection of two data columns.If logical: defines if maincomponent analysis should be used.
 #'@param bg logical, defines if a background grid should be generated
 #'@return A 2 dimensional plot of the data_set with the function as 
+#'@examples
+#'test <- make_test()
+#'set <- make_set(test, by='class')
+#'make_2D_plot(set, project = c(1,1), project=FALSE)
+#'
+#'make_2D_plot(set,'LDA_1', ppu = 3)
+#'make_2D_plot(set,'LDA_1', project = c('a','b'))
 make_2D_plot <- function(set,
                          func_name=FALSE,
-                         ppu = 10,
+                         ppu = 5,
                          project = TRUE,
                          bg = TRUE) {
-  if (!is.data_set(set)) {
+  
+  if (!is.data_set(set)) {                                               #check if input correct
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
   if(is.logical(func_name)&&!func_names){
@@ -59,31 +64,35 @@ make_2D_plot <- function(set,
   else if(!any(set$func_names==func_name)){
     stop(sprintf("%s is not in given  data_set",func_name), call. = FALSE)
   }
+  if(!set$dim>=2){
+    stop("set dimension must be at least two!", call. = FALSE)
+  }
+  stopifnot(is.numeric(ppu)&&is.logical(bg))
   #prama
   classfunc <- set$func[[func_name]]
   uresults <- set$classes
   n <- set$n_classes
-  #Project on first two parameter or maincomponents
-  if (is.logical(project)&&project) {
-    proj <- make_projection(set)
-    proj_to <- proj[[1]]
-    proj_in <- proj[[2]]
+  
+  #Project on selected parameter or first two eigenvectors
+  if (is.logical(project)&&project) {        
+    proj <- make_projection(set)            #use maincomponent analysis
+    proj_to <- proj[[1]]                    
+    proj_in <- proj[[2]]                    #projectfunction for grid
     proj_data <-
-      as.data.frame(t(apply(set$data, 1, proj_to)))
+      as.data.frame(t(apply(set$data, 1, proj_to))) # project data
   }
   else if(is.character(project)&&length(project)==2){
-    proj_data <- set$data[project]
-    proj_in <- function(x){
-      vec <- rep(0, times = (set$dim))
+    proj_data <- set$data[project] # select two columns 
+    proj_in <- function(x){        # projectfunction for grid
+      vec <- rep(0, times = set$dim)
       vec[set$parnames==project[1]] <- x[1]
       vec[set$parnames==project[2]] <- x[2]
-      vec
+      return(vec)
     }
   }
   else{
-    proj_in <- function(x)
-      c(x, rep(0, times = (set$dim - 2)))
-    proj_data <- set$data
+    proj_in <- function(x) c(x, rep(0, times = (set$dim - 2)))   #project function for grid
+    proj_data <- set$data[,c(1,2)]                               #use first two columns   
   }
   x <- c(floor(min(proj_data[, 1])), ceiling(max(proj_data[, 1])))
   y <- c(floor(min(proj_data[, 2])), ceiling(max(proj_data[, 2])))
@@ -132,79 +141,6 @@ make_2D_plot <- function(set,
     )
   }
   return(mainplot)
-}
-#'calc_error
-#'
-#'Calculates the following percentages for a function of a data_set:
-#'an observation of a class 'A' classified to a class 'B'
-#'class 'A' classified to 'A'
-#'class 'A' not classified to 'A' 
-#'classified to class 'A' actually was class 'B'
-#'classified to class 'A' and also was 'A'
-#'classified to class 'A' but was not 'A'
-#'total missclassification of the data 
-#'
-#'@param set A object of class 'data_set'
-#'@param name the functionname of the function in set
-#'@return A list with 3 entrys: 
-calc_error <- function(set, name) {
-  if (!is.data_set(set)) {
-    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
-  }
-  if(!any(set$func_names==name)){
-    stop(sprintf("%s is not in given  data_set",name), call. = FALSE)
-  }
-  info <- set$func_info[[name]][['parameter']]
-  f <- set$func[[name]]
-  G <- set$classnames
-  estimated <- apply(set$data, 1, f)              # classify data with function to calc missclassifications
-  
-  of_Data <- lapply(G, function(class) {                    # calc missclassifications of dataset
-    t <- table(estimated[set$results == set$classes[class]])
-    if(sum(t)!=0){
-      number <- sum(t)
-    }
-    else{
-      number <- 1
-    }
-    order <- t[G]
-    names(order) <- G
-    order[is.na(order)] <- 0
-    classresults <- as.list(order / number)
-    right <- order[class] / number
-    wrong <- (1 - right)
-    col <- unlist(list(classresults, right, wrong))
-    return(col)
-  })
-  
-  of_Results <- lapply(G, function(class) {                 # mistake of f^-1(class)
-    t <- table(set$results[estimated == set$classes[class]])
-    if(sum(t)!=0){
-      number <- sum(t)
-    }
-    else{
-      number <- 1
-    }
-    order <- t[G]
-    names(order) <- G
-    order[is.na(order)] <- 0
-    classresults <- as.list(order / number)
-    right <- order[class] / number
-    wrong <- (1 - right)
-    col <- unlist(list(classresults, right, wrong))
-    return(col)
-  })
-  probs_of_Data <-
-    data.frame(class = c(G, 'right', 'wrong'), of_Data)
-  probs_of_Results <-
-    data.frame(class = c(G, 'right', 'wrong'), of_Results)
-  colnames(probs_of_Data) <- c('class', G)
-  colnames(probs_of_Results) <- c('class', G)
-  miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes +
-                        1]) / set$n_classes
-  miss <- round(miss, 2)
-  return(list(probs_of_Data,probs_of_Results,total_miss=miss))
 }
 
 plot_error <- function(set, name) {
@@ -306,17 +242,20 @@ plot_error <- function(set, name) {
 #'@example 
 #'plot_summary(set,"LDA_1")
 #'
-plot_summary <- function(set,name,background=TRUE,project=TRUE){
+plot_summary <- function(set,name,background=TRUE,project=TRUE, ppu = 5){
   liste0 <- plot_error(set, name)
-  error_list <- do.call(grid.arrange, liste0)
-  plot <-
-    make_2D_plot(set,
+  plot_list <- do.call(grid.arrange, liste0)
+  
+  if(set$dim>=2){
+    plot <- make_2D_plot(set,
                name,
-               ppu = 5,
-               background,
-               project
+               ppu,
+               project,
+               background
                )
-  plotlist <- list(error_list, plot)
-  niceplot <- do.call("grid.arrange", c(plotlist, ncol = 2, top = sprintf("%s %s",set$title,name)))
+  plot_list[[length(plot_list)+1]] <-  plot
+  }
+  
+  niceplot <- do.call("grid.arrange", c(plot_list, ncol = 2, top = sprintf("%s %s",set$title,name)))
   return(niceplot)
 }
