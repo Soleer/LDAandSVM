@@ -10,12 +10,12 @@ testRDA <- function() {
   validation_set <- make_testset(N, G, P)
   
   #TODO complete
-  test_that("RDA works at all", {
+  #test_that("RDA works at all", {
     RDA_object <- RDA(test_set$clone())
     RDA_function <- RDA_object$func
     print(RDA_function)
     
-  })
+  #})
   
   test_that("RDA has valuable results, works with maximum failure rate", {
     maximum_failure <- 0.5

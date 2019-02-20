@@ -102,23 +102,8 @@ small_sigma_est <- function(set) {
     
     small_sigma <- mean(sumOfClasses) / (N - K)
   } else{
-    small_sigma <- 0
+    small_sigma <- 1
   }
   
   return(small_sigma)
-<<<<<<< HEAD
-=======
-    
 }
-
-testSmallSigma <- function() {
-  N <- 5
-  G<- 3
-  test_set <- make_testset(N, G)
->>>>>>> 9c4700f7ad1ca908e1cfd9bdbb8bc882adef66d0
-  
-}
-<<<<<<< HEAD
-
-=======
->>>>>>> 9c4700f7ad1ca908e1cfd9bdbb8bc882adef66d0
