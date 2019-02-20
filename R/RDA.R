@@ -139,13 +139,3 @@ calc_error <- function(data, results, f) {
   return(miss)
 }
 
-
-
-###TEST
-<<<<<<< HEAD
-=======
-#TODO Test comparing LDA and QDA with RDA for according parameters
-data_set <- make_testset(N=3, G = 3)
-
-RDA(test_set)
->>>>>>> 36a329c0c5063fef9873ee1fb0e465c2a59e3233
