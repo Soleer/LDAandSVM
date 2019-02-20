@@ -22,7 +22,6 @@ data_set <- R6Class(
     .description = "",       #description
     .pi = 0,                 #vector of probability of each class
     .mean = 0,               #list of parameter means of each class
-    .data_by_classes = NULL,  #list of data by classes TODO get working
     .meantotal = 0,          #parameter means over all classes
     .sigma = 0,              #list of covaraince matrices of each class
     .sigma_bet = NA,         #between class covariance matrix
@@ -121,10 +120,6 @@ data_set <- R6Class(
       cat("\nMeans of Parameters:\n")
       print(as.data.frame(private$.mean))
       #totalmean      
-      private$.data_by_classes <- lapply(private$.classes, function(class) {
-        private$.data[private$.results == class, ]
-      })
-      names(private$.data_by_classes) <- private$.classnames
       
       private$.meantotal <- colMeans(private$.data)
       
@@ -200,6 +195,10 @@ data_set <- R6Class(
       else{
         private$.data_expansion[[base]]                   #no calculating 
       }
+    },
+    
+    get_data_by_class = function(class){
+      return(data[private$.results == self$classes[class],])
     }
   ),
   
@@ -461,31 +460,6 @@ make_testset <- function(N = 10, G = 3) {
   force(N)
   force(G)
   
-  make_test <- function(ninputs = 10,
-                        nparam = 2,
-                        nclasses = 3,
-                        sigma = 0.8,
-                        cube = c(-5, 5)) {
-    nsigma <- length(sigma)
-    center <- sapply(1:nparam, function(p) {
-      sample(cube[1]:cube[2], nclasses, replace = TRUE)
-    })
-    data <- lapply(0:(nclasses - 1), function(i) {
-      class <- LETTERS[i + 1]
-      inputs <- sapply(1:nparam, function(p) {
-        return(rnorm(ninputs, center[i + 1, p], sigma[i %% nsigma + 1]))
-      })
-      inputs <- data.frame(inputs, rep(class, times = ninputs))
-      return(inputs)
-    })
-    result <- data[[1]]
-    sapply(2:nclasses, function(r) {
-      result <<- rbind(result, data[[r]])
-    })
-    colnames(result) <- c(letters[1:nparam], 'class')
-    return(result)
-  }
-  
   test <- make_test(N, nclasses = G)
   
   set <-
@@ -493,4 +467,5 @@ make_testset <- function(N = 10, G = 3) {
              by = "class",
              title = "TEST",
              description = "Weil ich kann!")
+  return(set)
 }
