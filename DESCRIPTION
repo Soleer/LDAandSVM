@@ -35,7 +35,6 @@ Depends:
     quadprog,
     MASS,
     NlcOptim,
-    e1071,
     shiny,
     rlang,
     testthat

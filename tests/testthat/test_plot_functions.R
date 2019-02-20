@@ -2,8 +2,7 @@ context("test_plot_functions")
 
 set <- make_testset()
 test_that("maincomponent_analysis", {
-  expect_equal("list",class(maincomponent_analysis(set)))
-  expect_equal("matrix",class(maincomponent_analysis(set)[[1]]))
+  expect_equal("matrix",class(maincomponent_analysis(set)))
   expect_true(is.double(maincomponent_analysis(set)[[1]]))
 })
 m <- matrix(1:9,nrow = 3)
