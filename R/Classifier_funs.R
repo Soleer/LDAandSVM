@@ -39,7 +39,7 @@ classify <- function(classes, delta) {
 #' The LDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
-#' function in the second entry
+#' function in the second entry and saves it in the input set.
 #' @examples
 #' LDA(Rockets_set)
 #' func_name <- LDA(SAC_G1)[['name']]
@@ -82,7 +82,7 @@ LDA <- function(set) {
 #' The QDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created QDA function in the given set in the first entry and the actual classification
-#' function in the second entry
+#' function in the second entry and saves it in the input set.
 #' @examples
 #' QDA(Rockets_set)
 #' func_name <- QDA(SAC_G1)[['name']]
@@ -129,7 +129,7 @@ QDA <- function(set) {
 #' @param omega A penalizer matrix used for the classification. Note that the dimensions must fit the dimension of the
 #'              (potentially) expanded dataset
 #' @return Returns a list with the name of the created PDA function in the given set in the first entry and the actual classification
-#' function in the second entry
+#' function in the second entry and saves it in the input set.
 #' @examples
 #' PDA(Rockets_set, "quad", diag(2, nrow = 5))
 #' func_name <- PDA(SAC_G1)[['name']]
