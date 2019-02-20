@@ -30,16 +30,14 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Depends:
-    R6
-    ggplot2
-    gridExtra
-    quadprog
-    MASS
-    NlcOptim
-    e1071
-    shiny
-    NlcOptim
-    shiny
+    R6,
+    ggplot2,
+    gridExtra,
+    quadprog,
+    MASS,
+    NlcOptim,
+    e1071,
+    shiny,
+    NlcOptim,
+    shiny,
     rlang
-    
-

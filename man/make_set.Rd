@@ -11,10 +11,13 @@ make_set(data, by, title = "", description = "")
 
 \item{by}{the name of a column of data to classify by}
 
-\item{title}{title of the data}
+\item{title}{optional title of the data}
 
-\item{description}{description of the data}
+\item{description}{optional description of the data}
+}
+\value{
+A data_set
 }
 \description{
-\code{make_set} transforms a dataframe into a data_set
+\code{make_set} transforms a dataframe into an R6 object of class 'data_set'.
 }

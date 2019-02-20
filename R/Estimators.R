@@ -122,4 +122,3 @@ testSmallSigma <- function() {
     #TODO 
   })
 }
-testSmallSigma()

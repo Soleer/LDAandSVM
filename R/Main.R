@@ -1,23 +1,23 @@
-library(ggplot2)
-library(gridExtra)
-library(quadprog)
-library(R6)
-library(MASS)
-library(NlcOptim)
-library(e1071)
-library(shiny)
-library(NlcOptim)
-library(shiny)
-library(rlang)
-source("R/Basis_expansion.R")
-source("R/Test.R")
-source("R/oop.R")
-source("R/Estimators.R")
-source("R/Classifier_funs.R")
-source("R/plot_functions.R")
-source("R/svm_oop.R")
-source("R/shinyplot.R")
-set.seed(0)
+# library(ggplot2)
+# library(gridExtra)
+# library(quadprog)
+# library(R6)
+# library(MASS)
+# library(NlcOptim)
+# library(e1071)
+# library(shiny)
+# library(NlcOptim)
+# library(shiny)
+# library(rlang)
+# source("R/Basis_expansion.R")
+# source("R/Test.R")
+# source("R/oop.R")
+# source("R/Estimators.R")
+# source("R/Classifier_funs.R")
+# source("R/plot_functions.R")
+# source("R/svm_oop.R")
+# source("R/shinyplot.R")
+# set.seed(0)
 # 
 # ##Real Data
 # d1 <- read.csv("student-alcohol-consumption/student-mat.csv",header=TRUE)
@@ -157,19 +157,8 @@ set.seed(0)
 #                 title = "R Markdown ",
 #                 description = "R Markdown presentation file")
 # classify_app()
-<<<<<<< HEAD
 
-d1 <- read.csv("exams/StudentsPerformance.csv",header=TRUE)
 
-Performance_math_writing_gender  <- data.frame(math = d1$math.score, write = d1$writing.score, gender = d1$gender)
-Performance_math_writing_pared  <- data.frame(math = d1$math.score, write = d1$writing.score, pared = d1$parental.level.of.education)
-
-Performance_math_writing_pared_set <- make_set(Performance_math_writing_pared, by = "gender", title = "Students Performance in test", "Test real data")
-
-fun <- LDA(Performance_math_writing_pared_set)[['name']]
-plot <- make_2D_plot(Performance_math_writing_pared_set, fun, ppu = 1, project = FALSE)
-classify_app()
-=======
 # test <- make_test(nclasses = 3,ninputs = 50)
 # test <- make_set(test,"class","TITEL",description = "Description")
 # test$func_names
@@ -189,4 +178,3 @@ classify_app()
 # }
 # gg
 
->>>>>>> db10bc86d9ada7e20609ff70f06c161d88354b22
