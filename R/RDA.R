@@ -92,16 +92,17 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     data_set <- make_set(data = training_dataframe, by = "training_results") 
 
 
-    classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)$func
+    classifier_set <- RDA(set = data_set, alpha = alpha, gamma = gamma)$func
     
     #validation on block j
     validation_data_set <- data[[i]]
     validation_results <- results[[i]]
     
-    
+    #TODO call correctly
+    calc_totalMiss <- function(set, name)
     current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
     
-    current_error
+    return(current_error)
   })
   
   return(mean(errors))
