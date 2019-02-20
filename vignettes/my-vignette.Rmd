@@ -1,7 +1,13 @@
 ---
 output:
+<<<<<<< HEAD
+  pdf_document: default
+  word_document: default
+  html_document: default
+=======
   html_document: default
   pdf_document: default
+>>>>>>> 37d9ee5fad5b6c980fda45284209451f98406d2d
 ---
 ```{r source, echo=FALSE, warning = FALSE}
 source("../R/Basis_expansion.R")
