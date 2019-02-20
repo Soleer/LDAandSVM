@@ -256,4 +256,11 @@ RDA <- function(set, alpha, gamma){
 }
 
 
+<<<<<<< HEAD
 
+=======
+# N <- 5
+# G<- 2
+# test_set <- make_testset(N, G )
+# testRDA()
+>>>>>>> e83ce084876d346158964548424478f5d979bb43
