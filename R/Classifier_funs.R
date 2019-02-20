@@ -24,7 +24,11 @@ class_by_targets <- function(classes, delta) {
 #return max
 classify <- function(classes, delta) {
   classfunction <- function(x) {
-    return(classes[which.max(delta(x))])
+    print(x) #TODO delete
+    print(delta(x))
+    
+    pos_max <- which.max(delta(x))
+    return(classes[pos_max])
   }
   return(classfunction)
 }
@@ -187,16 +191,16 @@ RDA <- function(set, alpha, gamma){
     gamma <<- alpha_gamma$gamma
   }
   
-  print(set)
-  source("R/Estimators.R")
-  print(set)
-  kleinesSigma <- small_sigma_est(set)
-  
 
-  sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ 
-    #TODO Formel
-    sigma_est <- sigma_est(set)
-    n <- ncol(sigma_est)
+  source("R/Estimators.R")
+
+  kleinesSigma <- small_sigma_est(set)
+  sigma_est <- sigma_est(set)
+  n <- ncol(sigma_est)
+
+  sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ #TODO check dimensions
+
+
     sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
     
     sigma_classAlphaGamma <-
@@ -204,7 +208,7 @@ RDA <- function(set, alpha, gamma){
     
   })
   
-  sigma_inv <- lapply(sigmaAlphaGamma, solve)
+  sigma_inv <- lapply(sigmaAlphaGamma, solve) # TODO immer invertierbar?
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {

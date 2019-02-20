@@ -83,7 +83,7 @@ small_sigma_est <- function(set){
   G <- set$classes
   data_by_classes <- set$data_by_classes
   
-  return (0) #TODO
+  return (1) #TODO
   
   if (N != K) {
     sumOfClasses <- sapply(
