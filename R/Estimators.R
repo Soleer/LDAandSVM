@@ -110,7 +110,7 @@ small_sigma_est <- function(set){
   return(small_sigma)
     
 }
-library(testthat)
+
 testSmallSigma <- function() {
   N <- 5
   G<- 3

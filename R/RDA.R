@@ -1,10 +1,3 @@
-library(ggplot2)
-library(gridExtra)
-source("R/oop.R")
-source("R/Classifier_funs.R")
-source("R/Calc_error.R")
-
-set.seed(0)
 #Regular Discriminant analysis from 4.3.1
 
 ####cross validation/ tuning parameters

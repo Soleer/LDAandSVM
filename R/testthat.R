@@ -1,6 +1,3 @@
-library(testthat)
-library(sheet9)
-
 #RDA test 
 testRDA <- function() {
   N <- 5
