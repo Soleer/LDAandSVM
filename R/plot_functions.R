@@ -195,7 +195,6 @@ plot_error <- function(set, name) {
           stat = "identity",
           width = 1
         ) + theme(
-          legend.position = "none",
           axis.text.y = element_blank(),
           axis.title.y = element_blank(),
           axis.title.x = element_blank()
