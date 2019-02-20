@@ -38,6 +38,7 @@ classify <- function(classes, delta) {
 #' LDA
 #'
 #' The LDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' 
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
@@ -81,6 +82,7 @@ LDA <- function(set) {
 #' QDA
 #'
 #' The QDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' 
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created QDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
@@ -124,6 +126,7 @@ QDA <- function(set) {
 #' PDA
 #'
 #' The PDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' 
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @param base One of the following strings \itemize{\item "id"; \item "quad"; \item "cube"; \item "sqrt"; \item "log"; \item "abs"}
 #'             The data gets then expanded. @seealso basis_exp
@@ -193,6 +196,7 @@ PDA <- function(set, base = "id", omega) {                             ##The PDA
 #'SVM
 #'
 #' The SVM classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' 
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @param C A positive double used to decide how large the margin should be, hence the sensitivity of the
 #'          SVM function to misclassification. Large values encourage an overfit wiggly boundary, while a 
