@@ -21,3 +21,7 @@ test_that("make_2D_plot", {
   QDA(set)
   expect_error(make_2D_plot(set,"QDA"))
 })
+
+test_that("plot_summary", {
+    
+})
