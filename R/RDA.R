@@ -108,4 +108,49 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   return(mean(errors))
 }
 
+<<<<<<< HEAD
+
+#'calc_error
+#'
+#'calculates the total error rate of of a classifaction function on a dataset
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@param results correct classes
+#'@param f classification function
+#'@return total error rate
+calc_error <- function(data, results, f) {
+  G <- unique(results)
+  
+  force(f)
+  y <- f(1:2)
+  print(y)
+  estimated <- apply(data, 1, f)
+  
+  of_Data <- lapply(G, function(class) {
+    c <- as.character(class)
+    t <- table(estimated[results == class])
+    number <- sum(t)
+
+    order <- t[G]
+    order[is.na(order)] <- 0
+    classresults <- as.list(order / number)
+    
+    right <- t[c] / number
+    wrong <- (1 - right)
+    
+    return(col)
+  })
+  
+  probs_of_Data <-
+    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
+
+  miss <-
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
+  
+  #TODO right or wrong quote?
+  return(miss)
+}
+
+=======
 ###TEST
+>>>>>>> e9a32dbb3694dcac07e15734e3317d9cf9e1e4f7

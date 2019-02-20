@@ -189,6 +189,84 @@ PDA <- function(set, base, omega) {                             ##The PDA classi
       omega = omega
     )))
 }
+#'SVM
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+SVM <- function(set,
+                C = 1,
+                kernel = "id",
+                d = 1,
+                g = 1) {
+  ##The SVM classification function. A function factory
+  if (!is.data_set(set)) {
+    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
+  }
+  if (!is.double(C) && C <= 0) {
+    stop("Input 'C' must be a positive double", call. = FALSE)
+  }  
+  if (!is.character(kernel) && length(kernel) != 1) { 
+    stop("Input 'kernel' must be a string with length one.")
+  }  
+  if (!is.double(d) && d <= 0) {
+    stop("Input 'd' must be a positive double", call. = FALSE)
+  }
+  if (!is.double(g) && g <= 0) {
+    stop("Input 'g' must be a positive double", call. = FALSE)
+  }
+  if (length(set$func) > 0) {
+    slot <- character(0)
+    sapply(set$func_info, function(lis) {
+      l <- lis[['parameter']]
+      if (!is.null(l[["C"]]) &&
+          !is.null(l[["kernel"]]) &&
+          !is.null(l[["d"]]) &&
+          !is.null(l[["g"]])) {
+        if (l[["C"]] ==  C &&
+            isTRUE(all.equal(l[["kernel"]],kernel)) &&
+            l[["d"]] == d &&
+            l[["g"]] == g) {
+          slot <<- lis[["name"]]
+        }
+      }
+    })
+    if (length(slot) > 0) {
+      return(list(name = slot, func = set$func[[slot]]))
+    }
+  }
+  values <- list(
+    "C" = C,
+    "kernel" = kernel,
+    "d" = d,
+    "g" = g
+  )
+  t <- svm_classify_list(set, values)
+  f <- svm_classify(t, set$classes)
+  return(set$set_function(
+    f,
+    type = "SVM",
+    parameter = list(
+      base = 'id',
+      dim = NULL,
+      omega = NULL,
+      C = C,
+      kernel = kernel,
+      d = d,
+      g = g
+    )
+  ))
+}
 
 #RDA
 RDA <- function(set, alpha, gamma){
@@ -256,11 +334,3 @@ RDA <- function(set, alpha, gamma){
 }
 
 
-<<<<<<< HEAD
-
-=======
-# N <- 5
-# G<- 2
-# test_set <- make_testset(N, G )
-# testRDA()
->>>>>>> e83ce084876d346158964548424478f5d979bb43
