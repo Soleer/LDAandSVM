@@ -1,5 +1,6 @@
 # classification functions -> G
 #helpfunction
+source("R/Estimators.R")
 targets <- function(vector) {
   n <- length(vector)
   En <- diag(1, n, n)
@@ -299,9 +300,6 @@ RDA <- function(set, alpha, gamma){
     alpha <<- alpha_gamma$alpha
     gamma <<- alpha_gamma$gamma
   }
-  
-
-  source("R/Estimators.R")
 
   kleinesSigma <- small_sigma_est(set)
   sigma_est <- sigma_est(set)
