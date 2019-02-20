@@ -24,8 +24,6 @@ class_by_targets <- function(classes, delta) {
 #return max
 classify <- function(classes, delta) {
   classfunction <- function(x) {
-    print(x) #TODO delete
-    print(delta(x))
     
     pos_max <- which.max(delta(x))
     return(classes[pos_max])
@@ -198,7 +196,7 @@ RDA <- function(set, alpha, gamma){
     stop("Input must be of class 'data_set' (?make_set)")
   }
   
-  if (length(set$func) > 0) { #TODO could cause trouble in cross validation
+  if (length(set$func) > 0) { 
     slot <- character(0)
     sapply(set$func_info, function(l) {
       if (!is.null(l[["type"]])) {
@@ -245,8 +243,10 @@ RDA <- function(set, alpha, gamma){
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      -1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
+      - 1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
     }) + p
+
+    print(result)
     return(result)
   }
   
@@ -254,3 +254,13 @@ RDA <- function(set, alpha, gamma){
   return(set$set_function(classify_func, type = "RDA", list(base='id',description =
                                                               "basic RDA function")))
 }
+
+
+<<<<<<< HEAD
+
+=======
+# N <- 5
+# G<- 2
+# test_set <- make_testset(N, G )
+# testRDA()
+>>>>>>> e83ce084876d346158964548424478f5d979bb43
