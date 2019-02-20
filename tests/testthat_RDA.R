@@ -1,0 +1,79 @@
+library(testthat)
+source("R/Calc_error.R")
+
+#RDA test 
+testRDA <- function() {
+  N <- 50
+  G<- 5
+  test_set <- make_testset(N, G )
+  validation_set <- make_testset(N, G)
+  
+  #TODO complete
+  test_that("LDA equals RDA", {
+    
+    RDA1_function <- RDA(test_set, alpha = 1, gamma =1)$func
+    
+    LDA_function <- LDA(test_set)$func
+   
+    print(LDA_function)
+    typeof(LDA_function)
+    
+    print(validation_set$data)
+    typeof(validation_set$data)
+    
+    resultLDAVal <- apply(validation_set$data, 1, LDA_function)
+    
+    print(resultLDAVal)
+    typeof(resultLDAVal)
+    
+    resultRDA1Val <- apply(validation_set$data, 1, RDA1_function)
+    
+    print(resultRDA1Val)
+    typeof(resultRDA1Val)
+    
+    resultLDATrain <- apply(test_set$data, 1, LDA_function)
+    resultRDA1Train <- apply(test_set$data, 1, RDA1_function)
+    
+    expect_equivalent(resultRDA1Train, resultLDATrain)
+    expect_equivalent(resultRDA1Val, resultRDA1Val)
+  })
+  
+  test_that("QDA equals RDA", { 
+    RDA2_function <- RDA(test_set, alpha = 0, gamma = 1)$func
+    QDA_function <- QDA(test_set)$func
+    
+    resultQDAVal <- apply(validation_set$data, 1, QDA_function)
+    resultRDA2Val <- apply(validation_set$data, 1, RDA2_function)
+    
+    resultQDATrain <- apply(test_set$data, 1, QDA_function)
+    resultRDA2Train <- apply(test_set$data, 1, RDA2_function)
+    
+    expect_equivalent(resultRDA2Train, resultQDATrain)
+    expect_equivalent(resultQDAVal, resultRDA2Val)
+  })
+  
+  test_that("RDA better than LDA and QDA", {
+    RDA3_function <- RDA(test_set)$func # uses cross validation 
+
+    calc_errorRDA3Train <- calc_miss(test_set$data , test_set$results,RDA3_function)
+    calc_errorRDA3Val <- calc_miss(validation_set$data , validation_set$results,RDA3_function)
+    
+    calc_errorQDATrain <- calc_miss(test_set$data , test_set$results,QDA_function)
+    calc_errorQDAVal <- calc_miss(validation_set$data , validation_set$results,QDA_function)
+    
+    calc_errorLDATrain <- calc_miss(test_set$data , test_set$results, LDA_function)
+    calc_errorLDAVal <- calc_miss(validation_set$data , validation_set$results,LDA_function)
+    
+    #Training performance better than validation
+    expect_lte(calc_errorRDA3Train, calc_errorRDA3Val)
+    
+    #RDA better in training
+    expect_lte(calc_errorRDA3Train, calc_errorQDATrain)
+    expect_lte(calc_errorRDA3Train, calc_errorLDATrain)
+    
+    #RDA better in validation
+    expect_lte(calc_errorRDA3Val, calc_errorQDAVal)
+    expect_lte(calc_errorRDA3Val, calc_errorLDAVal)
+  })
+}
+
