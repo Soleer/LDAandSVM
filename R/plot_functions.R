@@ -313,8 +313,8 @@ plot_summary <- function(set,name,background=TRUE,project=TRUE){
     make_2D_plot(set,
                name,
                ppu = 5,
-               background,
-               project
+               project,
+               background
                )
   plotlist <- list(error_list, plot)
   niceplot <- do.call("grid.arrange", c(plotlist, ncol = 2, top = sprintf("%s %s",set$title,name)))

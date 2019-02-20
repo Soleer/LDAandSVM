@@ -1,8 +1,13 @@
 ---
 output:
+<<<<<<< HEAD
   pdf_document: default
   word_document: default
   html_document: default
+=======
+  html_document: default
+  pdf_document: default
+>>>>>>> 37d9ee5fad5b6c980fda45284209451f98406d2d
 ---
 ```{r source, echo=FALSE, warning = FALSE}
 source("../R/Basis_expansion.R")
@@ -99,7 +104,7 @@ So we see that for this data set LDA is to 89% rigth.
 We can also put both these plots together with one simply function:
 
 ```{r plot_total, results='hide', fig.keep='last', out.width='100%'}
-plot_summary(Rocket_set, func_example1)
+plot_summary(Rocket_set, func_example1, project = FALSE)
 ```
 
 It is now 0:01 in the morning on January 1st and we see that our neighbour has a rocket that's really loud and we are interested if it one of the now banned rocket of the type Classic. We have observed, that the rocket exploded at about 40 meters and was about 102 decibels loud. So we let our classification function make all the work for us. We get the class of the to be classified point (102, 40) by typing
@@ -243,4 +248,12 @@ What happens when neither LDA or QDA sufficently classify but PDA is too complex
 
 ## Support Vector Machines (SVM)
 
-A different approach to the whole problem is the Support Vector Machines
+A different approach to the whole problem is the Support Vector Machines. We first try to randomly seperate the classes with on straight line. This obviously won't classify great so by introducing a margin of error from which we demand that no vector lies further into the wrong class than said margin, we force the line to be bend. All points within the margin of error and only these points are therefore relevant for the seperation of the classes. Theoretically there need not be any assumptions towards the underlying distribution so SVM are generally applicable. For further informations into the mathematics behind SVMs see Hastie et al. "The Elements of Statistical Learning" (2008) pp. 417-438. 
+
+This is the result of SVM with a radial kernel for our classification problem above:
+
+![SVM with a radial kernel](Vignette_Shiny_SVM_Class.png)
+
+In this example the data were normal distributed and we can see in the above plot that SVM overfits quite a bit and this can sometimes lead to result that are better on paper but not necessarily reflect the underlying distribution. This results in the best error rate of all Classifiers in this Vignette:
+
+![SVM Error with a radial kernel](Vignette_Shiny_SVM_Error.png)
