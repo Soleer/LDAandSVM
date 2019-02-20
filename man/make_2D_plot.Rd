@@ -30,8 +30,6 @@ test <- make_test()
 set <- make_set(test, by='class')
 make_2D_plot(set, project = c(1,1), project=FALSE)
 
-\dontrun{
 make_2D_plot(set,'LDA_1', ppu = 3)
 make_2D_plot(set,'LDA_1', project = c('a','b'))
-}
 }
