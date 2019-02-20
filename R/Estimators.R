@@ -106,6 +106,19 @@ small_sigma_est <- function(set) {
   }
   
   return(small_sigma)
-  
+<<<<<<< HEAD
+=======
+    
 }
 
+testSmallSigma <- function() {
+  N <- 5
+  G<- 3
+  test_set <- make_testset(N, G)
+>>>>>>> 9c4700f7ad1ca908e1cfd9bdbb8bc882adef66d0
+  
+}
+<<<<<<< HEAD
+
+=======
+>>>>>>> 9c4700f7ad1ca908e1cfd9bdbb8bc882adef66d0

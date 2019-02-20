@@ -450,7 +450,7 @@ func = function(Value) {
 #'@param title optional title of the data
 #'@param description optional description of the data
 #'@return A data_set
-#'
+#'@export
 make_set <- function(data,
                      by,
                      title="",
@@ -465,8 +465,7 @@ make_set <- function(data,
 #'@return TRUE if set is a data_set, else FALSE
 #'@examples
 #'is.data_set(NULL)
-#'
-#'#FALSE
+#'@export
 is.data_set <- function(set) {
   any(class(set) == "data_set")
 }
@@ -478,14 +477,16 @@ is.data_set <- function(set) {
 #'@param N number of observations per class
 #'@param K number of classes
 #'@param P number of parameters of each observation
+#'@return a data_set
+#'@examples
+#'set <- make_testset(N = 50, K= 2)
+#'@export
 make_testset <- function(N = 10, K = 3, P = 2) {
-  
   test <- make_test(ninputs = N, nclasses = K, nparam = P)
-  
   set <-
     make_set(test,
              by = "class",
              title = "TEST",
-             description = "Weil ich kann!")
+             description = "Testset")
   return(set)
 }

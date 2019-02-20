@@ -23,8 +23,8 @@ calc_miss <- function(data, results, f){
 #' @param name the functionname of the function in set
 #' @return A list with 3 entrys. Entry [[1]] and [[2]] are matrixes and contain the values as described in the description.
 #' [[3]] is the propability of missclassification.
-#' @examples 
-#' LALALALALA
+#' 
+#' @export
 calc_error <- function(set, name) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)

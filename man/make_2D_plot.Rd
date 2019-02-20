@@ -26,10 +26,8 @@ A 2 dimensional plot of the data_set with the function as
 Takes a data_set and creates a 2 dimensional plot
 }
 \examples{
-test <- make_test()
-set <- make_set(test, by='class')
-make_2D_plot(set, project = c(1,1), project=FALSE)
-
-make_2D_plot(set,'LDA_1', ppu = 3)
-make_2D_plot(set,'LDA_1', project = c('a','b'))
+set <- make_testset()
+make_2D_plot(set, project = c(1,2))
+name <- LDA(set)[['name']]
+make_2D_plot(set, name, ppu = 3)
 }
