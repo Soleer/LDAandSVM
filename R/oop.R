@@ -22,6 +22,7 @@ data_set <- R6Class(
     .description = "",       #description
     .pi = 0,                 #vector of probability of each class
     .mean = 0,               #list of parameter means of each class
+    .data_by_classes = NULL,  #list of data by classes TODO get working
     .meantotal = 0,          #parameter means over all classes
     .sigma = 0,              #list of covaraince matrices of each class
     .sigma_bet = NA,         #between class covariance matrix
@@ -119,8 +120,11 @@ data_set <- R6Class(
       names(private$.mean) <- private$.classnames
       cat("\nMeans of Parameters:\n")
       print(as.data.frame(private$.mean))
-      
-      #totalmean
+      #totalmean      
+      private$.data_by_classes <- lapply(private$.classes, function(class) {
+        private$.data[private$.results == class, ]
+      })
+      names(private$.data_by_classes) <- private$.classnames
       
       private$.meantotal <- colMeans(private$.data)
       
@@ -258,6 +262,16 @@ data_set <- R6Class(
         stop("n_classes is read only", call. = FALSE)
       }
     },
+    data_by_classes = function(Value) {
+      #TODO access at k 
+      if (missing(Value)) {
+        return(private$.data_by_classes)
+      }
+      else{
+        stop("results is read only", call. = FALSE)
+      }
+    },
+    
     count = function(Value) {
       if (missing(Value)) {
         return(private$.count)

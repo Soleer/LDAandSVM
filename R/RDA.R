@@ -77,6 +77,8 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 
     training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
     print(colnames(training_dataframe))
+    
+    source("R/oop.R")
     data_set <- make_set(data = training_dataframe, by = "training_results") 
 
 
@@ -85,6 +87,8 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     #validation on block j
     validation_data_set <- data[[i]]
     validation_results <- results[[i]]
+    
+    
     current_error <- calc_error(validation_data_set, validation_results, classifier)
     
     current_error
@@ -102,11 +106,12 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 #'@param results correct classes
 #'@param f classification function
 #'@return total error rate
-calc_error <- function(data_set, results, f) {
-  data <- data_set$data
+calc_error <- function(data, results, f) {
   G <- unique(results)
   
   force(f)
+  y <- f(1:2)
+  print(y)
   estimated <- apply(data, 1, f)
   
   of_Data <- lapply(G, function(class) {
@@ -130,9 +135,17 @@ calc_error <- function(data_set, results, f) {
   miss <-
     sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
   
+  #TODO right or wrong quote?
   return(miss)
 }
 
 
 
 ###TEST
+<<<<<<< HEAD
+=======
+#TODO Test comparing LDA and QDA with RDA for according parameters
+data_set <- make_testset(N=3, G = 3)
+
+RDA(test_set)
+>>>>>>> 36a329c0c5063fef9873ee1fb0e465c2a59e3233

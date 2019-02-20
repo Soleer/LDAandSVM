@@ -317,14 +317,14 @@ plot_error <- function(set, name) {
 #'@example 
 #'plot_summary(set,"LDA_1")
 #'
-plot_summary <- function(set,name,background=TRUE,project=TRUE){
+plot_summary <- function(set,name,background=TRUE,project=TRUE, ppu = 5){
   liste0 <- plot_error(set, name)
   plot_list <- do.call(grid.arrange, liste0)
   
   if(set$dim>=2){
     plot <- make_2D_plot(set,
                name,
-               ppu = 5,
+               ppu,
                project,
                background
                )
