@@ -1,18 +1,8 @@
 ---
 output:
-<<<<<<< HEAD
-  pdf_document: default
-  html_document: default
-=======
-<<<<<<< HEAD
   pdf_document: default
   word_document: default
   html_document: default
-=======
-  html_document: default
-  pdf_document: default
->>>>>>> 37d9ee5fad5b6c980fda45284209451f98406d2d
->>>>>>> 36a329c0c5063fef9873ee1fb0e465c2a59e3233
 ---
 ```{r source, echo=FALSE, warning = FALSE}
 source("../R/Basis_expansion.R")
@@ -21,7 +11,6 @@ source("../R/oop.R")
 source("../R/Estimators.R")
 source("../R/Classifier_funs.R")
 source("../R/plot_functions.R")
-#source("R/svm.R")
 source("../R/shinyplot.R")
 set.seed(2)
 ```

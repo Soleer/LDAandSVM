@@ -300,7 +300,7 @@ testRDA <- function() {
   })
 }
 
-N <- 5
-G<- 2
-test_set <- make_testset(N, G )
-testRDA()
+# N <- 5
+# G<- 2
+# test_set <- make_testset(N, G )
+# testRDA()
