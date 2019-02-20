@@ -1,6 +1,5 @@
 # classification functions -> G
 #helpfunction
-source("R/Estimators.R")
 targets <- function(vector) {
   n <- length(vector)
   En <- diag(1, n, n)
