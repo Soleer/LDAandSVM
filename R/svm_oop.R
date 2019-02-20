@@ -480,35 +480,3 @@ SVM <- function(set,
   ))
 }
 
-
-
-
-
-
-
-
-#test##########################
-print("VORISCHT,TEST")
-test <- make_test(nclasses = 3,ninputs = 100)
-test <- make_set(test,"class","TITEL",description = "Description")
-test$func_names
-results <- test$results
-data <- test$data
-dd <- SVM(test,C = 1,kernel = "radial",d=1,g=1)[['name']]
-f <- test$func[[dd]]
-calc_error(test,dd)
-
-
-
-gg <- 0
-for (i in 1:100) {
-  gg[i] <- (f(as.double(data[i,])))
-}
-gg
-
-
-
-
-#Vergleiche mit SVM aus Paket e1071
-#svm_two_classes_oop:hier stimmt noch was nicht mit dem kernel-Wechsel
-#make 2D plot Fertig machen, Niklas

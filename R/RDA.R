@@ -136,7 +136,3 @@ calc_error <- function(data_set, results, f) {
 
 
 ###TEST
-
-data_set <- make_testset(N=3, G = 3)
-
-RDA(test_set)
