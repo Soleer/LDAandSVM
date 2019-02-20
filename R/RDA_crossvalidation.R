@@ -91,8 +91,6 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     validation_data_set <- data[[i]]
     validation_results <- results[[i]]
     
-    #TODO call correctly
-    calc_totalMiss <- function(set, name)
     current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
     
     return(current_error)
@@ -100,4 +98,3 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   return(mean(errors))
 }
-

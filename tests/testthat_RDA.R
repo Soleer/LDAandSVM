@@ -7,9 +7,28 @@ testRDA <- function() {
   G<- 5
   P<- 2
   test_set <- make_testset(N, G, P )
-  validation_set <- make_testset(N, G)
+  validation_set <- make_testset(N, G, P)
   
   #TODO complete
+  test_that("RDA works at all", {
+    RDA3_function <- RDA(test_set)$func # uses cross validation 
+    
+    calc_errorRDA3Train <- calc_miss(test_set$data , test_set$results,RDA3_function)
+    calc_errorRDA3Val <- calc_miss(validation_set$data , validation_set$results,RDA3_function)
+  
+
+    #RDA better in training
+    expect_lte(calc_errorRDA3Train, calc_errorQDATrain)
+    
+    #RDA better in validation
+    expect_lte(calc_errorRDA3Val, 0.5)
+    
+    #Training performance better than validation
+    expect_lte(calc_errorRDA3Train, calc_errorRDA3Val)
+    
+  })
+  
+  
   LDA_function <- LDA(test_set)$func
   test_that("LDA equals RDA", {
     
