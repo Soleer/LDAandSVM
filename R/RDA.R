@@ -2,6 +2,7 @@ library(ggplot2)
 library(gridExtra)
 source("R/oop.R")
 source("R/Classifier_funs.R")
+source("R/Calc_error.R")
 
 set.seed(0)
 #Regular Discriminant analysis from 4.3.1
@@ -98,115 +99,12 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     validation_results <- results[[i]]
     
     
-    current_error <- calc_error(validation_data_set, validation_results, classifier)
+    current_error <- calc_totalMiss(validation_data_set, validation_results, classifier)
     
     current_error
   })
   
   return(mean(errors))
 }
-
-
-#'calc_error
-#'
-#'calculates the total error rate of of a classifaction function on a dataset
-#'
-#'@param data Dataframe of Parameters for all Observations
-#'@param results correct classes
-#'@param f classification function
-#'@return total error rate
-calc_error <- function(data, results, f) {
-  G <- unique(results)
-  
-  force(f)
-  y <- f(1:2)
-  print(y)
-  estimated <- apply(data, 1, f)
-  
-  of_Data <- lapply(G, function(class) {
-    c <- as.character(class)
-    t <- table(estimated[results == class])
-    number <- sum(t)
-
-    order <- t[G]
-    order[is.na(order)] <- 0
-    classresults <- as.list(order / number)
-    
-    right <- t[c] / number
-    wrong <- (1 - right)
-    
-    return(col)
-  })
-  
-  probs_of_Data <-
-    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
-
-  miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
-  return(miss)
-}
-
-calc_error <- function(set, name) {
-  if (!is.data_set(set)) {
-    stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
-  }
-  if(!any(set$func_names==name)){
-    stop(sprintf("%s is not in given  data_set",name), call. = FALSE)
-  }
-  info <- set$func_info[[name]][['parameter']]
-  f <- set$func[[name]]
-  G <- set$classnames
-  estimated <- apply(set$data, 1, f)              # classify data with function to calc missclassifications
-  
-  of_Data <- lapply(G, function(class) {                    # calc missclassifications of dataset
-    t <- table(estimated[set$results == set$classes[class]])
-    if(sum(t)!=0){
-      number <- sum(t)
-    }
-    else{
-      number <- 1
-    }
-    order <- t[G]
-    names(order) <- G
-    order[is.na(order)] <- 0
-    classresults <- as.list(order / number)
-    right <- order[class] / number
-    wrong <- (1 - right)
-    col <- unlist(list(classresults, right, wrong))
-    return(col)
-  })
-  
-  of_Results <- lapply(G, function(class) {                 # mistake of f^-1(class)
-    t <- table(set$results[estimated == set$classes[class]])
-    if(sum(t)!=0){
-      number <- sum(t)
-    }
-    else{
-      number <- 1
-    }
-    order <- t[G]
-    names(order) <- G
-    order[is.na(order)] <- 0
-    classresults <- as.list(order / number)
-    right <- order[class] / number
-    wrong <- (1 - right)
-    col <- unlist(list(classresults, right, wrong))
-    return(col)
-  })
-  probs_of_Data <-
-    data.frame(class = c(G, 'right', 'wrong'), of_Data)
-  probs_of_Results <-
-    data.frame(class = c(G, 'right', 'wrong'), of_Results)
-  colnames(probs_of_Data) <- c('class', G)
-  colnames(probs_of_Results) <- c('class', G)
-  miss <-
-    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes +
-                        1]) / set$n_classes
-  miss <- round(miss, 2)
-  return(total_miss=miss)
-}
-
-
-
 
 ###TEST
