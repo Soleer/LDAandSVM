@@ -157,6 +157,7 @@ set.seed(0)
 #                 title = "R Markdown ",
 #                 description = "R Markdown presentation file")
 # classify_app()
+<<<<<<< HEAD
 
 d1 <- read.csv("exams/StudentsPerformance.csv",header=TRUE)
 
@@ -168,3 +169,24 @@ Performance_math_writing_pared_set <- make_set(Performance_math_writing_pared, b
 fun <- LDA(Performance_math_writing_pared_set)[['name']]
 plot <- make_2D_plot(Performance_math_writing_pared_set, fun, ppu = 1, project = FALSE)
 classify_app()
+=======
+# test <- make_test(nclasses = 3,ninputs = 50)
+# test <- make_set(test,"class","TITEL",description = "Description")
+# test$func_names
+# results <- test$results
+# data <- test$data
+# dd <- SVM(test,C = 50,kernel = "neural",d=5,g=3)[['name']]
+# f3 <- test$func[[dd]]
+# 
+# list("SVM_2")
+# calc_error(test,dd)
+# dd
+# 
+# 
+# gg <- 0
+# for (i in 1:150) {
+#   gg[i] <- (f3(as.double(data[i,])))
+# }
+# gg
+
+>>>>>>> db10bc86d9ada7e20609ff70f06c161d88354b22
