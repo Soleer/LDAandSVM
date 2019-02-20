@@ -18,7 +18,7 @@
 # source("R/svm_oop.R")
 # source("R/shinyplot.R")
 # set.seed(0)
-<<<<<<< HEAD
+
 # 
 # ##Real Data
 # d1 <- read.csv("student-alcohol-consumption/student-mat.csv",header=TRUE)
@@ -179,7 +179,6 @@
 # }
 # gg
 
-=======
 # # 
 # # ##Real Data
 # # d1 <- read.csv("student-alcohol-consumption/student-mat.csv",header=TRUE)
@@ -351,4 +350,3 @@
 # #   gg[i] <- (f3(as.double(data[i,])))
 # # }
 # # gg
->>>>>>> a9d1ba9142ba27dd2cab6133696f9a050adfa91b
