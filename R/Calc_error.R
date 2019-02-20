@@ -73,15 +73,16 @@ calc_error <- function(set, name) {
     sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:set$n_classes +
                         1]) / set$n_classes
   miss <- round(miss, 2)
-  return(list(probs_of_Data,probs_of_Results,total_miss=miss))
+  return(list(probs_of_Data,probs_of_Results,miss=miss))
 }
 
 calc_totalMiss <- function(set, name){
   #TODO nicht ganzen Funktionsaufruf von calc_error, eher andersherum
   errors<-calc_error(set, name)
-  return(errors$total_miss)
+  return(errors$miss)
 }
 
+<<<<<<< HEAD
 calc_miss <- function(data, results, f){
   estimations <- apply(data,1,f)
   n <- length(results)
@@ -128,3 +129,43 @@ calc_miss <- function(data, results, f){
 #'     sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
 #'   return(miss)
 #' }
+=======
+
+
+#'calc_error
+#'
+#'calculates the total error rate of of a classifaction function on a dataset
+#'
+#'@param data Dataframe of Parameters for all Observations
+#'@param results correct classes
+#'@param f classification function
+#'@return total error rate
+calc_totalMiss_ondata <- function(data, results, f) { #TODO 
+  G <- unique(results)
+
+  force(f)
+  estimated <- apply(data, 1, f)
+
+  of_Data <- lapply(G, function(class) {
+    c <- as.character(class)
+    t <- table(estimated[results == class])
+    number <- sum(t)
+
+    order <- t[G]
+    order[is.na(order)] <- 0
+    classresults <- as.list(order / number)
+
+    right <- t[c] / number
+    wrong <- (1 - right)
+
+    return(col)
+  })
+
+  probs_of_Data <-
+    data.frame(class = c(as.character(G), 'right', 'wrong'), of_Data)
+
+  miss <-
+    sum(probs_of_Data[probs_of_Data$class == 'wrong', 1:length(G) + 1]) / length(G)
+  return(miss)
+}
+>>>>>>> b40f85e5f05bcf79d56811c3ed396f6b5e861220
