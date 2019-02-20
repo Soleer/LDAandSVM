@@ -202,7 +202,7 @@ expansion = function(base) {
 ####################################################################################################### 
     #get observations of one class
 get_data_by_class = function(class){
-      return(data[private$.results == self$classes[class],])
+      return(data[private$.results == self$classes[class],]) #TODO funzt nicht, ruft anderen datensatz ab
 }
 #######################################################################################################
 ),
@@ -476,12 +476,13 @@ is.data_set <- function(set) {
 #'
 #'@param N number of observations per class
 #'@param K number of classes
+#'@param P number of parameters of each observation
 #'@return a data_set
 #'@examples
 #'set <- make_testset(N = 50, K= 2)
 #'@export
-make_testset <- function(N = 10, K = 3) {
-  test <- make_test(N, nclasses = K)
+make_testset <- function(N = 10, K = 3, P = 2) {
+  test <- make_test(ninputs = N, nclasses = K, nparam = P)
   set <-
     make_set(test,
              by = "class",

@@ -1,4 +1,7 @@
 ---
+title: "Presentation"
+author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
+date: "February 22, 2019"
 output:
   html_document: default
   word_document: default

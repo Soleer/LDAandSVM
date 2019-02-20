@@ -79,3 +79,16 @@ testRDA <- function() {
   })
 }
 
+testSmallSigma <- function(){
+  N <- 5
+  G<- 3
+  test_set <- make_testset(N, G)
+  print(test_set)
+  small_sigma_est(test_set)
+  
+  test_that("smallSigma makes sense", {
+    small_sigma_est(test_set)
+    #TODO 
+  })
+}
+
