@@ -36,6 +36,15 @@ classify <- function(classes, delta) {
 
 ## LDA, QDA, PDA, RDA
 
+#' LDA
+#'
+#' The LDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' @param set A R6 data_set object initialized with make_set. @seealso make_set
+#' @return Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
+#' function in the second entry
+#' @examples
+#' LDA(Rockets_set)
+#' func_name <- LDA(SAC_G1)[['name']]
 LDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -69,6 +78,16 @@ LDA <- function(set) {
                                                               "basic LDA function")))
 }
 
+
+#' QDA
+#'
+#' The QDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' @param set A R6 data_set object initialized with make_set. @seealso make_set
+#' @return Returns a list with the name of the created QDA function in the given set in the first entry and the actual classification
+#' function in the second entry
+#' @examples
+#' QDA(Rockets_set)
+#' func_name <- QDA(SAC_G1)[['name']]
 QDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -102,6 +121,20 @@ QDA <- function(set) {
                                                               "basic QDA function")))
 }
 
+
+#' PDA
+#'
+#' The PDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' @param set A R6 data_set object initialized with make_set. @seealso make_set
+#' @param base One of the following strings \itemize{\item "id"; \item "quad"; \item "cube"; \item "sqrt"; \item "log"; \item "abs"}
+#'             The data gets then expanded. @seealso basis_exp
+#' @param omega A penalizer matrix used for the classification. Note that the dimensions must fit the dimension of the
+#'              (potentially) expanded dataset
+#' @return Returns a list with the name of the created PDA function in the given set in the first entry and the actual classification
+#' function in the second entry
+#' @examples
+#' PDA(Rockets_set, "quad", diag(2, nrow = 5))
+#' func_name <- PDA(SAC_G1)[['name']]
 PDA <- function(set, base, omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")

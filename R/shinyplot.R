@@ -4,7 +4,7 @@ library(shiny)
 Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA", "RDA", "SVM"))                                  ##Dropdown menu where the classifier functions can be selected
 Base <- selectInput("Base", "Select Basis Expansion", choices = c("id", "quad", "cube", "sqrt", "log", "abs"))                              ##Dropdown menu where the basis expansion for PDA can be selected
 Background <- radioButtons("Background", "Plot classification Grid", c("TRUE", "FALSE"))                                                    ##Radio buttons with the option to print the background or not
-Project <- radioButtons("Project", "Project the data onto the main components", c("TRUE", "FALSE"))                                         ##Selection if the plot shoul be projected
+Project <- radioButtons("Project", "Project the data onto the main components", c("FALSE", "TRUE"))                                         ##Selection if the plot shoul be projected
 PPU <- sliderInput("PPU", "Select the points per unit for the background", value = 5, min = 1, max = 10, step = 1)                           ##Selection for the PPU of the plot
 
 Calc_button <- actionButton("Calc_button", "Classifiy")                                                                                     ##Button that starts the process of classifying
@@ -29,10 +29,11 @@ Load_test <- textInput("Load_test", "Load an R6 Dataset", value = "Name of the o
 Load_button <- actionButton("Load_button", "Load Object")                                             ##Button that loads in th object specified above
 Load <- wellPanel(Load_test, Load_button)                                                             ##Merges the two objects above into one
 
+Observations <- sliderInput("Observations", "Number of observations per class", value = 100, min = 2, max = 250) ##Slider that lets the user chose the number of observations per class
 Param <- sliderInput("Param", "Number of Dimensions", value = 2, min = 2, max = 10, step = 1)         ##Slider that lets the user chose the number of dimensions in a randomly generated test
 Classes <- sliderInput("Classes", "Number of Classes", value = 2, min = 2, max  = 10, step = 1)       ##Slider that lets the user chose the number of classes in a randomly generated test
 Test_button <- actionButton("Test_button", "Generate random testdata")                                ##Button to start generating a random test
-Create <- wellPanel(Param, Classes, Test_button)                                                      ##Merges the objects into one 
+Create <- wellPanel(Observations, Param, Classes, Test_button)                                        ##Merges the objects into one 
 
 Sigma1 <- numericInput("Sigma1", "std. of Class 1", value = 1, min = 0.01, max = 5)                   ##Input that lets the user chose the standard deviations of all classes
 Sigma2 <- numericInput("Sigma2", "std. of Class 2", value = 1.5, min = 0.01, max = 5)
@@ -74,8 +75,9 @@ server_LDA_SVM <- function(input, output){
   observeEvent(input$Test_button, {                                                       ##What happens when the "create random Test" button is pressed:
     nparam <- input$Param                                                                 ##Number of Dimensions and
     nclasses <- input$Classes                                                             ##number of Classes gets loaded
+    Observations <- input$Observations                                                    ##Number of observations per class
     print(paste("Creating a test with", nclasses, "classes in", nparam, "dimensions."))   ##Confirmation console output
-    test_shiny <- make_test(100,                                                          ##Creating a test via make_test() with classes, dimensions and sigma values
+    test_shiny <- make_test(Observations,                                                 ##Creating a test via make_test() with classes, dimensions and sigma values
                       nparam = nparam,
                       nclasses = nclasses,
                       sigma = c(input$Sigma1, input$Sigma2, input$Sigma3, input$Sigma4, input$Sigma5, 
@@ -221,6 +223,17 @@ ui_LDA_SVM <- fluidPage(                                                        
 )
 
 
+#' classify_app
+#'
+#' A shiny application for classifying data with a graphic interface. Use the "Load Test" option to 
+#' load in a R6 data_set object by its name or generate a random test using the options on the 
+#' left and the paramters for the std in the middle. For classifying use the column on the right 
+#' and chose the classifier and potentially and further parameters. To view the classification 
+#' plot go to the second tab and to see the error plot go to the thrid tab. In both these the
+#' image can be saved with the options  at the bottom. The images will be saved as .png
+#' @return Nothing
+#' @examples
+#' classify_app()
 classify_app <- function(){
   shinyApp(ui_LDA_SVM, server_LDA_SVM)
 }
