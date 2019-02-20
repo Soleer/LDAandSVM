@@ -20,7 +20,7 @@ data_set <- R6Class(
     .n_obs = 0,              #number of observations ( nrow(.data))
     .title = "",             #title of data_set
     .description = "",       #description
-    .pi = 0,                 #vector of possibilitys of each class
+    .pi = 0,                 #vector of probability of each class
     .mean = 0,               #list of parameter means of each class
     .meantotal = 0,          #parameter means over all classes
     .sigma = 0,              #list of covaraince matrices of each class
@@ -428,9 +428,6 @@ make_set <- function(data,
                      by,
                      title="",
                      description="") {
-  print("data:")
-  print(is.data.frame(data))
-  print(data)
   
   data_set$new(data, by, title, description)
 }

@@ -15,7 +15,7 @@ source("R/oop.R")
 source("R/Estimators.R")
 source("R/Classifier_funs.R")
 source("R/plot_functions.R")
-source("R/svm.R")
+source("R/svm_oop.R")
 source("R/shinyplot.R")
 set.seed(0)
 
@@ -51,9 +51,10 @@ set <-
 ### Shiny-Interface
 classify_app()
 ### PDA
+set$parnames
 func_name0 <-  PDA(set, base = "quad")[['name']]
 plot_summary(set,func_name0)
-make_2D_plot(set,func_name0)
+make_2D_plot(set,func_name0,project = c('a','b'))
 ### LDA
 func_name1 <- LDA(set)[['name']]
 plot_summary(set,func_name1)
@@ -112,7 +113,8 @@ p1 <- do.call(grid.arrange, liste1)
 testplot1 <-
   make_2D_plot(Rocket_set,
                func_name1,
-               ppu = 2)
+               ppu = 2,
+               project = FALSE)
 plotlist1 <- list(p1, testplot1)
 
 func_name2 <- QDA(Rocket_set)[['name']]
@@ -124,7 +126,9 @@ testplot2 <-
                func_name2,
                ppu = 2,
                project = FALSE)
+
 testplot2
+
 plotlist2 <- list(p1, testplot2)
 
 ggplot(mtcars, aes(x=hp, y=mpg)) + geom_point(aes(y=qsec), color="red") 
@@ -132,4 +136,24 @@ testplot1 <- testplot1 + geom_point(aes(x = 60, y = -80))
 testplot1
 testplot2
 
-Rocket_set$func[[func_name2]](c(60, -80))
+blub <- plot_summary(Rocket_set,func_name1)
+blub
+
+Rocket_set$func[[func_name1]](c(40, 103))
+
+
+## Shiny SVM
+set.seed(2)
+sig <- c(1.5, 2, 2.5, 1.3)  ##Creating a vector of standard deviations for the the make_test() function
+dimension <- 2   ##Number of dimensions the test should have. 2 for simlicity
+
+test <- make_test(100, ##Creating a random test where each class has 100 observations
+                  nparam = dimension, ##in 2 Dimensions
+                  nclasses = 4, ##with 4 classes
+                  sigma = sig) ##That are distributed as specified above
+
+set <- make_set(test, ##Creating a R6 dataset object with the generated data
+                by = "class", ##Column in which the classes of the observations are listed
+                title = "R Markdown ",
+                description = "R Markdown presentation file")
+classify_app()

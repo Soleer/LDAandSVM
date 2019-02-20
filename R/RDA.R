@@ -73,26 +73,19 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     #training
 
     training_data <- do.call(rbind, data[-i]) 
-    results <- unlist(results[-i])
+    training_results <- unlist(results[-i])
 
-    
-    training_dataframe <- cbind(results, training_data) #TODO kontrollieren, ob zusammenpassen
-    
-
-
-    source("R/oop.R")
-    print("training_dataframe:")
-    print(is.data.frame(training_dataframe))
-    print(training_dataframe)
-    
-    data_set <- make_set(data = training_dataframe, by = "results") 
+    training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
+    print(colnames(training_dataframe))
+    data_set <- make_set(data = training_dataframe, by = "training_results") 
 
 
     classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)
     
     #validation on block j
     validation_data_set <- data[[i]]
-    current_error <- calc_error(validation_data_set, results, classifier)
+    validation_results <- results[[i]]
+    current_error <- calc_error(validation_data_set, validation_results, classifier)
     
     current_error
   })

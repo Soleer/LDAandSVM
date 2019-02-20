@@ -71,12 +71,13 @@ make_2D_plot <- function(set,
     proj_data <-
       as.data.frame(t(apply(set$data, 1, proj_to)))
   }
-  else if(is.character(project)){
+  else if(is.character(project)&&length(project)==2){
     proj_data <- set$data[project]
     proj_in <- function(x){
       vec <- rep(0, times = (set$dim))
-      vec[set$param==project[1]] <- x[1]
-      vec[set$param==project[2]] <- x[2]
+      vec[set$parnames==project[1]] <- x[1]
+      vec[set$parnames==project[2]] <- x[2]
+      vec
     }
   }
   else{
@@ -104,9 +105,7 @@ make_2D_plot <- function(set,
       height = 0,
       width = 0
     )
-  if(project){
-    xtimes <- (x[2] - x[1]) * ppu
-    ytimes <- (y[2] - y[1]) * ppu
+  if(is.logical(project)&&project){
     mainplot + theme(axis.title.x=element_blank(),
                      axis.text.x=element_blank(),
                      axis.ticks.x=element_blank(),
@@ -116,6 +115,8 @@ make_2D_plot <- function(set,
   }
   #3. colored background
   if (bg) {
+    xtimes <- (x[2] - x[1]) * ppu
+    ytimes <- (y[2] - y[1]) * ppu
     background <-
       data.frame(x = rep(seq(x[1], x[2], length.out = xtimes), times = ytimes),
                  y = rep(seq(y[1], y[2], length.out = ytimes),  each = xtimes))
@@ -312,8 +313,8 @@ plot_summary <- function(set,name,background=TRUE,project=TRUE){
     make_2D_plot(set,
                name,
                ppu = 5,
-               background,
-               project
+               project,
+               background
                )
   plotlist <- list(error_list, plot)
   niceplot <- do.call("grid.arrange", c(plotlist, ncol = 2, top = sprintf("%s %s",set$title,name)))

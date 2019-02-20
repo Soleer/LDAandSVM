@@ -1,3 +1,8 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 ```{r source, echo=FALSE, warning = FALSE}
 source("../R/Basis_expansion.R")
 source("../R/Test.R")
@@ -6,7 +11,7 @@ source("../R/Estimators.R")
 source("../R/Classifier_funs.R")
 source("../R/plot_functions.R")
 #source("R/svm.R")
-#source("R/shinyplot.R")
+source("../R/shinyplot.R")
 set.seed(2)
 ```
 
@@ -47,7 +52,7 @@ height <- c(height_B, height_R, height_C)
 decibel <- c(decibel_B, decibel_R, decibel_C)
 class <- c(classes_B, classes_R, classes_C)
 
-Rockets <- data.frame(height = height, decibel = decibel, class = class)
+Rockets <- data.frame(decibel = decibel, height = height, class = class)
 ```
 
 Suppose we have a dataset of 289 observations of skyrockets for sylvester where we have measured both the heigth and the volume of our rckets. There are 115 rockets of the type "Barock", 78 of the type "Renaissance" and 96 of the type "Classic". This allows us to Classify the data with this package. First, we need to create a data_set object out of our data-frame. We do this by typing:
@@ -66,7 +71,8 @@ and finally create the plot
 ```{r LDA example plot, results='hide'}
 exampleplot1 <- make_2D_plot(Rocket_set,
                func_example1,
-               ppu = 2)
+               ppu = 2,
+               project = FALSE)
 ```
 
 which we will disply with:
@@ -89,10 +95,55 @@ do.call(grid.arrange, example_error)
 
 So we see that for this data set LDA is to 89% rigth.
 
-It is now 0:01 in the morning on January 1st and we see that our neighbour has a rocket that's really loud and we are interested if it one of the now banned rocket of the type Classic. We have observed, that the rocket 
+We can also put both these plots together with one simply function:
+
+```{r plot_total, results='hide', fig.keep='last', out.width='100%'}
+plot_summary(Rocket_set, func_example1, project = FALSE)
+```
+
+It is now 0:01 in the morning on January 1st and we see that our neighbour has a rocket that's really loud and we are interested if it one of the now banned rocket of the type Classic. We have observed, that the rocket exploded at about 40 meters and was about 102 decibels loud. So we let our classification function make all the work for us. We get the class of the to be classified point (102, 40) by typing
+
+```{r Point Classification}
+Rocket_set$func[[func_example1]](c(103, 40))
+```
+
+and find out that LDA tells us that the rocket was of the forbidden type "Renaissance". We can see the Rocket in our plot if we simply add it as a black point:
+
+```{r adding Point}
+exampleplot1 <- exampleplot1 + geom_point(aes(x = 102, y = 40))
+exampleplot1
+```
+
+We are now very close to calling the police for such a violation of the law but to make sure we want QDA to give us the same result as a confirmation because the point is very close at the edge. So we redo the proceedure for QDA
+
+```{r QDA point}
+func_example2 <- QDA(Rocket_set)[['name']]
+exampleplot2 <- make_2D_plot(Rocket_set,
+               func_example2,
+               ppu = 2,
+               project = FALSE)
+exampleplot2 <- exampleplot2 + geom_point(aes(x = 102, y = 40))
+exampleplot2
+```
+
+We realise that QDA seems to calssify the Point to "Barock" but we are unsure for we have watery eyes because of all the smoke in the air and let QDA give us a definite answer with:
+
+```{r definite answer point}
+Rocket_set$func[[func_example2]](c(103, 40))
+```
+
+We are now very unsure whether or not he is using the type "Renaissance" and decide to not confront him because we don't want to blame ourselves.
 
 ```{r seed setting, echo = FALSE}
 set.seed(2)
+```
+
+## Shiny
+
+This package comes with a shiny app to make it easier for the user to navigate the package. We can open it the following way.
+
+```{r shinyapp, results='hide', fig.keep='none'}
+classify_app()
 ```
 
 ## Linear Disciminent Analysis (LDA)
@@ -116,7 +167,8 @@ set <- make_set(test, ##Creating a R6 dataset object with the generated data
 func_name1 <- LDA(set)[['name']] ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
 testplot1 <- make_2D_plot(set, ##Creating a ggplot object where the classification image is saved in
                           func_name1, ##Function by which should be classified
-                          ppu = 5) ##Resolution of the background
+                          ppu = 5,
+                          project = FALSE) ##Resolution of the background
   
 testplot1 ##Actual plotting
 ```
@@ -141,7 +193,8 @@ Since we want to keep assuming that the underlying distribution is gaussian we h
 func_name2 <- QDA(set)[['name']] ##Setting the Classifier function as QDA
 testplot2 <- make_2D_plot(set, ##Creating a plot object for the classification plot
                func_name2,
-               ppu = 5)
+               ppu = 5,
+               project = FALSE)
 
 testplot2 ##Plotting the image
 ```
@@ -167,7 +220,8 @@ The plot below has a quadratic polynomial basis expansion. Note that Omega is qu
 func_name3 <-  PDA(set, base = "quad", omega = diag(2, nrow=5))[['name']] ##Setting the Classifier function as QDA
 testplot3 <- make_2D_plot(set, ##Creating a plot object for the classification plot
                func_name3,
-               ppu = 5)
+               ppu = 5,
+               project  = FALSE)
 
 testplot3 ##Plotting the image
 ```
@@ -188,4 +242,12 @@ What happens when neither LDA or QDA sufficently classify but PDA is too complex
 
 ## Support Vector Machines (SVM)
 
-A different approach to the whole problem is the Support Vector Machines
+A different approach to the whole problem is the Support Vector Machines. We first try to randomly seperate the classes with on straight line. This obviously won't classify great so by introducing a margin of error from which we demand that no vector lies further into the wrong class than said margin, we force the line to be bend. All points within the margin of error and only these points are therefore relevant for the seperation of the classes. Theoretically there need not be any assumptions towards the underlying distribution so SVM are generally applicable. For further informations into the mathematics behind SVMs see Hastie et al. "The Elements of Statistical Learning" (2008) pp. 417-438. 
+
+This is the result of SVM with a radial kernel for our classification problem above:
+
+![SVM with a radial kernel](Vignette_Shiny_SVM_Class.png)
+
+In this example the data were normal distributed and we can see in the above plot that SVM overfits quite a bit and this can sometimes lead to result that are better on paper but not necessarily reflect the underlying distribution. This results in the best error rate of all Classifiers in this Vignette:
+
+![SVM Error with a radial kernel](Vignette_Shiny_SVM_Error.png)
