@@ -5,15 +5,15 @@ source("R/Calc_error.R")
 testRDA <- function() {
   N <- 50
   G<- 5
-  test_set <- make_testset(N, G )
+  P<- 2
+  test_set <- make_testset(N, G, P )
   validation_set <- make_testset(N, G)
   
   #TODO complete
+  LDA_function <- LDA(test_set)$func
   test_that("LDA equals RDA", {
     
-    RDA1_function <- RDA(test_set, alpha = 1, gamma =1)$func
-    
-    LDA_function <- LDA(test_set)$func
+    RDA1_function <- RDA(test_set$clone(), alpha = 1, gamma =1)$func
    
     print(LDA_function)
     typeof(LDA_function)
@@ -38,10 +38,11 @@ testRDA <- function() {
     expect_equivalent(resultRDA1Val, resultRDA1Val)
   })
   
+  #QDA
+  QDA_function <- QDA(test_set)$func
   test_that("QDA equals RDA", { 
-    RDA2_function <- RDA(test_set, alpha = 0, gamma = 1)$func
-    QDA_function <- QDA(test_set)$func
-    
+    RDA2_function <- RDA(test_set$clone(), alpha = 0, gamma = 1)$func
+
     resultQDAVal <- apply(validation_set$data, 1, QDA_function)
     resultRDA2Val <- apply(validation_set$data, 1, RDA2_function)
     
@@ -52,6 +53,7 @@ testRDA <- function() {
     expect_equivalent(resultQDAVal, resultRDA2Val)
   })
   
+  #Test performance win
   test_that("RDA better than LDA and QDA", {
     RDA3_function <- RDA(test_set)$func # uses cross validation 
 
