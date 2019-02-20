@@ -157,3 +157,22 @@
 #                 title = "R Markdown ",
 #                 description = "R Markdown presentation file")
 # classify_app()
+# test <- make_test(nclasses = 3,ninputs = 50)
+# test <- make_set(test,"class","TITEL",description = "Description")
+# test$func_names
+# results <- test$results
+# data <- test$data
+# dd <- SVM(test,C = 50,kernel = "neural",d=5,g=3)[['name']]
+# f3 <- test$func[[dd]]
+# 
+# list("SVM_2")
+# calc_error(test,dd)
+# dd
+# 
+# 
+# gg <- 0
+# for (i in 1:150) {
+#   gg[i] <- (f3(as.double(data[i,])))
+# }
+# gg
+
