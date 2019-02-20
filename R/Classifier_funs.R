@@ -24,8 +24,6 @@ class_by_targets <- function(classes, delta) {
 #return max
 classify <- function(classes, delta) {
   classfunction <- function(x) {
-    print(x) #TODO delete
-    print(delta(x))
     
     pos_max <- which.max(delta(x))
     return(classes[pos_max])
@@ -165,7 +163,7 @@ RDA <- function(set, alpha, gamma){
     stop("Input must be of class 'data_set' (?make_set)")
   }
   
-  if (length(set$func) > 0) { #TODO could cause trouble in cross validation
+  if (length(set$func) > 0) { 
     slot <- character(0)
     sapply(set$func_info, function(l) {
       if (!is.null(l[["type"]])) {
@@ -212,8 +210,10 @@ RDA <- function(set, alpha, gamma){
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      -1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
+      - 1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
     }) + p
+
+    print(result)
     return(result)
   }
   
@@ -221,3 +221,53 @@ RDA <- function(set, alpha, gamma){
   return(set$set_function(classify_func, type = "RDA", list(base='id',description =
                                                               "basic RDA function")))
 }
+
+#RDA test 
+testRDA <- function() {
+  library(testthat)
+  N <- 5
+  G<- 2
+  test_set <- make_testset(N, G )
+  validation_set <- make_testset(N, G)
+  
+  #TODO complete
+  test_that("LDA equals RDA", {
+    
+    RDA1_function <- RDA(test_set, alpha = 1, gamma =1)$func
+    print("")
+    print("RDA1:")
+    print(RDA1_function)
+    
+    LDA_function <- LDA(test_set)$func
+    print(LDA_function)
+    typeof(LDA_function)
+    
+    resultLDA <- apply(validation_set$data, 1, LDA_function)
+    resultRDA1 <- apply(validation_set$data, 1, RDA1_function)
+    
+      expect_equivalent(resultRDA1, resultLDA)
+  })
+  
+  test_that("QDA equals RDA", { 
+    RDA2_function <- RDA(test_set, alpha = 0, gamma = 1)$func
+    QDA_function <- QDA(test_set)$func
+    
+    resultRDA1 <- RDA2_function(validation_set$data)
+    resultQDA <- QDA_function(validation_set$data)
+    
+    expect_equivalent(resultRDA1, resultQDA)
+  })
+  
+  test_that("RDA better that LDA and QDA", {
+    RDA3_function <- RDA(test_set)$func # uses cross validation 
+    resultRDA3 <- RDA3_function(validation_set$data)
+    
+    expect_gte(resultRDA3, resultQDA)
+    expect_gte(resultRDA3, resultLDA)
+  })
+}
+
+N <- 5
+G<- 2
+test_set <- make_testset(N, G )
+testRDA()

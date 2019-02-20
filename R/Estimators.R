@@ -110,3 +110,16 @@ small_sigma_est <- function(set){
   return(small_sigma)
     
 }
+
+testSmallSigma <- function() {
+  library(testthat)
+  N <- 5
+  G<- 3
+  test_set <- make_testset(N, G)
+  
+  test_that("smallSigma makes sense", {
+    small_sigma_est(test_set)
+    #TODO 
+  })
+}
+testSmallSigma()
