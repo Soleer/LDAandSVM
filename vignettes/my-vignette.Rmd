@@ -8,6 +8,17 @@ output:
   pdf_document: default
 ---
 ```{r source, echo=FALSE, warning = FALSE, results='hide'}
+library(ggplot2)
+library(gridExtra)
+library(quadprog)
+library(R6)
+library(MASS)
+library(NlcOptim)
+library(e1071)
+library(shiny)
+library(NlcOptim)
+library(shiny)
+library(rlang)
 source("../R/Basis_expansion.R")
 source("../R/Test.R")
 source("../R/oop.R")
@@ -15,6 +26,7 @@ source("../R/Estimators.R")
 source("../R/Classifier_funs.R")
 source("../R/plot_functions.R")
 source("../R/shinyplot.R")
+source("../R/Calc_error.R")
 set.seed(2)
 ```
 

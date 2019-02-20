@@ -5,24 +5,26 @@ calc_miss <- function(data, results, f){
 }
 
 
-#'calc_error
+#' calc_error
 #'
-#'Calculates the following propabilitys for a classificationfunction of a data_set:
-#'[[1]]                                                        #accessed over: 
-#'prop. of: class 'A' to be classified to a class 'B'          # ['B','A']
-#'prop. of: class 'A' to be classified to 'A'                  # ['right','A']
-#'prop. of: class 'A' to be not classified to 'A'              # ['wrong','A']
-#'[[2]]
-#'prop. of: classified to class 'A' and actually was class 'B' #['B','A']
-#'prop. of: classified to class 'A' and also was 'A'           #['right','A']
-#'prop. of: classified to class 'A' but was not 'A'            #['wrong','A']
-#'[[3]]
-#'prop. of: missclassification                                 #['miss']
+#' Calculates the following propabilitys for a classificationfunction of a data_set:
+#' [[1]]                                                        #accessed over: 
+#' prop. of: class 'A' to be classified to a class 'B'          # ['B','A']
+#' prop. of: class 'A' to be classified to 'A'                  # ['right','A']
+#' prop. of: class 'A' to be not classified to 'A'              # ['wrong','A']
+#' [[2]]
+#' prop. of: classified to class 'A' and actually was class 'B' #['B','A']
+#' prop. of: classified to class 'A' and also was 'A'           #['right','A']
+#' prop. of: classified to class 'A' but was not 'A'            #['wrong','A']
+#' [[3]]
+#' prop. of: missclassification                                 #['miss']
 #'
-#'@param set A object of class 'data_set'
-#'@param name the functionname of the function in set
-#'@return A list with 3 entrys. Entry [[1]] and [[2]] are matrixes and contain the values as described in the description.
+#' @param set A object of class 'data_set'
+#' @param name the functionname of the function in set
+#' @return A list with 3 entrys. Entry [[1]] and [[2]] are matrixes and contain the values as described in the description.
 #' [[3]] is the propability of missclassification.
+#' @examples 
+#' LALALALALA
 calc_error <- function(set, name) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
