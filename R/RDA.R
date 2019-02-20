@@ -210,7 +210,3 @@ calc_error <- function(set, name) {
 
 
 ###TEST
-#TODO Test comparing LDA and QDA with RDA for according parameters
-#data_set <- make_testset(N=3, G = 3)
-
-#RDA(test_set)

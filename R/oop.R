@@ -26,7 +26,7 @@ data_set <- R6Class(
     .sigma = 0,              #list of covaraince matrices of each class
     .sigma_bet = NA,         #between class covariance matrix
     .n_func = 0,             #number of saved classification functions
-    .function_list = list(), #list of already calculated classification functions
+    .function_list = list(), #list of already calculated classification functions 
     .function_info = list()  #list of corresponding parameters for each function
   ),
   public = list(

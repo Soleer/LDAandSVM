@@ -1,16 +1,24 @@
-Package: sheet9
-Title: Sheet9
-Version: 1.0
+Package: LDA.SVM
+Title: LDA_SVM
+Version: 1.1
 Authors@R: 
-    person(given = "Niklas",
-           family = "Wünstel",
-           role = c("aut", "cre","main"),
-           email = "niklas@soleer.de")
     person(given = "Henning",
            family = "Stein",
            role = c("aut", "cre"),
            email = "stein.henning74@gmail.com")
-Description: This package fullfills all tasks needed for sheet 9. 
+    person(given = "Daniel",
+           family = "Fridljand",
+           role = c("aut", "cre"),
+           email = "daniel.fridljand@stud.uni-heidelberg.de")
+    person(given = "Benedikt",
+           family = "Lauer",
+           role = c("aut", "cre"),
+           email = "benedikt.lauer@gmx.de")
+    person(given = "Niklas",
+           family = "Wünstel",
+           role = c("aut", "cre"),
+           email = "niklas@soleer.de")
+Description: This package conains many functions for classification problems.
 License: Best License In History, Maybe Ever
 Encoding: UTF-8
 LazyData: true
