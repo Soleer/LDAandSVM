@@ -37,7 +37,5 @@ Depends:
     NlcOptim,
     e1071,
     shiny,
-    NlcOptim,
-    shiny,
     rlang,
     testthat
