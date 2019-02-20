@@ -116,9 +116,6 @@ small_sigma_est <- function(set){
     
 }
 
-<<<<<<< HEAD
-
-=======
 testSmallSigma <- function() {
   N <- 5
   G<- 3
@@ -129,4 +126,3 @@ testSmallSigma <- function() {
     #TODO 
   })
 }
->>>>>>> 2c7eae01fd701c5f3fc26c1f1784bb1989fa2ef2
