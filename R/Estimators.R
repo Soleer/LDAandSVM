@@ -116,4 +116,17 @@ small_sigma_est <- function(set){
     
 }
 
+<<<<<<< HEAD
 
+=======
+testSmallSigma <- function() {
+  N <- 5
+  G<- 3
+  test_set <- make_testset(N, G)
+  
+  test_that("smallSigma makes sense", {
+    small_sigma_est(test_set)
+    #TODO 
+  })
+}
+>>>>>>> 2c7eae01fd701c5f3fc26c1f1784bb1989fa2ef2
