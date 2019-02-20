@@ -17,6 +17,6 @@ function in the second entry and saves it in the input set.
 The LDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
 }
 \examples{
-LDA(Rockets_set)
-func_name <- LDA(SAC_G1)[['name']]
+test <- make_testset()
+func_name <- LDA(test)[['name']]
 }

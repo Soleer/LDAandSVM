@@ -41,8 +41,9 @@ classify <- function(classes, delta) {
 #' @return Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
 #' @examples
-#' LDA(Rockets_set)
-#' func_name <- LDA(SAC_G1)[['name']]
+#' test <- make_testset()
+#' func_name <- LDA(test)[['name']]
+#' @export
 LDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -85,8 +86,9 @@ LDA <- function(set) {
 #' @return Returns a list with the name of the created QDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
 #' @examples
-#' QDA(Rockets_set)
-#' func_name <- QDA(SAC_G1)[['name']]
+#' test <- make_testset()
+#' func_name <- QDA(test)[['name']]
+#' @export
 QDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -133,8 +135,9 @@ QDA <- function(set) {
 #' @return Returns a list with the name of the created PDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
 #' @examples
-#' PDA(Rockets_set, "quad", diag(2, nrow = 5))
-#' func_name <- PDA(SAC_G1)[['name']]
+#' test <- make_testset()
+#' func_name <- PDA(test,base='quad')[['name']]
+#' @export
 PDA <- function(set, base = "id", omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
@@ -210,9 +213,9 @@ PDA <- function(set, base = "id", omega) {                             ##The PDA
 #' @return Returns a list with the name of the created SVM function in the given set in the first entry and the actual classification
 #' function in the second entry and saves the classification function in the R6 object R6.
 #' @examples
-#' SVM(Rockets_set, 1,"radial, g = 1)
-#' func_name <- SVM(SAC_G1)[['name']]
-
+#' test <- make_testset()
+#' func_name <- SVM(test,C = 1, kernel = 'radial', g = 1)[['name']]
+#' @export
 SVM <- function(set,
                 C = 1,
                 kernel = "id",
@@ -348,5 +351,6 @@ RDA <- function(set, alpha, gamma){
     )
   ))
 }
+
 
 

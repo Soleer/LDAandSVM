@@ -1,5 +1,4 @@
 ## Create Test
-
 #' make_test
 #'
 #' Generates a Dataframe with ninputs many columns and a 'class' column. Every Class has
@@ -13,9 +12,10 @@
 #' @return A Dataframe with nparam many columns with gaussian data and a columns 'class'
 #' @examples
 #' test <- make_test()
-#' set <- make_set(test, by = class, title="test")
+#' set <- make_set(test, by = 'class', title="test")
 #' 
 #' make_test(ninputs = 80, nparam = 4, nclasses = 4, sigma = c(1,2,0.8,1.5), cube = c(-10,10))
+#' @export
 make_test <- function(ninputs = 100,
                       nparam = 2,
                       nclasses = 2,

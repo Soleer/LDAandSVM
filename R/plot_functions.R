@@ -5,6 +5,7 @@
 #'@param set a data_set
 #'@return matrix whose columns contain the eigenvectors of set$sigma_bet.
 #' The vectors are normalized to unit length and sorted by decreasing eigenvalues. 
+#' @export
 maincomponent_analysis <- function(set) {
   cov_matrix <- set$sigma_bet
   ev <- eigen(cov_matrix)
@@ -17,6 +18,7 @@ maincomponent_analysis <- function(set) {
 #'@param set a data_set
 #'@param dim dimension of target space
 #'@return A list with a function that reduces to dim via maincomponent analysis and one that projects back by setting all other dimensions to zero.
+#'@export
 make_projection <- function(set, dim = 2) {
   U <- maincomponent_analysis(set)[, 1:dim]
   proj <- function(x) {
@@ -39,12 +41,11 @@ make_projection <- function(set, dim = 2) {
 #'@param bg logical, defines if a background grid should be generated
 #'@return A 2 dimensional plot of the data_set with the function as 
 #'@examples
-#'test <- make_test()
-#'set <- make_set(test, by='class')
-#'make_2D_plot(set, project = c(1,1), project=FALSE)
-#'
-#'make_2D_plot(set,'LDA_1', ppu = 3)
-#'make_2D_plot(set,'LDA_1', project = c('a','b'))
+#'set <- make_testset()
+#'make_2D_plot(set, project = c(1,2))
+#'name <- LDA(set)[['name']]
+#'make_2D_plot(set, name, ppu = 3)
+#'@export
 make_2D_plot <- function(set,
                          func_name=FALSE,
                          ppu = 5,
@@ -54,19 +55,21 @@ make_2D_plot <- function(set,
   if (!is.data_set(set)) {                                               #check if input correct
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
-  if(is.logical(func_name)&&!func_names){
+  if(is.logical(func_name)&&!func_name){
     project <- FALSE
     bg <- FALSE
   }
   else if(!any(set$func_names==func_name)){
     stop(sprintf("%s is not in given  data_set",func_name), call. = FALSE)
   }
+  else{
+    classfunc <- set$func[[func_name]]
+  }
   if(!set$dim>=2){
     stop("set dimension must be at least two!", call. = FALSE)
   }
   stopifnot(is.numeric(ppu)&&is.logical(bg))
   #prama
-  classfunc <- set$func[[func_name]]
   uresults <- set$classes
   n <- set$n_classes
   
@@ -237,21 +240,22 @@ plot_error <- function(set, name) {
 #'@param background logical, decides if the data plot should have a background grid
 #'@param project logical, decides if maincomponent analyse should be used to make the data plot
 #'@examples 
-#'plot_summary(set,"LDA_1")
+#'set <- make_testset()
+#'name <- LDA(set)[['name']]
+#'plot_summary(set,name)
+#'@export
 plot_summary <- function(set, name, background=TRUE, project=TRUE){
   liste0 <- plot_error(set, name)
   plot_list <- do.call(grid.arrange, liste0)
-  
   if(set$dim>=2){
     plot <- make_2D_plot(set,
-               name,
-               ppu = 5,
-               project,
-               background
-               )
-  plot_list[[length(plot_list)+1]] <-  plot
+                 name,
+                 ppu = 5,
+                 project,
+                 background
+                 )
+    plot_list[[length(plot_list)+1]] <-  plot
   }
-  
   niceplot <- do.call("grid.arrange", c(plot_list, ncol = 2, top = sprintf("%s %s",set$title,name)))
   return(niceplot)
 }

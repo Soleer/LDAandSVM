@@ -8,6 +8,9 @@ alpha_gamma_crossFit(data_set)
 
 alpha_gamma_crossFit(data_set)
 }
+\arguments{
+\item{data_set}{to be trained on for cross validation}
+}
 \value{
 alpha, gamma
 
@@ -15,7 +18,6 @@ alpha, gamma
 }
 \description{
 cross validates for the best alpha and gamma
-#'@param data_set to be trained on for cross validation
 
 cross validates for the best alpha and gamma
 #'@param data_set to be trained on for cross validation

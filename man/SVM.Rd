@@ -31,3 +31,7 @@ function in the second entry and saves the classification function in the R6 obj
 \description{
 The SVM classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
 }
+\examples{
+test <- make_testset()
+func_name <- SVM(test,C = 1, kernel = 'radial', g = 1)[['name']]
+}

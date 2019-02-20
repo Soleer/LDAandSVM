@@ -18,5 +18,5 @@ plot go to the second tab and to see the error plot go to the thrid tab. In both
 image can be saved with the options  at the bottom. The images will be saved as .png
 }
 \examples{
-classify_app()
+
 }

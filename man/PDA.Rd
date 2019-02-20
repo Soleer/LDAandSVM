@@ -4,7 +4,7 @@
 \alias{PDA}
 \title{PDA}
 \usage{
-PDA(set, base, omega)
+PDA(set, base = "id", omega)
 }
 \arguments{
 \item{set}{A R6 data_set object initialized with make_set. @seealso make_set}
@@ -23,6 +23,6 @@ function in the second entry and saves it in the input set.
 The PDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
 }
 \examples{
-PDA(Rockets_set, "quad", diag(2, nrow = 5))
-func_name <- PDA(SAC_G1)[['name']]
+test <- make_testset()
+func_name <- PDA(test,base='quad')[['name']]
 }

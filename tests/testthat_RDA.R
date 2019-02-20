@@ -1,5 +1,5 @@
-library(testthat)
-source("R/Calc_error.R")
+#library(testthat)
+#source("../R/Calc_error.R")
 
 #RDA test 
 testRDA <- function() {
@@ -76,6 +76,19 @@ testRDA <- function() {
     #RDA better in validation
     expect_lte(calc_errorRDA3Val, calc_errorQDAVal)
     expect_lte(calc_errorRDA3Val, calc_errorLDAVal)
+  })
+}
+
+testSmallSigma <- function(){
+  N <- 5
+  G<- 3
+  test_set <- make_testset(N, G)
+  print(test_set)
+  small_sigma_est(test_set)
+  
+  test_that("smallSigma makes sense", {
+    small_sigma_est(test_set)
+    #TODO 
   })
 }
 

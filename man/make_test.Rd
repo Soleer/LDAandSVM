@@ -28,7 +28,7 @@ boundaries. The Output can be used to create a data_set.
 }
 \examples{
 test <- make_test()
-set <- make_set(test, by = class, title="test")
+set <- make_set(test, by = 'class', title="test")
 
 make_test(ninputs = 80, nparam = 4, nclasses = 4, sigma = c(1,2,0.8,1.5), cube = c(-10,10))
 }
