@@ -1,7 +1,3 @@
-#Plot functions
-library(ggplot2)
-library(gridExtra)
-source("R/Calc_error.R")
 
 #'maincomponent_analysis
 #'

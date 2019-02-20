@@ -1,5 +1,3 @@
-library(R6)
-
 #Basic R6-Object "data_set":
 
 
