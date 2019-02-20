@@ -187,9 +187,12 @@ RDA <- function(set, alpha, gamma){
     gamma <<- alpha_gamma$gamma
   }
   
+  print(set)
+  source("R/Estimators.R")
+  print(set)
   kleinesSigma <- small_sigma_est(set)
   
-  source("R/Estimators.R")
+
   sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){ 
     #TODO Formel
     sigma_est <- sigma_est(set)

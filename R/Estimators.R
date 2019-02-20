@@ -75,20 +75,38 @@ sigma_bet_exp <- function(data, results) {
   return(B)
 }
 
-small_sigma_est <- function(set){ #TODO kontrollieren
-  data <- set$data
+small_sigma_est <- function(set){ 
   results <- set$results
   mu <- set$mean
   K <- set$n_classes
-  N <- set$n_obs
-  classes <- set$classes
+  N <- set$n_obs 
+  G <- set$classes
+  data_by_classes <- set$data_by_classes
   
-  small_sigma <- sum(sapply(classes, FUN = function(k){
-    sum(sapply(data[where(results == k), ], FUN2 = function(x){
-      mean((x-mu$class) ^2)
-    }))
-  })) * 1/(N-K)
+  return (0) #TODO
   
-  small_sigma
+  if (N != K) {
+    sumOfClasses <- sapply(
+      1:K,
+      FUN = function(k) {
+        data_of_class <- data[results == G[k],]
+        mu_of_k <-  mu[[k]]
+        
+        v <- apply(data_of_class, 1, function(x) {
+          ((x - mu_of_k) ^ 2)
+        })
+        
+        s <- sum(v)
+        return(s)
+      }
+    )
+    
+    small_sigma <- mean(sumOfClasses) / (N - K)
+  } else{
+    
+    small_sigma <- 0
+  }
+
+  return(small_sigma)
     
 }

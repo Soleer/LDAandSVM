@@ -77,6 +77,8 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 
     training_dataframe <- cbind(training_results, training_data) #TODO kontrollieren, ob zusammenpassen
     print(colnames(training_dataframe))
+    
+    source("R/oop.R")
     data_set <- make_set(data = training_dataframe, by = "training_results") 
 
 
@@ -136,7 +138,7 @@ calc_error <- function(data_set, results, f) {
 
 
 ###TEST
-
+#TODO Test comparing LDA and QDA with RDA for according parameters
 data_set <- make_testset(N=3, G = 3)
 
 RDA(test_set)
