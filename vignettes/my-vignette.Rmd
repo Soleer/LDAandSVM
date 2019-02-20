@@ -60,7 +60,7 @@ Suppose we have a dataset of 289 observations of skyrockets for sylvester where 
 ```{r Creation, results='hide'}
 Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets", description = "Rockets with their flight heigth")
 ```
-Here we load in our Rockets data-frame and name the columns by which we want to classify with the parameter "by". We now want to see how our classification looks like so we first create a classification function:
+Here we load in our Rockets data-frame and name the columns by which we want to classify with the parameter "by". We now want to see how our classification looks like so we first create a classification function by its name:
 
 ```{r Classification function creation}
 func_example1 <- LDA(Rocket_set)[['name']]
@@ -71,7 +71,7 @@ and finally create the plot
 ```{r LDA example plot, results='hide'}
 exampleplot1 <- make_2D_plot(Rocket_set,
                func_example1,
-               ppu = 2,
+               ppu = 1,
                project = FALSE)
 ```
 
@@ -97,11 +97,11 @@ So we see that for this data set LDA is to 89% rigth.
 
 We can also put both these plots together with one simply function:
 
-```{r plot_total, results='hide', fig.keep='last', out.width='100%'}
-plot_summary(Rocket_set, func_example1, project = FALSE)
+```{plot_total, results='hide', fig.keep='last'}
+plot_summary(Rocket_set, func_example1, ppu = 1, project = FALSE)
 ```
 
-It is now 0:01 in the morning on January 1st and we see that our neighbour has a rocket that's really loud and we are interested if it one of the now banned rocket of the type Classic. We have observed, that the rocket exploded at about 40 meters and was about 102 decibels loud. So we let our classification function make all the work for us. We get the class of the to be classified point (102, 40) by typing
+It is now 0:01 in the morning on January 1st and we see that our neighbour has a rocket that's really loud and we are interested if it one of the now banned rocket of the type "Renaissance". We have observed, that the rocket exploded at about 40 meters and was about 103 decibels loud. So we let our classification function make all the work for us. We get the class of the to be classified point (103, 40) by typing
 
 ```{r Point Classification}
 Rocket_set$func[[func_example1]](c(103, 40))
@@ -110,7 +110,7 @@ Rocket_set$func[[func_example1]](c(103, 40))
 and find out that LDA tells us that the rocket was of the forbidden type "Renaissance". We can see the Rocket in our plot if we simply add it as a black point:
 
 ```{r adding Point}
-exampleplot1 <- exampleplot1 + geom_point(aes(x = 102, y = 40))
+exampleplot1 <- exampleplot1 + geom_point(aes(x = 103, y = 40))
 exampleplot1
 ```
 
@@ -120,9 +120,9 @@ We are now very close to calling the police for such a violation of the law but 
 func_example2 <- QDA(Rocket_set)[['name']]
 exampleplot2 <- make_2D_plot(Rocket_set,
                func_example2,
-               ppu = 2,
+               ppu = 1,
                project = FALSE)
-exampleplot2 <- exampleplot2 + geom_point(aes(x = 102, y = 40))
+exampleplot2 <- exampleplot2 + geom_point(aes(x = 103, y = 40))
 exampleplot2
 ```
 
@@ -242,7 +242,7 @@ What happens when neither LDA or QDA sufficently classify but PDA is too complex
 
 ## Support Vector Machines (SVM)
 
-A different approach to the whole problem is the Support Vector Machines. We first try to randomly seperate the classes with on straight line. This obviously won't classify great so by introducing a margin of error from which we demand that no vector lies further into the wrong class than said margin, we force the line to be bend. All points within the margin of error and only these points are therefore relevant for the seperation of the classes. Theoretically there need not be any assumptions towards the underlying distribution so SVM are generally applicable. For further informations into the mathematics behind SVMs see Hastie et al. "The Elements of Statistical Learning" (2008) pp. 417-438. 
+A different approach to the whole problem is the Support Vector Machines. We first try to randomly seperate the classes with a line. This obviously won't classify great so by introducing a margin of error from which we demand that no vector lies further into the wrong class than said margin, we force the line to be bend. All points within the margin of error and only these points are therefore relevant for the seperation of the classes. It is then possible to apply kernels that project the data into a higher dimensional space and where the seperation lines can be straight lines and the classification become simpler. These get then projected back down into the initial space and appear curved. Theoretically there need not be any assumptions towards the underlying distribution so SVM are generally applicable. For further informations into the mathematics behind SVMs see Hastie et al. "The Elements of Statistical Learning" (2008) pp. 417-438. 
 
 This is the result of SVM with a radial kernel for our classification problem above:
 
