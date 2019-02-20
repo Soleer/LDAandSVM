@@ -5,8 +5,9 @@
 #'alpha_gamma_crossFit
 #'
 #'cross validates for the best alpha and gamma
-#'#'@param data_set to be trained on for cross validation
+#'@param data_set to be trained on for cross validation
 #'@return alpha, gamma
+#'@export
 alpha_gamma_crossFit <- function(data_set) {
   data <- data_set$data
   results <- data_set$results

@@ -288,14 +288,11 @@ fun_list <-
     temp <- list()
     for (s in (r + 1):set$n_classes) {
       # Define a data-set containing the observations of class r and s
-      print(set$table)
       dat <-
         rbind(set$data[set$results == set$classes[r], ], set$data[set$results == set$classes[s], ])
       # Define an atomic vector containing the associated classes
       res <-
         c(as.character(set$results[set$results == set$classes[r]]), as.character(set$results[set$results == set$classes[s]]))
-      print(dat)
-      print(results)
       # Assign the decision function comparing the r-th class and the s-th class to postion s in
       # the list temp.
       temp[[s]] <-

@@ -1,5 +1,5 @@
-library(testthat)
-source("R/Calc_error.R")
+#library(testthat)
+#source("../R/Calc_error.R")
 
 #RDA test 
 testRDA <- function() {

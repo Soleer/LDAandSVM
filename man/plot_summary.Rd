@@ -19,5 +19,7 @@ plot_summary(set, name, background = TRUE, project = TRUE)
 summarizes a function of a data_set in one plot
 }
 \examples{
-plot_summary(set,"LDA_1")
+set <- make_testset()
+name <- LDA(set)[['name']]
+plot_summary(set,name)
 }

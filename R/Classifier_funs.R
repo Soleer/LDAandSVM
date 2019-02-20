@@ -43,6 +43,7 @@ classify <- function(classes, delta) {
 #' @examples
 #' LDA(Rockets_set)
 #' func_name <- LDA(SAC_G1)[['name']]
+#' @export
 LDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -87,6 +88,7 @@ LDA <- function(set) {
 #' @examples
 #' QDA(Rockets_set)
 #' func_name <- QDA(SAC_G1)[['name']]
+#' @export
 QDA <- function(set) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
@@ -135,6 +137,7 @@ QDA <- function(set) {
 #' @examples
 #' PDA(Rockets_set, "quad", diag(2, nrow = 5))
 #' func_name <- PDA(SAC_G1)[['name']]
+#' @export
 PDA <- function(set, base = "id", omega) {                             ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
@@ -212,7 +215,7 @@ PDA <- function(set, base = "id", omega) {                             ##The PDA
 #' @examples
 #' SVM(Rockets_set, 1,"radial, g = 1)
 #' func_name <- SVM(SAC_G1)[['name']]
-
+#' @export
 SVM <- function(set,
                 C = 1,
                 kernel = "id",

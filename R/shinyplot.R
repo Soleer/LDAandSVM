@@ -230,7 +230,8 @@ ui_LDA_SVM <- fluidPage(                                                        
 #' image can be saved with the options  at the bottom. The images will be saved as .png
 #' @return Nothing
 #' @examples
-#' classify_app()
+#'
+#' @export
 classify_app <- function(){
   shinyApp(ui_LDA_SVM, server_LDA_SVM)
 }

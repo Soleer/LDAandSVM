@@ -9,7 +9,7 @@
 #' @examples
 #' h <- basis_exp("quad")
 #' h(c(2, 3))
-#' # 2 3 4 6 9
+#' @export
 basis_exp <- function(type = "id") { ##Function factory that returns function that makes a basis expansion
   stopifnot((typeof(type) == "character"))              ##Checking if the input is valid
   pos <- c("id", "quad", "cube", "sqrt", "log", "abs")

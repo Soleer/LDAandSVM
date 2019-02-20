@@ -17,6 +17,4 @@ Checks if the input is an Object of class data_set.
 }
 \examples{
 is.data_set(NULL)
-
-#FALSE
 }

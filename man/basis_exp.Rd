@@ -19,5 +19,4 @@ dimensional space
 \examples{
 h <- basis_exp("quad")
 h(c(2, 3))
-[1] 2 3 4 6 9
 }
