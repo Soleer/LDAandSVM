@@ -208,6 +208,7 @@ PDA <- function(set, base = "id", omega) {                             ##The PDA
 #'             dth-Degree polynomial: K(x,x') = (1+ <x,x'>)^d
 #'                      Radial basis: K(x,x') = exp(-g ||x - x'||^2)
 #'                    Neural network: K(x,x') = tanh(d* <x,x'> + g)
+#'            Use "id" for no kernel.
 #' @param d A positive double used in dth-Degree polynomial and Neural network kernel. See parameter 'kernel'
 #' @param g A positive double used in Radial basis and Neural network kernel. See parameter 'kernel'
 #' @return Returns a list with the name of the created SVM function in the given set in the first entry and the actual classification
@@ -221,22 +222,24 @@ SVM <- function(set,
                 kernel = "id",
                 d = 1,
                 g = 1) {
-  ##The SVM classification function. A function factory
+  # The SVM classification function. A function factory
+  # Test input:
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
-  if (!is.double(C) && C <= 0) {
+  if ((!is.double(C) && C <= 0 && length(C) != 1)||is.na(C)) {
     stop("Input 'C' must be a positive double", call. = FALSE)
   }  
   if (!is.character(kernel) && length(kernel) != 1) { 
     stop("Input 'kernel' must be a string with length one.")
   }  
-  if (!is.double(d) && d <= 0) {
+  if ((!is.double(d) && d <= 0 && length(d) != 1)|| is.na(d)) {
     stop("Input 'd' must be a positive double", call. = FALSE)
   }
-  if (!is.double(g) && g <= 0) {
+  if ((!is.double(g) && g <= 0 && length(d) != 1)|| is.na(g)) {
     stop("Input 'g' must be a positive double", call. = FALSE)
   }
+  # Test if SVM-classification-function was already calculated using the same parameters.
   if (length(set$func) > 0) {
     slot <- character(0)
     sapply(set$func_info, function(lis) {
@@ -254,17 +257,22 @@ SVM <- function(set,
       }
     })
     if (length(slot) > 0) {
+      # If it was already calculated, return the function saved in the data_set.
       return(list(name = slot, func = set$func[[slot]]))
     }
   }
+  # Save the parameters in a list for easier handling.
   values <- list(
     "C" = C,
     "kernel" = kernel,
     "d" = d,
     "g" = g
   )
+  # Calculate list of decision-functions.
   t <- svm_classify_list(set, values)
+  # Calculate classification-function.
   f <- svm_classify(t, set$classes)
+  # return function and save it in the data_set.
   return(set$set_function(
     f,
     type = "SVM",

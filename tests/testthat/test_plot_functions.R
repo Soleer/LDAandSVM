@@ -14,10 +14,9 @@ test_that("make_projection", {
   expect_warning(make_projection(set,m))
   expect_equivalent(0,make_projection(set,0)[[1]](c(0,0)))
 })
-
+QDA(set)
 test_that("make_2D_plot", {
   expect_error(make_2D_plot(set))
-  QDA(set)
   expect_error(make_2D_plot(set,"QDA"))
 })
 
