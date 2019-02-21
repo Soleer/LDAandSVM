@@ -82,7 +82,7 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   return(list(alpha, gamma))
   }
 
-#'validationErrorRate
+#validationErrorRate
 #'
 #'calculates the mean total error rate of RDA for given alpha, gamma to determin
 #'  best selection in the cross fitting
