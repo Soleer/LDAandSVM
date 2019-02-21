@@ -6,15 +6,17 @@
 #'
 #'cross validates for the best alpha and gamma
 #'#'@param data_set to be trained on for cross validation
+#'@param K number of validation sets. Note that though K = 10 is common, it does take far too long in this code
+#'@param N number of parameters to choose. Note that Omega(crossFit) = N^2
 #'@return alpha, gamma
-alpha_gamma_crossFit <- function(data_set) {
+alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K 
   data <- data_set$data
   results <- data_set$results
   #splits data in K equal sized training/validation samples
   #data
   n<- nrow(data) 
 
-  K <- min(3, n)
+  K <- min(K, n) 
   partition<-split(1:n, sample(1:K, n, replace = T)) #TODO ?equally sized
   
   #splits results and data according to chosen partition with corresponding rows
@@ -26,7 +28,7 @@ alpha_gamma_crossFit <- function(data_set) {
   })
    
   #creates parameters to choose from in cross fitting
-  N <- 5 #how many parameters shall be considered
+  #how many parameters shall be considered
   v <- seq(from = 0,
            to = 1,
            length.out = N) #TODO aequidistant?
@@ -84,7 +86,11 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     training_dataframe <- cbind(training_results, training_data) 
     data_set <- make_set(data = training_dataframe, by = "training_results") 
       #in order to generate a RDA object for it
-      classifier <- RDA(set = data_set, alpha = alpha, gamma = gamma)$func
+      classifier_obj <- RDA(set = data_set, alpha = alpha, gamma = gamma)
+      # if(is.null(classifier_obj)){ #singularities may occur
+      #   return(Inf)
+      # }
+      classifier <- classifier_obj$func
     
     #validation on block i
     validation_data_set <- data[[i]]
@@ -97,9 +103,19 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   return(mean(errors))
 }
-
-test_cross <- function(){
-  test_data <- make_testset()
-  alpha_gamma_crossFit(test_data)
-}
-test_cross()
+# 
+# test_cross<- function(){
+# 
+#   sets <- lapply(1:number, FUN= function(i){
+#     make_testset()
+#   })
+#   
+#   alpha_gammas <- lapply(sets, FUN = function(set){
+#     alpha_gamma <- alpha_gamma_crossFit(set)
+#     print(alpha_gamma)
+#     return(alpha_gamma)
+#   })
+#   
+#   print(alpha_gammas)
+# }
+# test_cross()

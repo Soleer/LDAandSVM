@@ -58,6 +58,11 @@ initialize = function(data,
       if (any(sapply(data[, private$.col_names != by], is.infinite))) {
         stop("Parametercolumns contain NA Values!", call. = FALSE)
       }
+      printProgress <- TRUE
+      
+      if(printProgress){
+        
+      
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
       private$.data_expansion[['id']] <- private$.data
@@ -73,7 +78,7 @@ initialize = function(data,
       #print progress
       cat("\nClasses:\n")
       print(u_classes)
-      
+      }
       #Numbers
       
       #save
@@ -90,6 +95,7 @@ initialize = function(data,
       #save number of unique classes
       private$.n_classes <- length(private$.classes)
       #print progress
+    
       cat(sprintf("\nNumber of Classes: %s \n", private$.n_classes))
       
       private$.n_obs <- nrow(data)

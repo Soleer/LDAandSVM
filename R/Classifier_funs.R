@@ -305,7 +305,7 @@ RDA <- function(set, alpha, gamma){
   N <- set$n_obs
   mu <- set$mean
   
-  if(missing(alpha) | missing(gamma)){
+  if(missing(alpha) || missing(gamma)){
     
     alpha_gamma <- alpha_gamma_crossFit(set) #TODO perhaps identical copy of set
     alpha <<- alpha_gamma$alpha
@@ -317,20 +317,46 @@ RDA <- function(set, alpha, gamma){
   n <- ncol(sigma_est)
 
   sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){
-
-
-    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
+    if(anyNA(sigma_class)){
+      print(set$sigma)
+      print(set$sigma)
+    }
     
+    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
     sigma_classAlphaGamma <-
       sigma_class*alpha + (1 - alpha) * sigma_estGamma
     
+
+    return(sigma_classAlphaGamma)
   })
   
-  sigma_inv <- lapply(sigmaAlphaGamma, solve) # TODO immer invertierbar?
+  detSigma <- lapply(sigmaAlphaGamma, det)
+  # if(0 %in% detSigma){
+  #   return(null)
+  # }
+
+  sigma_inv <- lapply(sigmaAlphaGamma, function(X){
+    out <- tryCatch(
+      {
+        inverse <- solve(X)
+        return(inverse)
+      },
+      error=function(cond) {
+        #Singularities may occurwarnings
+        return(diag(n))# TODO
+      }
+    )   
+    out
+  }) # TODO immer invertierbar?
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      - 1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
+      loga<- (- 1 / 2 * log(detSigma[[k]]))
+      if(is.nan(loga)){ #TODO
+        print(detSigma[[k]])
+      }
+      skala <- (- 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
+      return(loga + skala)
     }) + p
 
     print(result)
@@ -351,6 +377,12 @@ RDA <- function(set, alpha, gamma){
     )
   ))
 }
+
+test_RDA<- function(){
+  test_data <- make_testset()
+  RDA(test_data)
+}
+test_RDA()
 
 
 
