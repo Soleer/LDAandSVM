@@ -43,7 +43,9 @@ initialize = function(data,
       if(ncol(data)==1){
         stop("Data must have at least one parametercolumn", call. = FALSE)
       }
-      
+      if(is.na(title)){
+        stop("Title can't be a NA",call. = FALSE)
+      }
       self$description <- description
       self$title <- title
       
@@ -319,7 +321,7 @@ get_data_by_class = function(class){
         return(private$.title)
       }
       else{
-        if (is.character(Value)) {
+        if (is.character(Value) && !is.na(Value)) {
           if (length(Value) == 1) {
             private$.title <- Value
           }
