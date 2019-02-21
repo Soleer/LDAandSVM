@@ -1,3 +1,6 @@
+library(MASS)
+library(quadprog)
+library(NlcOptim)
 # This function catches the error-messages of another function expr and prints them as warnings.
 # It returns a list containing the output of the function expr, a slot for error-messages
 # and a slot for warning-messages.

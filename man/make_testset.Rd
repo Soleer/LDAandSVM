@@ -4,12 +4,14 @@
 \alias{make_testset}
 \title{make_testset}
 \usage{
-make_testset(N = 10, K = 3)
+make_testset(N = 10, K = 3, P = 2)
 }
 \arguments{
 \item{N}{number of observations per class}
 
 \item{K}{number of classes}
+
+\item{P}{number of parameters of each observation}
 }
 \value{
 a data_set
@@ -18,5 +20,5 @@ a data_set
 Creates a simple data_set with random data.
 }
 \examples{
-set <- make_testset(N = 50, K= 2)
+make_testset(N = 50, K= 2)
 }
