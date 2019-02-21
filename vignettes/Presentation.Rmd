@@ -1,7 +1,7 @@
 ---
-title: "Presentation"
+title: "LDA und SVM"
 author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
-date: "February 20, 2019"
+date: "February 22, 2019"
 output:
   ioslides_presentation: default
   beamer_presentation: default
@@ -44,7 +44,7 @@ This is an R Markdown presentation. Markdown is a simple formatting syntax for a
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
 ## Slide with Bullets
-1. Item 1
+1. 
 2. Item 2
     a. Item 2a
     b. Item 2b

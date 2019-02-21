@@ -153,6 +153,9 @@ PDA <-
     }
     data_exp <- set$expansion(base)
     d <- dim(data_exp)[2]
+    if(!is.matrix(omega) | ncol(omega) != nrow(omega) | ncol(omega) != d){
+      stop(paste("Omega must be a quadratic matrix of size", d))
+    }
     if (missing(omega)) {
       ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
@@ -255,13 +258,10 @@ SVM <- function(set,
   }
   if (!is.character(kernel) && length(kernel) != 1) {
     stop("Input 'kernel' must be a string with length one.")
-<<<<<<< HEAD
   }
   if (!is.double(d) && d <= 0) {
-=======
   }  
   if ((!is.double(d) && d <= 0 && length(d) != 1) || is.na(d)) {
->>>>>>> ae67aa8ecedf5cdfe5a8fd2e7fcdf782f2a04eaa
     stop("Input 'd' must be a positive double", call. = FALSE)
   }
   if ((!is.double(g) && g <= 0 && length(d) != 1) || is.na(g)) {
