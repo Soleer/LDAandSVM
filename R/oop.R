@@ -63,10 +63,8 @@ initialize = function(data,
       
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+
       
-      if(anyNA(data)){#TODO
-        warning("data contains Na (initialize)") 
-      }
       private$.data_expansion[['id']] <- private$.data
       
       private$.results <- data[, by]
@@ -120,11 +118,12 @@ initialize = function(data,
       
       #sigma calculate later if needed
       
-      sigma_list <- as.list(rep(NA, times = private$.n_classes)) #TODO
+      sigma_list <- as.list(rep(NA, times = private$.n_classes))
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
 },
+
 #######################################################################################################
     #custom print function
     
@@ -197,7 +196,7 @@ expansion = function(base) {
 ####################################################################################################### 
     #get observations of one class
 get_data_by_class = function(class){
-      return(data[private$.results == self$classes[class],]) #TODO funzt nicht, ruft anderen datensatz ab
+      return(self$data[private$.results == self$classes[class],])
 }
 #######################################################################################################
 ),
@@ -259,15 +258,6 @@ get_data_by_class = function(class){
       }
       else{
         stop("n_classes is read only", call. = FALSE)
-      }
-    },
-    data_by_classes = function(Value) {
-      #TODO access at k 
-      if (missing(Value)) {
-        return(private$.data_by_classes)
-      }
-      else{
-        stop("results is read only", call. = FALSE)
       }
     },
     

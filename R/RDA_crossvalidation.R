@@ -23,7 +23,7 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
     function(x, n)
       split(x, cut(seq_along(x), n, labels = FALSE))
   
-  partition <- chunk2(sample(1:n), K)
+  partition <- chunk(sample(1:n), K)
   partition
   #splits results and data according to chosen partition with corresponding rows
   results <- lapply(
