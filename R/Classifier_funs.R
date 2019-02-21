@@ -158,6 +158,9 @@ PDA <-
       ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
+    if(!is.matrix(omega) | ncol(omega) != nrow(omega) | ncol(omega) != d){
+      stop(paste("Omega must be a quadratic matrix of size", d))
+    }
     if (length(set$func) > 0) {
       ##check if already calculated
       slot <- character(0)
@@ -256,7 +259,7 @@ SVM <- function(set,
   }
   if (!is.character(kernel) && length(kernel) != 1) {
     stop("Input 'kernel' must be a string with length one.")
-  }  
+  }
   if ((!is.double(d) && d <= 0 && length(d) != 1) || is.na(d)) {
     stop("Input 'd' must be a positive double", call. = FALSE)
   }

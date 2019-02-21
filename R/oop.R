@@ -43,7 +43,9 @@ initialize = function(data,
       if(ncol(data)==1){
         stop("Data must have at least one parametercolumn", call. = FALSE)
       }
-      
+      if(is.na(title)){
+        stop("Title can't be a NA",call. = FALSE)
+      }
       self$description <- description
       self$title <- title
       
@@ -66,14 +68,13 @@ initialize = function(data,
 
       
       private$.data_expansion[['id']] <- private$.data
-      
+      #save classvalues of parameters under '.results'
       private$.results <- data[, by]
       
       private$.count <- table(private$.results)
       if(any(private$.count == 1)){
         stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
       }
-      
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
@@ -102,7 +103,6 @@ initialize = function(data,
       private$.pi <- sapply(private$.classnames, function(class) {
         private$.count[class] / private$.n_obs
       })
-    
       private$.pi <- as.list(private$.pi)
       names(private$.pi) <- private$.classnames
       
@@ -290,7 +290,7 @@ get_data_by_class = function(class){
         return(private$.title)
       }
       else{
-        if (is.character(Value)) {
+        if (is.character(Value) && !is.na(Value)) {
           if (length(Value) == 1) {
             private$.title <- Value
           }
