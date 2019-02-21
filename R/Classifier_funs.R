@@ -299,13 +299,14 @@ RDA <- function(set, alpha, gamma){
       return(list(name=slot,func=set$func[[slot]]))
     }
   }
+  
   G <- set$classes
   K <- set$n_classes
   p <- log(unlist(set$pi))
   N <- set$n_obs
   mu <- set$mean
   
-  if(missing(alpha) | missing(gamma)){
+  if(missing(alpha) || missing(gamma)){
     
     alpha_gamma <- alpha_gamma_crossFit(set) #TODO perhaps identical copy of set
     alpha <<- alpha_gamma$alpha
@@ -315,22 +316,74 @@ RDA <- function(set, alpha, gamma){
   kleinesSigma <- small_sigma_est(set)
   sigma_est <- sigma_est(set)
   n <- ncol(sigma_est)
+  allSigmas <- set$sigma
 
-  sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){
+  if(any(sapply(data_set$data, anyNA))){ #TODO
+    browser()
+    warning("data_set$dat contains Na (RDA)") 
+  }
 
-
-    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
+  if(any(sapply(allSigmas, anyNA))){ #TODO
+    browser()
+    print(set)
+    print(set$results)
+    print(allSigmas)
+    print(set$data)
+    warning("set$sigma contains Na RDA")
+  }
+  
+  sigmaAlphaGamma <- lapply(allSigmas, FUN = function(sigma_class){
     
+    # if(anyNA(sigma_class)){ #TODO
+    #   #print(set$sigma)
+    #   #warning(sigma_class)
+    #   warning("sigma_class of set$sigma lcontains Na (RDA/lapply)") 
+    # }
+    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
     sigma_classAlphaGamma <-
       sigma_class*alpha + (1 - alpha) * sigma_estGamma
     
+    # if(anyNA(sigma_classAlphaGamma)){ #TODO
+    #   warning("sigma_classAlphaGamma contains Na (RDA/ lapply)") 
+    # }
+
+    return(sigma_classAlphaGamma)
   })
   
-  sigma_inv <- lapply(sigmaAlphaGamma, solve) # TODO immer invertierbar?
+  if(anyNA(sigmaAlphaGamma)){ #TODO
+    warning("sigmaAlphaGamma contains Na (RDA)") 
+  }
+  
+  detSigma <- lapply(sigmaAlphaGamma, det)
+  # if(anyNA(detSigma)){ #TODO
+  #   warning("detSigma contains Na (RDA)") 
+  # }
+  # if(0 %in% detSigma){
+  #   return(null) //TODO
+  # }
+
+  sigma_inv <- lapply(sigmaAlphaGamma, function(X){
+    out <- tryCatch(
+      {
+        inverse <- solve(X)
+        return(inverse)
+      },
+      error=function(cond) {
+        #Singularities may occurwarnings
+        return(diag(n))# TODO
+      }
+    )   
+    out
+  }) # TODO immer invertierbar?
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      - 1 / 2 * log(det(sigmaAlphaGamma[[k]])) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
+      loga<- (- 1 / 2 * log(detSigma[[k]]))
+      if(is.nan(loga)){ #TODO
+        print(detSigma[[k]])
+      }
+      skala <- (- 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
+      return(loga + skala)
     }) + p
 
     print(result)
@@ -351,6 +404,13 @@ RDA <- function(set, alpha, gamma){
     )
   ))
 }
+
+# test_RDA<- function(){
+#   test_data <- make_testset()
+#   RDA(test_data)
+#   
+# }
+# test_RDA()
 
 
 

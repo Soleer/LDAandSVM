@@ -64,8 +64,13 @@ initialize = function(data,
       
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+      
+      if(anyNA(data)){#TODO
+        warning("data contains Na (initialize)") 
+      }
       private$.data_expansion[['id']] <- private$.data
       #Print progress
+      cat("\nData:\n")
       print(private$.data[1:5,])
       cat("...\n")
       #save classvalues of parameters under '.results'
@@ -85,7 +90,7 @@ initialize = function(data,
       #print progress
       cat("\nClasses:\n")
       print(u_classes)
-      
+    
       #Numbers
       
       #save
@@ -102,6 +107,7 @@ initialize = function(data,
       #save number of unique classes
       private$.n_classes <- length(private$.classes)
       #print progress
+    
       cat(sprintf("\nNumber of Classes: %s \n", private$.n_classes))
       
       private$.n_obs <- nrow(data)
@@ -134,7 +140,7 @@ initialize = function(data,
       
       #sigma calculate later if needed
       
-      sigma_list <- as.list(rep(NA, times = private$.n_classes))
+      sigma_list <- as.list(rep(NA, times = private$.n_classes)) #TODO
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
@@ -464,7 +470,10 @@ make_set <- function(data,
                      by,
                      title="",
                      description="") {
-  
+  if(anyNA(data)){
+    stop("data contains Na (oop/make_set)") 
+    #print(set$data) 
+  }
   data_set$new(data, by, title, description)
 }
 #'is.data_set
@@ -490,12 +499,22 @@ is.data_set <- function(set) {
 #'@examples
 #'set <- make_testset(N = 50, K= 2)
 #'@export
-make_testset <- function(N = 10, K = 3, P = 2) {
+make_testset <- function(N = 3, K = 3, P = 2) { 
   test <- make_test(ninputs = N, nclasses = K, nparam = P)
+  if(anyNA(test)){ #TODO
+   warning("Test contains Na (make_testset)") 
+  }
   set <-
     make_set(test,
              by = "class",
              title = "TEST",
              description = "Testset")
+  
+  if(anyNA(set$data)){
+    warning("Testset contains Na (make_testset)") 
+    #print(set$data) 
+  }
   return(set)
 }
+
+
