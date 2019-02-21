@@ -8,7 +8,7 @@ targets <- function(vector) {
               byrow = TRUE)
   D <- En - V
   results <- sapply(1:n, function(i) {
-    D[i,] %*% D[i,]
+    D[i, ] %*% D[i, ]
   })
   return(results)
 }
@@ -23,7 +23,6 @@ class_by_targets <- function(classes, delta) {
 #return max
 classify <- function(classes, delta) {
   classfunction <- function(x) {
-    
     pos_max <- which.max(delta(x))
     return(classes[pos_max])
   }
@@ -36,7 +35,7 @@ classify <- function(classes, delta) {
 #' LDA
 #'
 #' The LDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
-#' 
+#'
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
@@ -58,7 +57,7 @@ LDA <- function(set) {
       }
     })
     if (length(slot) > 0) {
-      return(list(name=slot,func=set$func[[slot]]))
+      return(list(name = slot, func = set$func[[slot]]))
     }
   }
   G <- set$classes
@@ -73,15 +72,19 @@ LDA <- function(set) {
     return(result)
   }
   classify_func <- classify(set$classes, delta)
-  return(set$set_function(classify_func, type = "LDA", list(base='id',description =
-                                                              "basic LDA function")))
+  return(set$set_function(
+    classify_func,
+    type = "LDA",
+    list(base = 'id', description =
+           "basic LDA function")
+  ))
 }
 
 
 #' QDA
 #'
 #' The QDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
-#' 
+#'
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created QDA function in the given set in the first entry and the actual classification
 #' function in the second entry and saves it in the input set.
@@ -103,7 +106,7 @@ QDA <- function(set) {
       }
     })
     if (length(slot) > 0) {
-      return(list(name=slot,func=set$func[[slot]]))
+      return(list(name = slot, func = set$func[[slot]]))
     }
   }
   G <- set$classes
@@ -118,15 +121,19 @@ QDA <- function(set) {
     return(result)
   }
   classify_func <- classify(set$classes, delta)
-  return(set$set_function(classify_func, type = "QDA", list(base='id',description =
-                                                              "basic QDA function")))
+  return(set$set_function(
+    classify_func,
+    type = "QDA",
+    list(base = 'id', description =
+           "basic QDA function")
+  ))
 }
 
 
 #' PDA
 #'
 #' The PDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
-#' 
+#'
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @param base One of the following strings \itemize{\item "id"; \item "quad"; \item "cube"; \item "sqrt"; \item "log"; \item "abs"}
 #'             The data gets then expanded. @seealso basis_exp
@@ -138,16 +145,20 @@ QDA <- function(set) {
 #' test <- make_testset()
 #' func_name <- PDA(test,base='quad')[['name']]
 #' @export
-PDA <- function(set, base = "id", omega) {                             ##The PDA classification function. A function factory
+PDA <-
+  function(set, base = "id", omega) {
+    ##The PDA classification function. A function factory
     if (!is.data_set(set)) {
       stop("Input must be of class 'data_set' (?make_set)")
     }
     data_exp <- set$expansion(base)
     d <- dim(data_exp)[2]
-    if (missing(omega)) {                                       ##check for omega
+    if (missing(omega)) {
+      ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
-    if (length(set$func) > 0) {                                 ##check if already calculated
+    if (length(set$func) > 0) {
+      ##check if already calculated
       slot <- character(0)
       sapply(set$func_info, function(lis) {
         l <- lis[['parameter']]
@@ -158,49 +169,61 @@ PDA <- function(set, base = "id", omega) {                             ##The PDA
         }
       })
       if (length(slot) > 0) {
-        return(list(name=slot,func=set$func[[slot]]))
+        return(list(name = slot, func = set$func[[slot]]))
       }
     }
     data_exp <- set$expansion(base)     ##expand data if needed
     h <- basis_exp(base)                ##get expansion function
     d <- dim(data_exp)[2]
-    if (missing(omega)) {               ##check for omega
+    if (missing(omega)) {
+      ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
-    G <- set$classnames                            ##Vector containing all unique classes
-    K <- set$n_classes                             ##Number of unique classes
-    p <- log(unlist(set$pi))                       ##Probability of one class occuring
-    mu <- mu_exp(data_exp, set)                    ##List of class centroid for each class
+    G <-
+      set$classnames                            ##Vector containing all unique classes
+    K <-
+      set$n_classes                             ##Number of unique classes
+    p <-
+      log(unlist(set$pi))                       ##Probability of one class occuring
+    mu <-
+      mu_exp(data_exp, set)                    ##List of class centroid for each class
     
-    sigma_list <- lapply(G, function(class) {      ##Calculating expanded Covariances
-        sigma_class_exp(data_exp[set$results == set$classes[class],], mu[[class]])
+    sigma_list <-
+      lapply(G, function(class) {
+        ##Calculating expanded Covariances
+        sigma_class_exp(data_exp[set$results == set$classes[class], ], mu[[class]])
       })
     
-    Matrix <- lapply(sigma_list, function(x) solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse
+    Matrix <-
+      lapply(sigma_list, function(x)
+        solve(x + omega)) ##Adding the Omega matrix (penalizer) to every class covariance matrix and getting the inverse
     names(Matrix) <- set$classnames
-    delta <- function(x) {                                     ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
+    delta <-
+      function(x) {
+        ##The distance function. The same as QDA but with a penalized distance function and with the expanded data.
         result <- sapply(G, function(class) {
-          diff <- h(x) - mu[[class]] 
-          return(- 1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff))
+          diff <- h(x) - mu[[class]]
+          return(-1 / 2 * log(det(Matrix[[class]])) - 1 / 2 * t(diff) %*% Matrix[[class]] %*% (diff))
         }) + p
         return(result)
-    }
+      }
     
-    classify_func <- classify(set$classes, delta) #from numbers to classes
+    classify_func <-
+      classify(set$classes, delta) #from numbers to classes
     
     return(set$set_function(classify_func, type = "PDA", list(
       base = base,
       dim = d,
       omega = omega
     )))
-}
+  }
 #'SVM
 #'
 #' The SVM classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
-#' 
+#'
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @param C A positive double used to decide how large the margin should be, hence the sensitivity of the
-#'          SVM function to misclassification. Large values encourage an overfit wiggly boundary, while a 
+#'          SVM function to misclassification. Large values encourage an overfit wiggly boundary, while a
 #'          small value of C causes a smoother boundary
 #' @param kernel One of the following strings \itemize{\item "id"; \item "poly"; \item "radial"; \item "neural"}
 #'             The feature space gets enlarged using basis expansions such as polynomials('poly') or
@@ -227,10 +250,10 @@ SVM <- function(set,
   }
   if (!is.double(C) && C <= 0) {
     stop("Input 'C' must be a positive double", call. = FALSE)
-  }  
-  if (!is.character(kernel) && length(kernel) != 1) { 
+  }
+  if (!is.character(kernel) && length(kernel) != 1) {
     stop("Input 'kernel' must be a string with length one.")
-  }  
+  }
   if (!is.double(d) && d <= 0) {
     stop("Input 'd' must be a positive double", call. = FALSE)
   }
@@ -246,7 +269,7 @@ SVM <- function(set,
           !is.null(l[["d"]]) &&
           !is.null(l[["g"]])) {
         if (l[["C"]] ==  C &&
-            isTRUE(all.equal(l[["kernel"]],kernel)) &&
+            isTRUE(all.equal(l[["kernel"]], kernel)) &&
             l[["d"]] == d &&
             l[["g"]] == g) {
           slot <<- lis[["name"]]
@@ -280,13 +303,24 @@ SVM <- function(set,
   ))
 }
 
-#RDA
-RDA <- function(set, alpha, gamma){
+#'RDA
+#'
+#' The regular Discriminant analysis from 4.3.1 as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#'
+#' @param set A R6 data_set object initialized with make_set. @seealso make_set
+#' @param alpha alpha from formula in Hastie between 0 and 1
+#' @param gamma gamma from formula between 0 and 1
+#' @return Returns a list with the name of the created RDA function in the given set in the first entry and the actual classification
+#' function in the second entry and saves the classification function in the R6 object R6.
+#' @examples
+#' test <- make_testset()
+#' func_name <- RDA(test, alpha = 0, gamma = 1)
+RDA <- function(set, alpha, gamma) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
   }
   
-  if (length(set$func) > 0) { 
+  if (length(set$func) > 0) {
     slot <- character(0)
     sapply(set$func_info, function(l) {
       if (!is.null(l[["type"]])) {
@@ -296,7 +330,7 @@ RDA <- function(set, alpha, gamma){
       }
     })
     if (length(slot) > 0) {
-      return(list(name=slot,func=set$func[[slot]]))
+      return(list(name = slot, func = set$func[[slot]]))
     }
   }
   
@@ -306,27 +340,23 @@ RDA <- function(set, alpha, gamma){
   N <- set$n_obs
   mu <- set$mean
   
-  if(missing(alpha) || missing(gamma)){
-    #attributes of alpha Gamma cross fit
-    numberOfValidations <- 3
-    accuracyOfParameters <- 20
-    
-    alpha_gamma <- alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) #TODO perhaps identical copy of set
-    alpha <<- alpha_gamma$alpha
-    gamma <<- alpha_gamma$gamma
+  if (missing(alpha) || missing(gamma)) {
+    return(RDA_crossFit(set))
   }
-
+  
   kleinesSigma <- small_sigma_est(set)
   sigma_est <- sigma_est(set)
   n <- ncol(sigma_est)
   allSigmas <- set$sigma
-
-  if(any(sapply(data_set$data, anyNA))){ #TODO
-    browser()
-    warning("data_set$dat contains Na (RDA)") 
+  
+  if (any(sapply(data_set$data, anyNA))) {
+    #TODO
+    #browser()
+    warning("data_set$dat contains Na (RDA)")
   }
-
-  if(any(sapply(allSigmas, anyNA))){ #TODO
+  
+  if (any(sapply(allSigmas, anyNA))) {
+    #TODO
     browser()
     print(set)
     print(set$results)
@@ -335,60 +365,43 @@ RDA <- function(set, alpha, gamma){
     warning("set$sigma contains Na RDA")
   }
   
-  sigmaAlphaGamma <- lapply(allSigmas, FUN = function(sigma_class){
-    
-    # if(anyNA(sigma_class)){ #TODO
-    #   #print(set$sigma)
-    #   #warning(sigma_class)
-    #   warning("sigma_class of set$sigma lcontains Na (RDA/lapply)") 
-    # }
-    sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
-    sigma_classAlphaGamma <-
-      sigma_class*alpha + (1 - alpha) * sigma_estGamma
-    
-    # if(anyNA(sigma_classAlphaGamma)){ #TODO
-    #   warning("sigma_classAlphaGamma contains Na (RDA/ lapply)") 
-    # }
-
-    return(sigma_classAlphaGamma)
-  })
-  
-  if(anyNA(sigmaAlphaGamma)){ #TODO
-    warning("sigmaAlphaGamma contains Na (RDA)") 
-  }
-  
+  sigmaAlphaGamma <- lapply(
+    allSigmas,
+    FUN = function(sigma_class) {
+      sigma_estGamma <-
+        sigma_est * gamma + (1 - gamma) * diag(n) * (kleinesSigma ** 2)
+      sigma_classAlphaGamma <-
+        sigma_class * alpha + (1 - alpha) * sigma_estGamma
+      return(sigma_classAlphaGamma)
+    }
+  )
   detSigma <- lapply(sigmaAlphaGamma, det)
-  # if(anyNA(detSigma)){ #TODO
-  #   warning("detSigma contains Na (RDA)") 
-  # }
-  # if(0 %in% detSigma){
-  #   return(null) //TODO
-  # }
 
-  sigma_inv <- lapply(sigmaAlphaGamma, function(X){
-    out <- tryCatch(
-      {
-        inverse <- solve(X)
-        return(inverse)
-      },
-      error=function(cond) {
-        #Singularities may occurwarnings
-        return(diag(n))# TODO
-      }
-    )   
+  
+  sigma_inv <- lapply(sigmaAlphaGamma, function(X) {
+    out <- tryCatch({
+      inverse <- solve(X)
+      return(inverse)
+    },
+    error = function(cond) {
+      #Singularities may occurwarnings
+      return(diag(n))# TODO
+    })
     out
   }) # TODO immer invertierbar?
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      loga<- (- 1 / 2 * log(detSigma[[k]]))
-      if(is.nan(loga)){ #TODO
+      loga <- (-1 / 2 * log(detSigma[[k]]))
+      if (is.nan(loga)) {
+        #TODO
         print(detSigma[[k]])
       }
-      skala <- (- 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
+      skala <-
+        (-1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
       return(loga + skala)
     }) + p
-
+    
     print(result)
     return(result)
   }
@@ -408,18 +421,38 @@ RDA <- function(set, alpha, gamma){
   ))
 }
 
-test_RDA<- function(){
+#'RDA_crossFit
+#'
+#' The regular Discriminant analysis from 4.3.1 as described in Hastie et al. "The Elements Statistical Learning" (2009)
+#' Uses cross validation to determin alpha and gamma @seealso alpha_gamma_crossFit
+#' Note that number of Observations per class must be a lot higher than numberOfValidations to avoid errors  
+#'
+#' @param set A R6 data_set object initialized with make_set. @seealso make_set
+#' @param numberOfValidations how many validations shall be conducted. Note that though K = 10 is common, it is impractical for RDA
+#'@param accuracyOfParameters how many parameters shall be evaluated. Note that Omega(crossFit) = N^2
+#' @return Returns a list with the name of the created RDA function in the given set in the first entry and the actual classification
+#' function in the second entry and saves the classification function in the R6 object R6.
+#' @examples
+#' test <- make_testset()
+#' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
+RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
   
+  alpha_gamma <-
+    alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) 
+  alpha <<- alpha_gamma$alpha
+  gamma <<- alpha_gamma$gamma
+  
+  return(RDA(set, alpha = alpha, gamma = gamma))
+}
+
+test_RDA <- function() {
   #attributes of each test
   nobservations <- 10#number of observations per class
   nclass <- 3 #number of classes
   dimParameters <- 2 #number of parameters
   
-  test_data <- make_testset(N = nobservations, K = nclass, P = dimParameters)
+  test_data <-
+    make_testset(N = nobservations, K = nclass, P = dimParameters)
   RDA(test_data)
-
+  
 }
-
-
-
-
