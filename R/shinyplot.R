@@ -87,7 +87,7 @@ server_LDA_SVM <- function(input, output){
   
   observeEvent(input$Calc_button, {                                                       ##What happens when the "classify" button is pressed:
     Classfun <- input$Classifier                                                          ##Function by which the set should be classified               
-    BG <- input$Background                                                                ##Reading whether the plot should be with a background
+    BG <- as.logical(input$Background)                                                    ##Reading whether the plot should be with a background
     Project <- input$Project                                                              ##Reading whether the plot should be projected onto the maincomponents
     PPU <- input$PPU
     
