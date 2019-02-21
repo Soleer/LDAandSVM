@@ -1,13 +1,13 @@
 context("test_oop")
 set.seed(0)
-a <- runif(4)
-d <- data.frame('a' = a[1:2],
-                'b' = a[3:4],
-                'class'  = c('A', 'B'))
+a <- runif(8)
+d <- data.frame('a' = a[1:4],
+                'b' = a[5:8],
+                'class'  = c('A','A','B','B'))
 b <-
-  data.frame('a' = a[1:2],
-             'b' = a[3:4],
-             'NA_character_'  = c('A', 'B'))
+  data.frame('a' = a[1:4],
+             'b' = a[5:8],
+             'NA_character_'  =  c('A','A','B','B'))
 char_mat <- matrix("a", nrow = 3, ncol = 3)
 set <-
   make_set(
@@ -28,16 +28,9 @@ test_that("test_make_set", {
   expect_error(make_set(data = d, by = "class", title = 0))
   expect_error(make_set(data = d, by = "class", title = char_mat))
   expect_error(make_set(data = d, by = "class", title = NA_character_))
-  expect_warning(make_set(
-    data = d,
-    by = "class",
-    title = "title",
-    description = char_mat
-  ))
   expect_null(set$func_names)
   expect_equal(list(), set$func_info)
   expect_equal("title", set$title)
-  
 })
 
 test_that("is.data_set", {
@@ -72,6 +65,5 @@ test_that("data_set", {
   expect_error(set$classes <- "w")
   expect_error(set$expansion(NA_character_))
   expect_error(set$set_function(set$func["LDA_1"]))
-  expect_error(set$set_function(set$func["LDA_1"][[1]],"QDA_2",parameter = list(c(0,-20),30,"w")))
 })
 

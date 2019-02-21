@@ -13,7 +13,7 @@ d <- data.frame('a' = a[1:2],
 char_mat <- matrix("a", nrow = 2, ncol = 2)
 mat <- matrix(0,nrow=20,ncol=3)
 for (i in 1:set$n_obs) {
-  print(asdf(as.double(set$data[i,])))
+  print(list(i,asdf(as.double(set$data[i,]))))
 }
 
 
@@ -66,11 +66,27 @@ test_that("SVM", {
   expect_error(SVM(set,-2))
   expect_error(SVM(set,1,"poly",NULL,NULL))
   expect_error(SVM(set,1,"poly",NA,NA))
-  
   expect_error(SVM(set,"log",mat))
   expect_error(SVM(set,"abs",d))
   expect_equal("SVM_4", svm$name)
   expect_equal(c(A="A"), svm$func(c(0,0)))
   expect_equal("function",class(svm$func))
 })
-#################### work in progress!!!
+test_that("RDA", {
+  expect_error(RDA(d))
+  expect_error(RDA(NA))
+  expect_error(RDA(NULL))
+  expect_error(RDA(NULL))
+  expect_equal("RDA_5", rda$name)
+  expect_equal(c(A="A"), rda$func(c(0,0)))
+  expect_equal("function",class(rda$func))
+})
+test_that("RDA_crossFit", {
+  expect_error(RDA_crossFit(d))
+  expect_error(RDA_crossFit(NA))
+  expect_error(RDA_crossFit(NULL))
+  expect_error(RDA_crossFit(NULL))
+  expect_equal("RDA_5", rda$name)
+  expect_equal(c(A="A"), rda$func(c(0,0)))
+  expect_equal("function",class(rda$func))
+})
