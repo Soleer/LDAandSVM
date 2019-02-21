@@ -65,33 +65,21 @@ initialize = function(data,
       
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+
       
-      if(anyNA(data)){#TODO
-        warning("data contains Na (initialize)") 
-      }
       private$.data_expansion[['id']] <- private$.data
-      #Print progress
-      cat("\nData:\n")
-      print(private$.data[1:5,])
-      cat("...\n")
-      #save classvalues of parameters under '.results'
+      
       private$.results <- data[, by]
       
       private$.count <- table(private$.results)
       if(any(private$.count == 1)){
         stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
       }
-      cat("\nObservations per Class:\n")
-      print(private$.count)
       
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
       u_classes <- as.vector(unique(private$.results))
-      #print progress
-      cat("\nClasses:\n")
-      print(u_classes)
-    
       #Numbers
       
       #save
@@ -103,16 +91,10 @@ initialize = function(data,
       names(private$.classes) <- private$.classnames
       #save number of parameters under dim
       private$.dim <- ncol(data) - 1
-      #print progress
-      cat(sprintf("\nNumber of Parameters: %s \n", private$.dim))
       #save number of unique classes
       private$.n_classes <- length(private$.classes)
-      #print progress
-    
-      cat(sprintf("\nNumber of Classes: %s \n", private$.n_classes))
       
       private$.n_obs <- nrow(data)
-      cat(sprintf("\nNumber of Observations: %s \n", private$.n_obs))
       
       #Estimators
       # All as lists
@@ -122,10 +104,9 @@ initialize = function(data,
       private$.pi <- sapply(private$.classnames, function(class) {
         private$.count[class] / private$.n_obs
       })
-      cat("\nOdds:\n")
+    
       private$.pi <- as.list(private$.pi)
       names(private$.pi) <- private$.classnames
-      print(as.data.frame(private$.pi))
       
       #mean
       
@@ -133,19 +114,18 @@ initialize = function(data,
         colMeans(private$.data[private$.results == class, ])
       })
       names(private$.mean) <- private$.classnames
-      cat("\nMeans of Parameters:\n")
-      print(as.data.frame(private$.mean))
       #totalmean      
       
       private$.meantotal <- colMeans(private$.data)
       
       #sigma calculate later if needed
       
-      sigma_list <- as.list(rep(NA, times = private$.n_classes)) #TODO
+      sigma_list <- as.list(rep(NA, times = private$.n_classes))
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
 },
+
 #######################################################################################################
     #custom print function
     
@@ -218,7 +198,7 @@ expansion = function(base) {
 ####################################################################################################### 
     #get observations of one class
 get_data_by_class = function(class){
-      return(data[private$.results == self$classes[class],]) #TODO funzt nicht, ruft anderen datensatz ab
+      return(self$data[private$.results == self$classes[class],])
 }
 #######################################################################################################
 ),
@@ -280,15 +260,6 @@ get_data_by_class = function(class){
       }
       else{
         stop("n_classes is read only", call. = FALSE)
-      }
-    },
-    data_by_classes = function(Value) {
-      #TODO access at k 
-      if (missing(Value)) {
-        return(private$.data_by_classes)
-      }
-      else{
-        stop("results is read only", call. = FALSE)
       }
     },
     
