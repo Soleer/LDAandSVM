@@ -68,29 +68,17 @@ initialize = function(data,
 
       
       private$.data_expansion[['id']] <- private$.data
-<<<<<<< HEAD
       #save classvalues of parameters under '.results'
-=======
-      
->>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       private$.results <- data[, by]
       
       private$.count <- table(private$.results)
       if(any(private$.count == 1)){
         stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
       }
-<<<<<<< HEAD
-=======
-      
->>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
       u_classes <- as.vector(unique(private$.results))
-<<<<<<< HEAD
-    
-=======
->>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       #Numbers
       
       #save
@@ -115,10 +103,6 @@ initialize = function(data,
       private$.pi <- sapply(private$.classnames, function(class) {
         private$.count[class] / private$.n_obs
       })
-<<<<<<< HEAD
-=======
-    
->>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       private$.pi <- as.list(private$.pi)
       names(private$.pi) <- private$.classnames
       
