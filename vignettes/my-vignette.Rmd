@@ -67,14 +67,14 @@ decibel <- c(decibel_B, decibel_R, decibel_C)
 class <- c(classes_B, classes_R, classes_C)
 
 Rockets <- data.frame(decibel = decibel, height = height, class = class)
-
 Rockets[] <- Rockets[sample.int(nrow(Rockets)), ]
+set.seed(2)
 ```
 
 Suppose we have a data-frame of 289 observations of skyrockets for sylvester where we have measured both the heigth and the volume (as in loudness) of our rockets. There are 115 rockets of the type "Barock", 78 of the type "Renaissance" and 96 of the type "Classic". The data-frame is structured like this:
 
 ```{r structure data-frame, echo = FALSE}
-rbind(Rockets[1, ], Rockets[150, ], Rockets[280, ])
+head(Rockets, 7)
 ```
 
 This allows us to Classify the data with this package. First, we need to create a R6 data_set object out of our data-frame. Therefore we load in the data-frame and name the column by whiche we want to classify with the parameter "by":
