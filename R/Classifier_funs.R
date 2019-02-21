@@ -299,6 +299,10 @@ RDA <- function(set, alpha, gamma){
       return(list(name=slot,func=set$func[[slot]]))
     }
   }
+  
+  if(any(sapply(set$sigma, anyNA))){ #TODO
+    warning("set$sigma contains Na RDA") 
+  }
   G <- set$classes
   K <- set$n_classes
   p <- log(unlist(set$pi))
@@ -316,21 +320,36 @@ RDA <- function(set, alpha, gamma){
   sigma_est <- sigma_est(set)
   n <- ncol(sigma_est)
 
+  if(anyNA(set$sigma)){ #TODO
+    warning("set$sigma contains Na (RDA)") 
+  }
+  
   sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){
-    if(anyNA(sigma_class)){
-      print(set$sigma)
-      print(set$sigma)
-    }
     
+    # if(anyNA(sigma_class)){ #TODO
+    #   #print(set$sigma)
+    #   #warning(sigma_class)
+    #   warning("sigma_class of set$sigma lcontains Na (RDA/lapply)") 
+    # }
     sigma_estGamma <-  sigma_est * gamma + (1 - gamma) * diag(n)* (kleinesSigma**2)
     sigma_classAlphaGamma <-
       sigma_class*alpha + (1 - alpha) * sigma_estGamma
     
+    # if(anyNA(sigma_classAlphaGamma)){ #TODO
+    #   warning("sigma_classAlphaGamma contains Na (RDA/ lapply)") 
+    # }
 
     return(sigma_classAlphaGamma)
   })
   
+  if(anyNA(sigmaAlphaGamma)){ #TODO
+    warning("sigmaAlphaGamma contains Na (RDA)") 
+  }
+  
   detSigma <- lapply(sigmaAlphaGamma, det)
+  # if(anyNA(detSigma)){ #TODO
+  #   warning("detSigma contains Na (RDA)") 
+  # }
   # if(0 %in% detSigma){
   #   return(null) //TODO
   # }

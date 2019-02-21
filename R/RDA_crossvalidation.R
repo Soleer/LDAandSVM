@@ -13,7 +13,7 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K
   data <- data_set$data
   results <- data_set$results
   #splits data in K equal sized training/validation samples
-  #data
+  #datawarn
   n<- nrow(data) 
 
   K <- min(K, n) 
@@ -23,9 +23,13 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K
   results <- lapply(partition, FUN = function(x){
     results[x]
   })
+  
   data <- lapply(partition, FUN = function(x){
     data[x, ]
   })
+  if(anyNA(data)){ #TODO
+    warning("data contains Na (alpha_gamma_crossFit)") 
+  }
    
   #creates parameters to choose from in cross fitting
   #how many parameters shall be considered
@@ -82,11 +86,21 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     
     #training on all data parts except the validation slot
     training_data <- do.call(rbind, data[-i]) 
+    if(anyNA(training_data)){ #TODO
+      warning("training_data contains Na (alpha_gamma_crossFit/validationErrorRate)") 
+    }
     training_results <- unlist(results[-i])
     training_dataframe <- cbind(training_results, training_data) 
+    if(anyNA(training_dataframe)){ #TODO
+      warning("training_dataframe contains Na (alpha_gamma_crossFit/validationErrorRate)") 
+    }
     data_set <- make_set(data = training_dataframe, by = "training_results") 
+    if(anyNA(data_set$data)){ #TODO
+      warning("training_dataframe contains Na (alpha_gamma_crossFit/validationErrorRate)") 
+    }
       #in order to generate a RDA object for it
       classifier_obj <- RDA(set = data_set, alpha = alpha, gamma = gamma)
+      
       # if(is.null(classifier_obj)){ #singularities may occur TODO
       #   return(Inf)
       # }
@@ -94,6 +108,9 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     
     #validation on block i
     validation_data_set <- data[[i]]
+    if(anyNA(validation_data_set)){ #TODO
+      warning("validation_data_set contains Na (alpha_gamma_crossFit/validationErrorRate)") 
+    }
     validation_results <- results[[i]]
     
     current_error <- calc_miss(validation_data_set, validation_results, classifier)
@@ -105,17 +122,18 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 }
 
 test_cross<- function(){
-  numberOfTest <- 1
+  numberOfTest <- 5
+  
   sets <- lapply(1:numberOfTest, FUN= function(i){
-    make_testset(N = 2, K = 2, P = 2)
+    make_testset()
   })
-# 
-#   alpha_gammas <- lapply(sets, FUN = function(set){
-#     alpha_gamma <- alpha_gamma_crossFit(set, K = 2, N = 2)
-#     print(alpha_gamma)
-#     return(alpha_gamma)
-#   })
-# 
-#   print(alpha_gammas)
+
+  alpha_gammas <- lapply(sets, FUN = function(set){
+    alpha_gamma <- alpha_gamma_crossFit(set, K = 2, N = 2)
+    print(alpha_gamma)
+    return(alpha_gamma)
+  })
+
+  print(alpha_gammas)
 }
 test_cross()
