@@ -20,6 +20,7 @@ class_by_targets <- function(classes, delta) {
   }
   return(classfunction)
 }
+
 #return max
 classify <- function(classes, delta) {
   classfunction <- function(x) {
