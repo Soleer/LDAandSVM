@@ -329,7 +329,7 @@ fun_list <-
 svm_classify_list <- function(set, values) {
   # print warning for neural kernel, because the results might vary greatly depending on input and parameter
   if(values$kernel == "neural"){
-    print("Warning: With the neural kernel the results might not be accurate depending on input and parameter!")
+    print("Warning: With the neural kernel the results might not be accurate depending on input and parameters!")
   }
   # If the input contains only two classes, then the output of the function is the SVM-decision-function
   if (set$n_classes == 2) {
