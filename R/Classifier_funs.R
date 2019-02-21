@@ -450,13 +450,13 @@ RDA <- function(set, alpha, gamma) {
 #' @export
 RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
   
+  
   alpha_gamma <-
     alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations)
   alpha <- alpha_gamma$alpha
   gamma <- alpha_gamma$gamma
 
-  print(paste("classifying with RDA, gamma =", gamma, "and alpha =", alpha))
-  #print(alpha_gamma)
+  print(paste("classifying with RDA, gamma =", gamma, "and alpha =", alpha, "(retrieved by Cross Validation)"))
   
   result <- RDA(set, alpha = alpha, gamma = gamma)
   return(result)
