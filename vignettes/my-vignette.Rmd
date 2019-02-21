@@ -299,8 +299,8 @@ For now we have only looked at uncorrelated data which is where LDA and QDA shin
 
 When we have both LDA and QDA there is always the question "Why not combine them?". Regularized Discriminant Analysis (RDA) is an approach to do exactly this. Instead of using a completely pooled covariance matrix or different covariance matrices for every class RDA takes a convex conjugation of both and fine-tunes the paramter of the conjugation to get the best result. If alpha is 0 RDA is the same as LDA while if alpha is 1 RDA is the same as QDA. **Pro**: with the right parameters RDA should always be better that both LDA and QDA. **Contra**: The cross-validation takes some time so the improved performance comes with an increased runtime.
 
-```{r RDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with PDA. The data is the same again but this time, there is no clear structure in the seperating lines because the Classification is done in the expanded 5-dimensional space."}
-func_name4 <-  RDA(set, alpha = 0.5, gamma = 0)[['name']] ##Setting the Classifier function as RDA
+```{r RDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with RDA. It is not fully linear butfar from beeing the same as QDA."}
+func_name4 <-  RDA(set, alpha = 0.5, gamma = 0.5)[['name']] ##Setting the Classifier function as RDA
 testplot4 <- make_2D_plot(set, ##Creating a plot object for the classification plot
                func_name4,
                ppu = 5,
@@ -309,7 +309,7 @@ testplot4 <- make_2D_plot(set, ##Creating a plot object for the classification p
 testplot4 ##Plotting the image
 ```
 
-```{r RDA Error, warning=FALSE, results='hide', fig.keep='last', fig.cap="\\label{fig:figs} Error in the PDA function. For further explanations of the barplots see LDA Error"}
+```{r RDA Error, warning=FALSE, results='hide', fig.keep='last', fig.cap="\\label{fig:figs} Error in the RDA function. For further explanations of the barplots see LDA Error"}
 liste3 <- plot_error(set, func_name4) ##Saving the RDA Errorplot into an object
 do.call(grid.arrange, liste3) ##Plotting the RDA Error
 ```
