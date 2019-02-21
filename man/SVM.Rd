@@ -27,7 +27,7 @@ Use "id" for no kernel.}
 }
 \value{
 Returns a list with the name of the created SVM function in the given set in the first entry and the actual classification
-function in the second entry and saves the classification function in the R6 object R6.
+function in the second entry and saves the classification function in the R6 object.
 }
 \description{
 The SVM classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)

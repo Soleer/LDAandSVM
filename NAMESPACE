@@ -3,6 +3,7 @@
 export(LDA)
 export(PDA)
 export(QDA)
+export(RDA)
 export(SVM)
 export(basis_exp)
 export(calc_error)

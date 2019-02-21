@@ -11,7 +11,7 @@ LDA(set)
 }
 \value{
 Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
-function in the second entry and saves it in the input set.
+function in the second entry and also saves it in the input set.
 }
 \description{
 The LDA classification function as described in Hastie et al. "The Elements Statistical Learning" (2009)
