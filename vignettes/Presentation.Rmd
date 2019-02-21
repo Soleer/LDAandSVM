@@ -3,8 +3,8 @@ title: "LDA und SVM"
 author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
 date: "February 22, 2019"
 output:
-  beamer_presentation: default
   ioslides_presentation: default
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -19,13 +19,15 @@ library(shiny)
 library(NlcOptim)
 library(shiny)
 library(rlang)
-source("../R/Basis_expansion.R")
-source("../R/Test.R")
-source("../R/oop.R")
-source("../R/Estimators.R")
-source("../R/Classifier_funs.R")
-source("../R/plot_functions.R")
-source("../R/shinyplot.R")
+library(knitr)
+source("R/Basis_expansion.R")
+source("R/Test.R")
+source("R/oop.R")
+source("R/Estimators.R")
+source("R/Classifier_funs.R")
+source("R/plot_functions.R")
+source("R/shinyplot.R")
+source("R/svm.R")
 set.seed(2)
 height_B <- rnorm(115, mean = 30, sd = 4)
 decibel_B <- rnorm(115, mean = 70, sd = 10)
@@ -56,14 +58,6 @@ set.seed(2)
 - Ziel
     - Klassifizierung neuer Daten <!-- automatisch -->
 
-<<<<<<< HEAD
-## Slide with Bullets
-1. 
-2. Item 2
-    a. Item 2a
-    b. Item 2b
-=======
->>>>>>> f655425ca278a93d329aa0a714aef33827f1330a
 
 ## Beispieldaten
 ```{r structure data-frame, echo = TRUE}
@@ -182,9 +176,12 @@ testplot5 ##Actual plotting
 ## Vergleich
 
 ```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='hide'}
+#library(kableExtra)
 # Vergleich <- data.frame(Methode = c("LDA", "QDA", "RDA", "PDA", "SVM"),
 #                         Pro = c("schnell und einfach", "relativ einfach mit wenigen Annahmen", "bestes aus LDA und QDA", "gut für korrellierte   Daten", "keine Ahnnahmen und sehr genau"),
 #                         Contra = c("nur lineare Trennung", "langsamer als LDA bei marginaler Verbesserung", "aufwendiges Parametertuning", "viel Wissen über Daten notwendig", "Overfitting und lange Berechnung"))
 # column_spec(kable_styling(kable(Vergleich), bootstrap_options = "striped", position = "left"), 1:3, border_right = TRUE, border_left = TRUE)
 ```
 ![](Pro_con.png)
+
+## Fragen
