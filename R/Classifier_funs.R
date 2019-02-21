@@ -25,6 +25,7 @@ class_by_targets <- function(classes, delta) {
 classify <- function(classes, delta) {
   classfunction <- function(x) {
     pos_max <- which.max(delta(x))
+    #print(classes[pos_max])
     return(classes[pos_max])
   }
   return(classfunction)
@@ -331,16 +332,17 @@ RDA <- function(set, alpha, gamma) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
   }
+  #alpha and gamma in between 0 and 1
+  if(!(is.numeric(alpha) && is.numeric(gamma))){
+    stop("alpha and gamma must be numeric")
+  }else if(!((alpha <= 1) && (gamma <= 1) && (alpha >= 0) && (gamma >= 0))){
+    stop("alpha and gamma must be between 0 and 1")
+  }
   
   if (length(set$func) > 0) {
     slot <- character(0)
     sapply(set$func_info, function(lis) {
       
-      if (!is.null(lis[["type"]])) {
-        if (lis[["type"]] == "RDA") {
-          slot <<- lis[["name"]]
-        }
-      }
       l <- lis[['parameter']]
       if (!is.null(l[["alpha"]]) && !is.null(l[["gamma"]])) {
         if (l[["alpha"]] == alpha && l[["gamma"]] == gamma) {
@@ -350,16 +352,12 @@ RDA <- function(set, alpha, gamma) {
       
     })
     
-    if (length(slot) > 0) {
+    if (length(slot) > 0) { #TODO korrigieren
       return(list(name = slot, func = set$func[[slot]]))
     }
   }
-  #alpha and gamma in between 0 and 1
-  if(!(is.numeric(alpha) && is.numeric(gamma))){
-    stop("alpha and gamma must be numeric")
-  }else if(!((alpha <= 1) && (gamma <= 1) && (alpha >= 0) && (gamma >= 0))){
-    stop("alpha and gamma must be between 0 and 1")
-  }
+
+ 
   
   G <- set$classes
   K <- set$n_classes
@@ -456,15 +454,15 @@ RDA <- function(set, alpha, gamma) {
 #' @examples
 #' test <- make_testset()
 #' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
-# RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
-#   
-#   alpha_gamma <-
-#     alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) 
-#   alpha <<- alpha_gamma$alpha
-#   gamma <<- alpha_gamma$gamma
-#   
-#   return(RDA(set, alpha = alpha, gamma = gamma))
-# }
+RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
+
+  alpha_gamma <-
+    alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations)
+  alpha <<- alpha_gamma$alpha
+  gamma <<- alpha_gamma$gamma
+
+  return(RDA(set, alpha = alpha, gamma = gamma))
+}
 
 # test_RDA <- function() {
 #   #attributes of each test
