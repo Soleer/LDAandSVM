@@ -38,7 +38,7 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
   data <- lapply(
     partition,
     FUN = function(x) {
-      data[x,]
+      data[x, ]
     }
   )
   #creates parameters to choose from in cross fitting
@@ -75,7 +75,7 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
       
     }
   }
-  print(alpha_gamma_error)
+  #print(alpha_gamma_error)
   
   #alternative implementation with apply
   "alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){
@@ -85,10 +85,9 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
 })"
 
   #finds best option of alpha and gamma. picks random, if equal do exist
-  #apply(data, 2, function(x) {if (all(is.na(x))) {NA}  else {which.min(x)} }) 
   X <-
     which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)
-  coordinates <- X[sample(nrow(X), size = 1, replace = TRUE), ]
+  coordinates <- X[sample(nrow(X), size = 1, replace = TRUE),]
   
   
   alpha <- alpha_gamma["alpha", coordinates[1], coordinates[2]]
@@ -155,26 +154,26 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   return(mean(errors))
 }
-# 
+#
 # test_cross <- function() {
 #   numberOfTest <- 1
-#   
+#
 #   #attributes of each test
 #   nobservations <- 7#number of observations per class
 #   nclass <- 3 #number of classes
 #   dimParameters <- 2 #number of parameters
-#   
+#
 #   #attributes of alpha Gamma cross fit
 #   numberOfValidations <- 3
 #   accuracyOfParameters <- 13
-#   
+#
 #   sets <- lapply(
 #     1:numberOfTest,
 #     FUN = function(i) {
 #       make_testset(N = nobservations, K = nclass, P = dimParameters)
 #     }
 #   )
-#   
+#
 #   alpha_gammas <- lapply(
 #     sets,
 #     FUN = function(set) {
@@ -184,7 +183,6 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 #       return(alpha_gamma)
 #     }
 #   )
-#   
+#
 #   print(alpha_gammas)
 # }
-
