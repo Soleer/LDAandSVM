@@ -258,8 +258,11 @@ SVM <- function(set,
   }
   if (!is.character(kernel) && length(kernel) != 1) {
     stop("Input 'kernel' must be a string with length one.")
+<<<<<<< HEAD
   }
   if (!is.double(d) && d <= 0) {
+=======
+>>>>>>> f655425ca278a93d329aa0a714aef33827f1330a
   }  
   if ((!is.double(d) && d <= 0 && length(d) != 1) || is.na(d)) {
     stop("Input 'd' must be a positive double", call. = FALSE)
