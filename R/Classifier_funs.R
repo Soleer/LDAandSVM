@@ -332,7 +332,7 @@ RDA <- function(set, alpha, gamma){
   
   detSigma <- lapply(sigmaAlphaGamma, det)
   # if(0 %in% detSigma){
-  #   return(null)
+  #   return(null) //TODO
   # }
 
   sigma_inv <- lapply(sigmaAlphaGamma, function(X){
@@ -378,11 +378,12 @@ RDA <- function(set, alpha, gamma){
   ))
 }
 
-test_RDA<- function(){
-  test_data <- make_testset()
-  RDA(test_data)
-}
-test_RDA()
+# test_RDA<- function(){
+#   test_data <- make_testset()
+#   RDA(test_data)
+#   
+# }
+# test_RDA()
 
 
 

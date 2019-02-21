@@ -87,7 +87,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     data_set <- make_set(data = training_dataframe, by = "training_results") 
       #in order to generate a RDA object for it
       classifier_obj <- RDA(set = data_set, alpha = alpha, gamma = gamma)
-      # if(is.null(classifier_obj)){ #singularities may occur
+      # if(is.null(classifier_obj)){ #singularities may occur TODO
       #   return(Inf)
       # }
       classifier <- classifier_obj$func
@@ -103,19 +103,19 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   return(mean(errors))
 }
+
+test_cross<- function(){
+  numberOfTest <- 1
+  sets <- lapply(1:numberOfTest, FUN= function(i){
+    make_testset(N = 2, K = 2, P = 2)
+  })
 # 
-# test_cross<- function(){
-# 
-#   sets <- lapply(1:number, FUN= function(i){
-#     make_testset()
-#   })
-#   
 #   alpha_gammas <- lapply(sets, FUN = function(set){
-#     alpha_gamma <- alpha_gamma_crossFit(set)
+#     alpha_gamma <- alpha_gamma_crossFit(set, K = 2, N = 2)
 #     print(alpha_gamma)
 #     return(alpha_gamma)
 #   })
-#   
+# 
 #   print(alpha_gammas)
-# }
-# test_cross()
+}
+test_cross()
