@@ -15,12 +15,13 @@ RDA(set, alpha, gamma)
 }
 \value{
 Returns a list with the name of the created RDA function in the given set in the first entry and the actual classification
-function in the second entry and saves the classification function in the R6 object R6.
+function in the second entry and saves the classification function in the R6 object.
 }
 \description{
 The regular Discriminant analysis from 4.3.1 as described in Hastie et al. "The Elements Statistical Learning" (2009)
 }
 \examples{
 test <- make_testset()
-func_name <- RDA(test, alpha = 0, gamma = 1)
+func_name <- RDA(test, alpha = 0, gamma = 1)[['name']]
 }
+
