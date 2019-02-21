@@ -461,5 +461,20 @@ RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5)
   alpha <- alpha_gamma$alpha
   gamma <- alpha_gamma$gamma
 
+  print(alpha_gamma)
   return(RDA(set, alpha = alpha, gamma = gamma))
+}
+
+test_RDA2 <- function() {
+  #attributes of each test
+  nobservations <- 10 #number of observations per class
+  nclass <- 3 #number of classes
+  dimParameters <- 2 #number of parameters
+
+  test_data <-
+    make_testset(N = nobservations, K = nclass, P = dimParameters)
+
+  RDA_crossFit(test_data)
+
+  print(results)
 }
