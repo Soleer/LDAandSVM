@@ -1,5 +1,4 @@
 #Basic R6-Object "data_set":
-library(R6)
 
 data_set <- R6Class(
   "data_set",

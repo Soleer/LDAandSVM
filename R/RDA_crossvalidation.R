@@ -1,12 +1,13 @@
 #Regular Discriminant analysis from 4.3.1
 
+
 ####cross validation/ tuning parameters
 
 #'alpha_gamma_crossFit
 #'
 #'cross validates for the best alpha and gamma
 #'@param set data_set to be trained on for cross validation
-#'@param K number of validation sets. Note that though K = 10 is common, it does take far too long in this code
+#'@param K number of validation sets. Note that though K = 10 is common, it is impractical for RDA
 #'@param N number of parameters to choose. Note that Omega(crossFit) = N^2
 #'@return alpha, gamma
 alpha_gamma_crossFit <- function(set, K = 3, N = 5) { #TODO adjust K 
@@ -131,14 +132,24 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 }
 
 test_cross<- function(){
-  numberOfTest <- 3
+  numberOfTest <- 2
+  
+  #attributes of each test
+  nobservations <- 10#number of observations per class
+  nclass <- 3 #number of classes
+  dimParameters <- 2 #number of parameters 
+    
+  #attributes of alpha Gamma cross fit
+  numberOfValidations <- 3
+  accuracyOfParameters <- 20
   
   sets <- lapply(1:numberOfTest, FUN= function(i){
-    make_testset(N = 30, K = 3, P = 2)
+
+    make_testset(N = nobservations, K = nclass, P = dimParameters)
   })
 
   alpha_gammas <- lapply(sets, FUN = function(set){
-    alpha_gamma <- alpha_gamma_crossFit(set, K = 2, N = 2)
+    alpha_gamma <- alpha_gamma_crossFit(set, K = numberOfValidations, N = accuracyOfParameters)
     print(alpha_gamma)
     return(alpha_gamma)
   })
