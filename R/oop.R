@@ -41,6 +41,9 @@ initialize = function(data,
       #Check if the 'by' Value is a Column of 'data'
       stopifnot(any(private$.col_names == by))
       #title and decription
+      if(ncol(data)==1){
+        stop("Data must have at least one parametercolumn", call. = FALSE)
+      }
       
       self$description <- description
       self$title <- title
@@ -58,6 +61,7 @@ initialize = function(data,
       if (any(sapply(data[, private$.col_names != by], is.infinite))) {
         stop("Parametercolumns contain NA Values!", call. = FALSE)
       }
+      
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
       private$.data_expansion[['id']] <- private$.data
@@ -66,6 +70,14 @@ initialize = function(data,
       cat("...\n")
       #save classvalues of parameters under '.results'
       private$.results <- data[, by]
+      
+      private$.count <- table(private$.results)
+      if(any(private$.count == 1)){
+        stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
+      }
+      cat("\nObservations per Class:\n")
+      print(private$.count)
+      
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
@@ -94,9 +106,6 @@ initialize = function(data,
       
       private$.n_obs <- nrow(data)
       cat(sprintf("\nNumber of Observations: %s \n", private$.n_obs))
-      private$.count <- table(private$.results)
-      cat("\nObservations per Class:\n")
-      print(private$.count)
       
       #Estimators
       # All as lists
