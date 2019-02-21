@@ -68,10 +68,6 @@ initialize = function(data,
         warning("data contains Na (initialize)") 
       }
       private$.data_expansion[['id']] <- private$.data
-      #Print progress
-      cat("\nData:\n")
-      print(private$.data[1:5,])
-      cat("...\n")
       #save classvalues of parameters under '.results'
       private$.results <- data[, by]
       
@@ -79,16 +75,10 @@ initialize = function(data,
       if(any(private$.count == 1)){
         stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
       }
-      cat("\nObservations per Class:\n")
-      print(private$.count)
-      
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
       u_classes <- as.vector(unique(private$.results))
-      #print progress
-      cat("\nClasses:\n")
-      print(u_classes)
     
       #Numbers
       
@@ -101,16 +91,10 @@ initialize = function(data,
       names(private$.classes) <- private$.classnames
       #save number of parameters under dim
       private$.dim <- ncol(data) - 1
-      #print progress
-      cat(sprintf("\nNumber of Parameters: %s \n", private$.dim))
       #save number of unique classes
       private$.n_classes <- length(private$.classes)
-      #print progress
-    
-      cat(sprintf("\nNumber of Classes: %s \n", private$.n_classes))
       
       private$.n_obs <- nrow(data)
-      cat(sprintf("\nNumber of Observations: %s \n", private$.n_obs))
       
       #Estimators
       # All as lists
@@ -120,10 +104,8 @@ initialize = function(data,
       private$.pi <- sapply(private$.classnames, function(class) {
         private$.count[class] / private$.n_obs
       })
-      cat("\nOdds:\n")
       private$.pi <- as.list(private$.pi)
       names(private$.pi) <- private$.classnames
-      print(as.data.frame(private$.pi))
       
       #mean
       
@@ -131,8 +113,6 @@ initialize = function(data,
         colMeans(private$.data[private$.results == class, ])
       })
       names(private$.mean) <- private$.classnames
-      cat("\nMeans of Parameters:\n")
-      print(as.data.frame(private$.mean))
       #totalmean      
       
       private$.meantotal <- colMeans(private$.data)
