@@ -19,8 +19,6 @@ library(shiny)
 library(NlcOptim)
 library(shiny)
 library(rlang)
-library(knitr)
-library(kableExtra)
 source("../R/Basis_expansion.R")
 source("../R/Test.R")
 source("../R/oop.R")
@@ -89,13 +87,13 @@ make_2D_plot(Rocket_set)
 ## LDA plot
 
 ```{r LDA plot}
-# func_name1 <- LDA(Rocket_set)[['name']] ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
-# testplot1 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-#                           func_name1, ##Function by which should be classified
-#                           ppu = 1,
-#                           project = FALSE) ##Resolution of the background
-#   
-# testplot1 ##Actual plotting
+func_name1 <- LDA(Rocket_set)[['name']] ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
+testplot1 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+                          func_name1, ##Function by which should be classified
+                          ppu = 1,
+                          project = FALSE) ##Resolution of the background
+
+testplot1 ##Actual plotting
 ```
 
 ## Quadratic Discriminant Analysis (QDA)
@@ -109,13 +107,13 @@ make_2D_plot(Rocket_set)
 ## QDA plot
 
 ```{r QDA plot}
-# func_name2 <- QDA(Rocket_set)[['name']] ##Creating the classifier function with QDA. 'name' is the slot in which the function is in
-# testplot2 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-#                           func_name2, ##Function by which should be classified
-#                           ppu = 1,
-#                           project = FALSE) ##Resolution of the background
-#   
-# testplot2 ##Actual plotting
+func_name2 <- QDA(Rocket_set)[['name']] ##Creating the classifier function with QDA. 'name' is the slot in which the function is in
+testplot2 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+                          func_name2, ##Function by which should be classified
+                          ppu = 1,
+                          project = FALSE) ##Resolution of the background
+
+testplot2 ##Actual plotting
 ```
 
 ## Regular Discriminant Analysis (RDA)
@@ -131,12 +129,12 @@ make_2D_plot(Rocket_set)
 
 ```{r RDA plot, results = 'hide'}
 func_name3 <- RDA(Rocket_set, alpha = 0.5, gamma = 0.5)[['name']] ##Creating the classifier function with RDA. 'name' is the slot in which the function is in
-# testplot3 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-#                           func_name3, ##Function by which should be classified
-#                           ppu = 1,
-#                           project = FALSE) ##Resolution of the background
-#   
-# testplot3 ##Actual plotting
+testplot3 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+                          func_name3, ##Function by which should be classified
+                          ppu = 1,
+                          project = FALSE) ##Resolution of the background
+
+testplot3 ##Actual plotting
 ```
 
 ## Penalized Discriminant Analysis (PDA)
@@ -152,13 +150,13 @@ func_name3 <- RDA(Rocket_set, alpha = 0.5, gamma = 0.5)[['name']] ##Creating the
 ## PDA plot
 
 ```{r PDA plot, results = 'hide'}
-# func_name4 <- PDA(Rocket_set, base = "cube")[['name']] ##Creating the classifier function with PDA. 'name' is the slot in which the function is in
-# testplot4 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-#                           func_name4, ##Function by which should be classified
-#                           ppu = 1,
-#                           project = FALSE) ##Resolution of the background
-#   
-# testplot4 ##Actual plotting
+func_name4 <- PDA(Rocket_set, base = "cube")[['name']] ##Creating the classifier function with PDA. 'name' is the slot in which the function is in
+testplot4 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+                          func_name4, ##Function by which should be classified
+                          ppu = 1,
+                          project = FALSE) ##Resolution of the background
+
+testplot4 ##Actual plotting
 ```
 
 ## Support Vector Machines (SVM)
@@ -172,21 +170,21 @@ func_name3 <- RDA(Rocket_set, alpha = 0.5, gamma = 0.5)[['name']] ##Creating the
 ## SVM plot
 
 ```{r SVM plot, results = 'hide'}
-# func_name5 <- SVM(Rocket_set, C = 1, kernel = "radial", g = 1)[['name']] ##Creating the classifier function with SVM. 'name' is the slot in which the function is in
-# testplot5 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-#                           func_name5, ##Function by which should be classified
-#                           ppu = 1,
-#                           project = FALSE) ##Resolution of the background
-#   
-# testplot5 ##Actual plotting
+func_name5 <- SVM(Rocket_set, C = 1, kernel = "radial", g = 1)[['name']] ##Creating the classifier function with SVM. 'name' is the slot in which the function is in
+testplot5 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+                          func_name5, ##Function by which should be classified
+                          ppu = 1,
+                          project = FALSE) ##Resolution of the background
+
+testplot5 ##Actual plotting
 ```
 
 ## Vergleich
 
 ```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='hide'}
-# Vergleich <- data.frame(Methode = c("LDA", "QDA", "RDA", "PDA", "SVM"), 
-#                         Pro = c("schnell und einfach", "relativ einfach mit wenigen Annahmen", "bestes aus LDA und QDA", "gut für korrellierte   Daten", "keine Ahnnahmen und sehr genau"), 
-#                         Contra = c("nur lineare Trennung", "langsamer als LDA bei marginaler Verbesserung", "aufwendiges Parametertuning", "viel Wissen über Daten notwendig", "Overfitting und lange Berechnung"))  
+# Vergleich <- data.frame(Methode = c("LDA", "QDA", "RDA", "PDA", "SVM"),
+#                         Pro = c("schnell und einfach", "relativ einfach mit wenigen Annahmen", "bestes aus LDA und QDA", "gut für korrellierte   Daten", "keine Ahnnahmen und sehr genau"),
+#                         Contra = c("nur lineare Trennung", "langsamer als LDA bei marginaler Verbesserung", "aufwendiges Parametertuning", "viel Wissen über Daten notwendig", "Overfitting und lange Berechnung"))
 # column_spec(kable_styling(kable(Vergleich), bootstrap_options = "striped", position = "left"), 1:3, border_right = TRUE, border_left = TRUE)
 ```
 ![](Pro_con.png)
