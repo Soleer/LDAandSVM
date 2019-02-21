@@ -326,7 +326,11 @@ fun_list <-
 #                         decision function comparing the second class to the third class).
 # The length of the list is (amount of classes) - 1, because the last class is already compared
 # to every class and doesn't has to be compared to any other class anymore.
-svm_classify_list <- function(set, values) {  
+svm_classify_list <- function(set, values) {
+  # print warning for neural kernel, because the results might vary greatly depending on input and parameter
+  if(values$kernel == "neural"){
+    print("Warning: With the neural kernel the results might not be accurate depending on input and parameter!")
+  }
   # If the input contains only two classes, then the output of the function is the SVM-decision-function
   if (set$n_classes == 2) {
     b <- svm_two_classes(set$data, set$results, values = values, classes = set$classes)
