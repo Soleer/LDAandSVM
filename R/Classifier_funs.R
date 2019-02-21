@@ -40,7 +40,7 @@ classify <- function(classes, delta) {
 #'
 #' @param set A R6 data_set object initialized with make_set. @seealso make_set
 #' @return Returns a list with the name of the created LDA function in the given set in the first entry and the actual classification
-#' function in the second entry and saves it in the input set.
+#' function in the second entry and also saves it in the input set.
 #' @examples
 #' test <- make_testset()
 #' func_name <- LDA(test)[['name']]
@@ -142,7 +142,7 @@ QDA <- function(set) {
 #' @param omega A penalizer matrix used for the classification. Note that the dimensions must fit the dimension of the
 #'              (potentially) expanded dataset
 #' @return Returns a list with the name of the created PDA function in the given set in the first entry and the actual classification
-#' function in the second entry and saves it in the input set.
+#' function in the second entry and also saves it in the input set.
 #' @examples
 #' test <- make_testset()
 #' func_name <- PDA(test,base='quad')[['name']]
@@ -240,7 +240,7 @@ PDA <-
 #' @param d A positive double used in dth-Degree polynomial and Neural network kernel. See parameter 'kernel'
 #' @param g A positive double used in Radial basis and Neural network kernel. See parameter 'kernel'
 #' @return Returns a list with the name of the created SVM function in the given set in the first entry and the actual classification
-#' function in the second entry and saves the classification function in the R6 object R6.
+#' function in the second entry and saves the classification function in the R6 object.
 #' @examples
 #' test <- make_testset()
 #' func_name <- SVM(test,C = 1, kernel = 'radial', g = 1)[['name']]
@@ -324,10 +324,11 @@ SVM <- function(set,
 #' @param alpha alpha from formula in Hastie between 0 and 1
 #' @param gamma gamma from formula between 0 and 1
 #' @return Returns a list with the name of the created RDA function in the given set in the first entry and the actual classification
-#' function in the second entry and saves the classification function in the R6 object R6.
+#' function in the second entry and saves the classification function in the R6 object.
 #' @examples
 #' test <- make_testset()
-#' func_name <- RDA(test, alpha = 0, gamma = 1)
+#' func_name <- RDA(test, alpha = 0, gamma = 1)[['name']]
+#' @export
 RDA <- function(set, alpha, gamma) {
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)")
