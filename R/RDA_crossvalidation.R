@@ -16,9 +16,17 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K
   #datawarn
   n<- nrow(data) 
 
-  K <- min(K, n) 
-  partition<-split(1:n, sample(1:K, n, replace = T)) #TODO ?equally sized
-  
+  K <- min(K, floor(n/2)) #so in each subpart are at least two elements in order for the the calculation of variances to work properly 
+
+  chunk <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE)) 
+  # 
+  # if(any(sapply(chunk, anyNA))){ 
+  #   browser()
+  #   warning("set$sigma contains Na RDA")
+  # }
+  # 
+  partition <- chunk2(sample(1:n), K) #TODO randomorderpartition
+  partition
   #splits results and data according to chosen partition with corresponding rows
   results <- lapply(partition, FUN = function(x){
     results[x]
@@ -60,9 +68,10 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K
     return(validationErrorRate(data, results, alpha, gamma))
   })"
   
-  #finds best option of alpha and gamma
-  coordinates <-
-    which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)[1, ]
+  #finds best option of alpha and gamma. picks random, if equal do exist
+  X <- which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)
+  coordinates <-X[sample(nrow(X),size=1,replace=TRUE),]
+
   
   alpha <- alpha_gamma[coordinates[1], coordinates[2],"alpha"]
   gamma <- alpha_gamma[coordinates[1], coordinates[2],"gamma"]
@@ -94,7 +103,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
     if(anyNA(training_dataframe)){ #TODO
       warning("training_dataframe contains Na (alpha_gamma_crossFit/validationErrorRate)") 
     }
-    data_set <- make_set(data = training_dataframe, by = "training_results") 
+    data_set <- make_set(data = training_dataframe, by = "training_results")
     if(any(sapply(data_set$data, anyNA))){ #TODO
       warning("training_dataframe contains Na (alpha_gamma_crossFit/validationErrorRate)") 
     }
@@ -122,10 +131,10 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 }
 
 test_cross<- function(){
-  numberOfTest <- 5
+  numberOfTest <- 3
   
   sets <- lapply(1:numberOfTest, FUN= function(i){
-    make_testset()
+    make_testset(N = 30, K = 3, P = 2)
   })
 
   alpha_gammas <- lapply(sets, FUN = function(set){

@@ -132,7 +132,7 @@ initialize = function(data,
       
       #sigma calculate later if needed
       
-      sigma_list <- as.list(rep(NA, times = private$.n_classes))
+      sigma_list <- as.list(rep(NA, times = private$.n_classes)) #TODO
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
