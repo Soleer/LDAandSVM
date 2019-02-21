@@ -239,6 +239,7 @@ plot_error <- function(set, name) {
 #'
 #'@param set a data_set
 #'@param name the name of the function to summarize
+#'@param ppu background points per unit
 #'@param background logical, decides if the data plot should have a background grid
 #'@param project logical, decides if maincomponent analyse should be used to make the data plot
 #'@examples 
@@ -246,13 +247,13 @@ plot_error <- function(set, name) {
 #'name <- LDA(set)[['name']]
 #'plot_summary(set,name)
 #'@export
-plot_summary <- function(set, name, background=TRUE, project=TRUE){
+plot_summary <- function(set, name, ppu=1, background=TRUE, project=TRUE){
   liste0 <- plot_error(set, name)
   plot_list <- do.call(grid.arrange, liste0)
   if(set$dim>=2){
     plot <- make_2D_plot(set,
                  name,
-                 ppu = 5,
+                 ppu = ppu,
                  project,
                  background
                  )
@@ -260,4 +261,32 @@ plot_summary <- function(set, name, background=TRUE, project=TRUE){
   }
   niceplot <- do.call("grid.arrange", c(plot_list, ncol = 2, top = sprintf("%s %s",set$title,name)))
   return(niceplot)
+}
+
+
+
+
+calc_miss_plot <- function(data, results, f){
+  estimations <- apply(data,1,f)
+  n <- length(results)
+  miss <- sum(results!=estimations)/n
+  #Plot
+  mistake_lable <-
+    c(paste0(miss * 100, '%', ' wrong'), paste0((1 - miss) * 100, '%', ' right')) #Labels in percent
+  mistake <-
+    data.frame(i = mistake_lable, per = c(miss, 1 - miss),color=c('red1','green3'))#combine labels and data
+  mi <-
+    ggplot(data = mistake) +                             #make plot
+    geom_bar(aes(y = per,
+                 x = i,
+                 fill = color),
+             stat = "identity",
+             width = 1) + theme(
+               legend.position = "none",
+               axis.text.y = element_blank(),
+               axis.title.y = element_blank(),
+               axis.title.x = element_blank()
+             )+ 
+    scale_fill_identity()
+  return(mi)
 }

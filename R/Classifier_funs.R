@@ -255,7 +255,7 @@ SVM <- function(set,
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
-  if ((!is.double(C) && C <= 0 && length(C) != 1) ||is.na(C)) {
+  if ((!is.double(C) && C <= 0 && length(C) != 1) || is.na(C)) {
     stop("Input 'C' must be a positive double", call. = FALSE)
   }
   if (!is.character(kernel) && length(kernel) != 1) {

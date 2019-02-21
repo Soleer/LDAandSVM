@@ -28,6 +28,7 @@ source("R/Classifier_funs.R")
 source("R/plot_functions.R")
 source("R/shinyplot.R")
 source("R/svm.R")
+source("R/Calc_error.R")
 set.seed(2)
 height_B <- rnorm(115, mean = 30, sd = 4)
 decibel_B <- rnorm(115, mean = 70, sd = 10)
@@ -39,34 +40,42 @@ classes_R <- rep("Renaissance", 78)
 
 height_C <- rnorm(96, mean = 42, sd = 7)
 decibel_C <- rnorm(96, mean = 64, sd = 8)
-classes_C <- rep("Classic", 96)
+classes_C <- rep("Classik", 96)
 
 height <- c(height_B, height_R, height_C)
 decibel <- c(decibel_B, decibel_R, decibel_C)
 class <- c(classes_B, classes_R, classes_C)
 
-Rockets <- data.frame(decibel = decibel, height = height, class = class)
-Rockets[] <- Rockets[sample.int(nrow(Rockets)), ]
+Rockets_data <- data.frame(decibel = decibel, height = height, class = class)
+Rockets_data[] <- Rockets_data[sample.int(nrow(Rockets_data)), ]
+validation <- Rockets_data[1:20,1:2]
+goals <- Rockets_data[1:20,'class']
+Rockets <- Rockets_data
 set.seed(2)
 ```
 
 ## Das Problem
 
-- Ausgangspunk
+- Ausgangspunkt
     - Daten in Klassen aufteilbar 
 
 - Ziel
     - Klassifizierung neuer Daten <!-- automatisch -->
+    
+- Weg 
+    - Trainingsdaten sammeln und Klassifizierungsfunktionen berechnen
 
+## Trainingsdaten
 
-## Beispieldaten
 ```{r structure data-frame, echo = TRUE}
-head(Rockets, 7)
+head(Rockets, 10)
 ```
 
-## Plot
+## Datenplot
+
 ```{r plot Example, echo = TRUE, results='hide'}
-Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets")
+
+Rocket_set <- make_set(Rockets, by = "class", title = "Rockets")
 make_2D_plot(Rocket_set)
 ```
 
@@ -78,12 +87,12 @@ make_2D_plot(Rocket_set)
 
 - Klassengrenzen linear
 
-## LDA plot
+## LDA Klassifizierung
 
-```{r LDA plot}
-func_name1 <- LDA(Rocket_set)[['name']] ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
-testplot1 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-                          func_name1, ##Function by which should be classified
+```{r LDA plot,results = 'hide',fig.keep='last'}
+func <- LDA(Rocket_set) ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
+testplot1 <- make_2D_plot(Rocket_set, ##Creating a ggplot
+                          func[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
 
@@ -98,15 +107,14 @@ testplot1 ##Actual plotting
     
 - Klassengrenzen quadratisch
 
-## QDA plot
+## QDA Klassifizierung
 
-```{r QDA plot}
-func_name2 <- QDA(Rocket_set)[['name']] ##Creating the classifier function with QDA. 'name' is the slot in which the function is in
-testplot2 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-                          func_name2, ##Function by which should be classified
+```{r QDA plot,results = 'hide',fig.keep='last'}
+func2 <- QDA(Rocket_set) ##Creating the classifier function with QDA. 'name' is the slot in which the function is in
+testplot2 <-make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+                          func2[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-
 testplot2 ##Actual plotting
 ```
 
@@ -119,15 +127,14 @@ testplot2 ##Actual plotting
 - Kombination aus LDA und QDA <!-- alpha -->
 - Kombination aus mehr- und eindimensionaler Verteilung <!-- gamma -->
 
-## RDA plot
+## RDA Klassifizierung
 
-```{r RDA plot, results = 'hide'}
-func_name3 <- RDA(Rocket_set, alpha = 0.5, gamma = 0.5)[['name']] ##Creating the classifier function with RDA. 'name' is the slot in which the function is in
+```{r RDA plot, results = 'hide',fig.keep='last'}
+func3 <- RDA(Rocket_set, alpha = 0.5, gamma = 0.5) ##Creating the classifier function with RDA. 'name' is the slot in which the function is in
 testplot3 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-                          func_name3, ##Function by which should be classified
+                          func3[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-
 testplot3 ##Actual plotting
 ```
 
@@ -141,15 +148,14 @@ testplot3 ##Actual plotting
 - Penalizer Matrix <!-- Matrix, die auf die Kovarianz addiert wird um bestimmte Koordinaten weniger oder mehr zu berücksichtigen (kleines
                         Vielfaches der Einheitsmatrix oder Cross - validation) -->
 
-## PDA plot
+## PDA Klassifizierung
 
-```{r PDA plot, results = 'hide'}
-func_name4 <- PDA(Rocket_set, base = "cube")[['name']] ##Creating the classifier function with PDA. 'name' is the slot in which the function is in
+```{r PDA plot, results = 'hide',fig.keep='last'}
+func4 <- PDA(Rocket_set, base = "cube") ##Creating the classifier function with PDA. 'name' is the slot in which the function is in
 testplot4 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-                          func_name4, ##Function by which should be classified
+                          func4[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-
 testplot4 ##Actual plotting
 ```
 
@@ -161,15 +167,14 @@ testplot4 ##Actual plotting
 - Nur Randpunkte für Klassifikation relevant (Support Vectors) <!-- C = Angabe über Genauigkeit der Klassifikation (je größer desto genauer) -->
 - Kernels <!-- klügere Art der Basisexpansion, betrachte Daten in Höherdimensionalen Raum, wo Trennungen einfacher sind -->  
 
-## SVM plot
+## SVM Klassifizierung
 
-```{r SVM plot, results = 'hide'}
-func_name5 <- SVM(Rocket_set, C = 1, kernel = "radial", g = 1)[['name']] ##Creating the classifier function with SVM. 'name' is the slot in which the function is in
+```{r SVM plot, results = 'hide', fig.keep='last'}
+func5 <- SVM(Rocket_set, C = 1, kernel = "radial", g = 1) ##Creating the classifier function with SVM. 'name' is the slot in which the function is in
 testplot5 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
-                          func_name5, ##Function by which should be classified
+                          func5[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-
 testplot5 ##Actual plotting
 ```
 
@@ -184,4 +189,7 @@ testplot5 ##Actual plotting
 ```
 ![](Pro_con.png)
 
-## Fragen
+## Ende
+<center>
+Vielen Dank
+</center>

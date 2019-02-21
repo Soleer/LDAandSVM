@@ -4,7 +4,6 @@ calc_miss <- function(data, results, f){
   sum(results!=estimations)/n
 }
 
-
 #' calc_error
 #'
 #' Calculates the following propabilitys for a classificationfunction of a data_set:

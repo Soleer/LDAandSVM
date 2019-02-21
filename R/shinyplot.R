@@ -10,9 +10,9 @@ PPU <- sliderInput("PPU", "Select the points per unit for the background", value
 Calc_button <- actionButton("Calc_button", "Classifiy")                                                                                     ##Button that starts the process of classifying
 Kernel <- selectInput("Kernel", "Select the Kernel", choices = c("id", "poly", "radial", "neural"))                                         ##Dropdown menu for the Kernel to be used
 Margin <- numericInput("Margin", "Select how exact the support vector lines should be", value = 1, min = 0.1, max = 1000)                   ##numeric input for the margin c in SVM
-Var_Pol <- sliderInput("Var_pol", "Select the power of the polynomial", value = 2, min = 1, max = 15, step = 1)                             ##slider input for the degree of the polynomial
+Var_Pol <- sliderInput("Var_Pol", "Select the power of the polynomial", value = 2, min = 1, max = 15, step = 1)                             ##slider input for the degree of the polynomial
 Radial <- sliderInput("Radial", "Select the factor of the radial basis", value = 1, min = 0.1, max = 50, step = 0.01)                       ##slider input for the multiplication factor in the radial kernel
-Var_Pol_neu <- sliderInput("Var_pol_neu", "Select the factor for the neural Kernel", value = 2, min = 0.1, max = 15, step = 0.01)           ##slider input for the factor in the neural kernel
+Var_Pol_neu <- sliderInput("Var_Pol_neu", "Select the factor for the neural Kernel", value = 2, min = 0.1, max = 15, step = 0.01)           ##slider input for the factor in the neural kernel
 Radial_neu <- sliderInput("Radial_neu", "Select the summand for the neural Kernel", value = 1, min = 0.1, max = 100, step = 0.01)           ##slider input for the summand in the neural kernel
 Alpha <- sliderInput("Alpha", "Select the Alpha value", value = 0, min = 0, max = 1, step = 0.01)                                           ##slider input for the Alpha value in RDA
 Gamma <- sliderInput("Gamma", "Select the Gamma value", value = 0, min = 0, max = 1, step = 0.01)                                           ##slider input for the Gamma value in RDA
@@ -176,17 +176,17 @@ server_LDA_SVM <- function(input, output){
       Kernel <- input$Kernel                                                              ##Reading in the Kernel 
       Margin <- input$Margin                                                              ##Reading in the margin
       if(Kernel == "neural"){                                                             ##If the neural Kernel is selected the values mean a different thing as with the other Kernels
-        Var_Pol <- input$Var_Pol_neu                                                      ##Reading in the values for the Kernels
+        Var_Pol_val <- input$Var_Pol_neu                                                  ##Reading in the values for the Kernels
         Radial <- input$Radial_neu
       }
       else{
-        Var_Pol <- input$Var_Pol
+        Var_Pol_val <- input$Var_Pol
         Radial <- input$Radial
       }
-        
-      print(paste("classifying with SVM, Kernel =", Kernel, ", Margin =", Margin, ", Degree =", Var_Pol, ", Radial Multiplier =", Radial)) ##Console output for transparency                    ##Console output for transparency
+
+      print(paste("classifying with SVM, Kernel =", Kernel, ", Margin =", Margin, ", Degree =", Var_Pol_val, ", Radial Multiplier =", Radial)) ##Console output for transparency                    ##Console output for transparency
       
-      func_shiny <- SVM(shiny_set, C = Margin, kernel = Kernel, d = Var_Pol, g = Radial)[['name']]
+      func_shiny <- SVM(shiny_set, C = Margin, kernel = Kernel, d = Var_Pol_val, g = Radial)[['name']]
       Error_plot_shiny <- plot_error(shiny_set, func_shiny)
       Class_plot_shiny <- make_2D_plot(shiny_set,
                                        func_shiny,
