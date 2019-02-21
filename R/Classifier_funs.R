@@ -357,8 +357,6 @@ RDA <- function(set, alpha, gamma) {
       return(list(name = slot, func = set$func[[slot]]))
     }
   }
-
- 
   
   G <- set$classes
   K <- set$n_classes
@@ -382,7 +380,6 @@ RDA <- function(set, alpha, gamma) {
   sigmaAlphaGamma <- lapply(
     allSigmas,
     FUN = function(sigma_class) {
-      #browser()
       sigma_estGamma <-
         sigma_est * gamma + (1 - gamma) * diag(n) * (kleinesSigma ** 2)
       sigma_classAlphaGamma <-

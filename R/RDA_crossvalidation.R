@@ -43,8 +43,6 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
       data[x, ]
     }
   )
-  
-  N <- 5
   #creates parameters to choose from in cross fitting
   #how many parameters shall be considered
   v <- seq(from = 0,
@@ -108,6 +106,11 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
 #'@return total mean error rate of all validations
 validationErrorRate <- function(data, results, alpha, gamma) {
   #vector of error rates on a single validation slot
+  errors <-c()
+  
+  for(i in 1:nrow(data)){
+    
+  }
   errors <- sapply(
     seq_along(data) ,
     FUN = function(i) {
@@ -152,35 +155,34 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   return(mean(errors))
 }
 
-# test_cross <- function() {
-#   numberOfTest <- 1
-#   
-#   #attributes of each test
-#   nobservations <- 7#number of observations per class
-#   nclass <- 3 #number of classes
-#   dimParameters <- 2 #number of parameters
-#   
-#   #attributes of alpha Gamma cross fit
-#   numberOfValidations <- 3
-#   accuracyOfParameters <- 10
-#   
-#   sets <- lapply(
-#     1:numberOfTest,
-#     FUN = function(i) {
-#       make_testset(N = nobservations, K = nclass, P = dimParameters)
-#     }
-#   )
-#   print(sets)
-#   
-#   alpha_gammas <- lapply(
-#     sets,
-#     FUN = function(set) {
-#       alpha_gamma <-
-#         alpha_gamma_crossFit(set, K = numberOfValidations, N = accuracyOfParameters)
-#       print(alpha_gamma)
-#       return(alpha_gamma)
-#     }
-#   )
-#   
-#   print(alpha_gammas)
-# }
+test_cross <- function() {
+  numberOfTest <- 10
+
+  #attributes of each test
+  nobservations <- 7#number of observations per class
+  nclass <- 3 #number of classes
+  dimParameters <- 2 #number of parameters
+
+  #attributes of alpha Gamma cross fit
+  numberOfValidations <- 3
+  accuracyOfParameters <- 11
+
+  sets <- lapply(
+    1:numberOfTest,
+    FUN = function(i) {
+      make_testset(N = nobservations, K = nclass, P = dimParameters)
+    }
+  )
+
+  alpha_gammas <- lapply(
+    sets,
+    FUN = function(set) {
+      alpha_gamma <-
+        alpha_gamma_crossFit(set, K = numberOfValidations, N = accuracyOfParameters)
+      print(alpha_gamma)
+      return(alpha_gamma)
+    }
+  )
+
+  print(alpha_gammas)
+}
