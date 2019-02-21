@@ -3,11 +3,13 @@ set.seed(0)
 a <- runif(8)
 d <- data.frame('a' = a[1:4],
                 'b' = a[5:8],
-                'class'  = c('A','A','B','B'))
+                'class'  = c('A', 'A', 'B', 'B'))
 b <-
-  data.frame('a' = a[1:4],
-             'b' = a[5:8],
-             'NA_character_'  =  c('A','A','B','B'))
+  data.frame(
+    'a' = a[1:4],
+    'b' = a[5:8],
+    'NA_character_'  =  c('A', 'A', 'B', 'B')
+  )
 char_mat <- matrix("a", nrow = 3, ncol = 3)
 set <-
   make_set(
@@ -59,11 +61,10 @@ test_that("data_set", {
   expect_error(set$func_names <- char_mat)
   expect_error(set$func_names <- NA_character_)
   expect_error(set$title <- NA_character_)
-  expect_error(set$change_func_name("LDA_1",NA_character_))
-  expect_error(set$change_func_name("LDA_1",char_mat))
-  expect_error(set$change_func_name("LDA_1","QDA_2"))
+  expect_error(set$change_func_name("LDA_1", NA_character_))
+  expect_error(set$change_func_name("LDA_1", char_mat))
+  expect_error(set$change_func_name("LDA_1", "QDA_2"))
   expect_error(set$classes <- "w")
   expect_error(set$expansion(NA_character_))
   expect_error(set$set_function(set$func["LDA_1"]))
 })
-

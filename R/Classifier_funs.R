@@ -346,15 +346,22 @@ RDA <- function(set, alpha, gamma) {
     }
   }
   
+  #alpha and gamma in between 0 and 1
+  if(!(is.numeric(alpha) && is.numeric(gamma))){
+    stop("alpha and gamma must be numeric")
+  }else if(!((alpha <= 1) && (gamma <= 1) && (alpha >= 0) && (gamma >= 0))){
+    stop("alpha and gamma must be between 0 and 1")
+  }
+  
   G <- set$classes
   K <- set$n_classes
   p <- log(unlist(set$pi))
   N <- set$n_obs
   mu <- set$mean
   
-  if (missing(alpha) || missing(gamma)) {
-    return(RDA_crossFit(set))
-  }
+  # if (missing(alpha) || missing(gamma)) { 
+  #   return(RDA_crossFit(set))
+  # }
   
   kleinesSigma <- small_sigma_est(set)
   sigma_est <- sigma_est(set)
@@ -370,6 +377,7 @@ RDA <- function(set, alpha, gamma) {
   sigmaAlphaGamma <- lapply(
     allSigmas,
     FUN = function(sigma_class) {
+      #browser()
       sigma_estGamma <-
         sigma_est * gamma + (1 - gamma) * diag(n) * (kleinesSigma ** 2)
       sigma_classAlphaGamma <-
@@ -395,16 +403,13 @@ RDA <- function(set, alpha, gamma) {
       return(diag(n))# TODO
     })
     out
-  }) 
+  })
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      loga <- (-1 / 2 * log(detSigma[[k]]))
-      skala <-
-        (-1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
-      return(loga + skala)
+     # browser()
+      -1 / 2 * log(detSigma[[k]]) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
     }) + p
-    
     return(result)
   }
   
@@ -437,15 +442,15 @@ RDA <- function(set, alpha, gamma) {
 #' @examples
 #' test <- make_testset()
 #' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
-RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
-  
-  alpha_gamma <-
-    alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) 
-  alpha <<- alpha_gamma$alpha
-  gamma <<- alpha_gamma$gamma
-  
-  return(RDA(set, alpha = alpha, gamma = gamma))
-}
+# RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
+#   
+#   alpha_gamma <-
+#     alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) 
+#   alpha <<- alpha_gamma$alpha
+#   gamma <<- alpha_gamma$gamma
+#   
+#   return(RDA(set, alpha = alpha, gamma = gamma))
+# }
 
 test_RDA <- function() {
   #attributes of each test
@@ -455,6 +460,53 @@ test_RDA <- function() {
   
   test_data <-
     make_testset(N = nobservations, K = nclass, P = dimParameters)
-  RDA(test_data)
+  RDA(test_data, alpha = 0.7, gamma = 0.4)
   
+  N <- 5
+  
+  #creates parameters to choose from in cross fitting
+  #how many parameters shall be considered
+  v <- seq(from = 0, 
+           to = 1,
+           length.out = N) 
+  
+  #array of all parameters for alpha and gwaramma
+  alpha_gamma <- #TODO so sollte das nicht
+    array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
+
+  print(alpha_gamma)
+  alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){
+    print(x)
+    alpha <- x[alpha]
+    gamma <- x[gamma]
+    return(alpha + gamma)
+  })
+  
+  print(alpha_gamma_error)
 }
+
+test_RDA2 <- function() {
+  #attributes of each test
+  nobservations <- 50 #number of observations per class
+  nclass <- 4 #number of classes
+  dimParameters <- 2 #number of parameters
+  
+  test_data <-
+    make_testset(N = nobservations, K = nclass, P = dimParameters)
+  
+  # result<-function(alpha_gamma){
+  #   alpha <- alpha_gamma[1]
+  #   gamma <- alpha_gamma[2]
+  #   func<- RDA(test_data, alpha, gamma)$func
+  #   return(func(test_data))
+  # }
+  # 
+  # alpha_gammas <- list(c(0,0) , c(1,1), c(0.5,0.5))
+  # results <- lapply(alpha_gammas, result)
+  
+    func<- RDA(test_data, alpha= 1, gamma = 0)$func
+    results <- lapply(test_data$data, func)
+  
+  print(results)
+}
+test_RDA2()

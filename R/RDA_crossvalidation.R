@@ -23,8 +23,8 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
     function(x, n)
       split(x, cut(seq_along(x), n, labels = FALSE))
   
-  partition <- chunk(sample(1:n), K)
-  partition
+  partition <- chunk(sample(1:n), K) #TODO  Error in 1:n : argument of length 0 
+
   #splits results and data according to chosen partition with corresponding rows
   results <- lapply(
     partition,
@@ -82,7 +82,7 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   return(list(alpha, gamma))
   }
 
-#'validationErrorRate
+#validationErrorRate
 #'
 #'calculates the mean total error rate of RDA for given alpha, gamma to determin
 #'  best selection in the cross fitting
