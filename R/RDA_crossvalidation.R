@@ -7,7 +7,7 @@
 #'
 #'cross validates for the best alpha and gamma
 #'@param set data_set to be trained on for cross validation
-#'@param K number of validation sets. Note that though K = 10 is common, it does take far too long in this code
+#'@param K number of validation sets. Note that though K = 10 is common, it is impractical for RDA
 #'@param N number of parameters to choose. Note that Omega(crossFit) = N^2
 #'@return alpha, gamma
 alpha_gamma_crossFit <- function(set, K = 3, N = 5) { #TODO adjust K 
