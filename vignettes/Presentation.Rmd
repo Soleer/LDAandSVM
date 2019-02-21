@@ -1,7 +1,7 @@
 ---
-title: "Presentation"
+title: "LDA und SVM"
 author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
-date: "February 20, 2019"
+date: "February 22, 2019"
 output:
   ioslides_presentation: default
   beamer_presentation: default
@@ -9,6 +9,18 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(gridExtra)
+library(quadprog)
+library(R6)
+library(MASS)
+library(NlcOptim)
+library(shiny)
+library(NlcOptim)
+library(shiny)
+library(rlang)
+library(knitr)
+library(kableExtra)
 source("../R/Basis_expansion.R")
 source("../R/Test.R")
 source("../R/oop.R")
@@ -34,54 +46,139 @@ decibel <- c(decibel_B, decibel_R, decibel_C)
 class <- c(classes_B, classes_R, classes_C)
 
 Rockets <- data.frame(decibel = decibel, height = height, class = class)
+Rockets[] <- Rockets[sample.int(nrow(Rockets)), ]
 set.seed(2)
 ```
 
-## R Markdown
+## Das Problem
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+- Ausgangspunk
+    - Daten in Klassen aufteilbar 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+- Ziel
+    - Klassifizierung neuer Daten <!-- automatisch -->
 
-## Slide with Bullets
-1. Item 1
-2. Item 2
-    a. Item 2a
-    b. Item 2b
 
-- Bullet 1
-    - Bullet 2
-- Bullet 3
-
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-str(Rockets)
-summary(Rockets)
+## Beispieldaten
+```{r structure data-frame, echo = TRUE}
+head(Rockets, 7)
 ```
 
-## Creating a set
-
-```{r Creating a set, results='hide', echo = TRUE}
-Rocket_set <- 
-  make_set(Rockets, 
-           by = 'class', 
-           title = "Rockets", 
-           description = "Rockets with their flight heigth")
+## Plot
+```{r plot Example, echo = TRUE, results='hide'}
+Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets")
+make_2D_plot(Rocket_set)
 ```
 
-```{r creating the classfun, echo = TRUE}
-func_example1 <- LDA(Rocket_set)[['name']]
+## Linear Disriminant Analysis (LDA)
+
+- Annahmen
+    - normalverteilte Daten
+    - gleiche Varianz in jeder Klasse
+
+- Klassengrenzen linear
+
+## LDA plot
+
+```{r LDA plot}
+# func_name1 <- LDA(Rocket_set)[['name']] ##Creating the classifier function with LDA. 'name' is the slot in which the function is in
+# testplot1 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+#                           func_name1, ##Function by which should be classified
+#                           ppu = 1,
+#                           project = FALSE) ##Resolution of the background
+#   
+# testplot1 ##Actual plotting
 ```
 
-```{r Creating a plot, results='hide', echo = TRUE}
-exampleplot1 <- make_2D_plot(Rocket_set,
-               func_example1,
-               ppu = 1,
-               project = FALSE)
+## Quadratic Discriminant Analysis (QDA)
+
+- Annahmen
+    - normalverteilte Daten
+    - unterschiedliche Varianzen für unterschiedliche Klassen
+    
+- Klassengrenzen quadratisch
+
+## QDA plot
+
+```{r QDA plot}
+# func_name2 <- QDA(Rocket_set)[['name']] ##Creating the classifier function with QDA. 'name' is the slot in which the function is in
+# testplot2 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+#                           func_name2, ##Function by which should be classified
+#                           ppu = 1,
+#                           project = FALSE) ##Resolution of the background
+#   
+# testplot2 ##Actual plotting
 ```
 
-## Plotting the test
-```{r displaying plot}
-exampleplot1
+## Regular Discriminant Analysis (RDA)
+
+- Annahmen
+    - normalverteilte Daten
+    - unterschiedliche Varianzen für unterschiedliche Klassen
+    
+- Kombination aus LDA und QDA <!-- alpha -->
+- Kombination aus mehr- und eindimensionaler Verteilung <!-- gamma -->
+
+## RDA plot
+
+```{r RDA plot, results = 'hide'}
+func_name3 <- RDA(Rocket_set, alpha = 0.5, gamma = 0.5)[['name']] ##Creating the classifier function with RDA. 'name' is the slot in which the function is in
+# testplot3 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+#                           func_name3, ##Function by which should be classified
+#                           ppu = 1,
+#                           project = FALSE) ##Resolution of the background
+#   
+# testplot3 ##Actual plotting
 ```
+
+## Penalized Discriminant Analysis (PDA)
+
+- Annahmen
+    - normalverteilte Daten
+    - unterschiedliche Varianzen für unterschiedliche Klassen
+    
+- Basis Expansion
+- Penalizer Matrix <!-- Matrix, die auf die Kovarianz addiert wird um bestimmte Koordinaten weniger oder mehr zu berücksichtigen (kleines
+                        Vielfaches der Einheitsmatrix oder Cross - validation) -->
+
+## PDA plot
+
+```{r PDA plot, results = 'hide'}
+# func_name4 <- PDA(Rocket_set, base = "cube")[['name']] ##Creating the classifier function with PDA. 'name' is the slot in which the function is in
+# testplot4 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+#                           func_name4, ##Function by which should be classified
+#                           ppu = 1,
+#                           project = FALSE) ##Resolution of the background
+#   
+# testplot4 ##Actual plotting
+```
+
+## Support Vector Machines (SVM)
+
+- Annahmen
+    - keine
+    
+- Nur Randpunkte für Klassifikation relevant (Support Vectors) <!-- C = Angabe über Genauigkeit der Klassifikation (je größer desto genauer) -->
+- Kernels <!-- klügere Art der Basisexpansion, betrachte Daten in Höherdimensionalen Raum, wo Trennungen einfacher sind -->  
+
+## SVM plot
+
+```{r SVM plot, results = 'hide'}
+# func_name5 <- SVM(Rocket_set, C = 1, kernel = "radial", g = 1)[['name']] ##Creating the classifier function with SVM. 'name' is the slot in which the function is in
+# testplot5 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the classification image is saved in
+#                           func_name5, ##Function by which should be classified
+#                           ppu = 1,
+#                           project = FALSE) ##Resolution of the background
+#   
+# testplot5 ##Actual plotting
+```
+
+## Vergleich
+
+```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='hide'}
+# Vergleich <- data.frame(Methode = c("LDA", "QDA", "RDA", "PDA", "SVM"), 
+#                         Pro = c("schnell und einfach", "relativ einfach mit wenigen Annahmen", "bestes aus LDA und QDA", "gut für korrellierte   Daten", "keine Ahnnahmen und sehr genau"), 
+#                         Contra = c("nur lineare Trennung", "langsamer als LDA bei marginaler Verbesserung", "aufwendiges Parametertuning", "viel Wissen über Daten notwendig", "Overfitting und lange Berechnung"))  
+# column_spec(kable_styling(kable(Vergleich), bootstrap_options = "striped", position = "left"), 1:3, border_right = TRUE, border_left = TRUE)
+```
+![](Pro_con.png)
