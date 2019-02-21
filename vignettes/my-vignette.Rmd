@@ -212,6 +212,27 @@ do.call(grid.arrange, liste2) ##Plotting the QDA Error
 
 For now we have only looked at uncorrelated data which is where LDA and QDA shine but as soon as the data gets correlated they start overfitting. To counteract this we need another small model change called Penalized Discriminant Analysis.
 
+## RDA
+
+When we have both LDA and QDA there is always the question "Why not combine them?". Regularized Discriminant Analysis (RDA) is an approach to do exactly this. Instead of using a completely pooled covariance matrix or different covariance matrices for every class RDA takes a convex conjugation of both and fine-tunes the paramter of the conjugation to get the best result. If alpha is 0 RDA is the same as LDA while if alpha is 1 RDA is the same as QDA. **Pro**: with the right parameters RDA should always be better that both LDA and QDA. **Contra**: The cross-validation takes some time so the improved performance comes with an increased runtime.
+
+```{r RDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with PDA. The data is the same again but this time, there is no clear structure in the seperating lines because the Classification is done in the expanded 5-dimensional space."}
+func_name4 <-  RDA(set, alpha = 0.5, gamma = 0)[['name']] ##Setting the Classifier function as RDA
+testplot4 <- make_2D_plot(set, ##Creating a plot object for the classification plot
+               func_name4,
+               ppu = 5,
+               project  = FALSE)
+
+testplot4 ##Plotting the image
+```
+
+```{r RDA Error, warning=FALSE, results='hide', fig.keep='last', fig.cap="\\label{fig:figs} Error in the PDA function. For further explanations of the barplots see LDA Error"}
+liste3 <- plot_error(set, func_name4) ##Saving the RDA Errorplot into an object
+do.call(grid.arrange, liste3) ##Plotting the RDA Error
+```
+
+We can see that in this example the classification is worse as with QDA for the reason that alpha and gamma were randomly set.
+
 ## Penalized Discriminant Analysis
 
 To fight overfitting, Hastie et al. have proposed a penalized metric where they add a penalty matrix Omega to the covariance matrix. The exact value of Omega has to be found by hand, cross validation, or superb intuition. As a second extra PDA does is a basis expansion if needed: "quad" for quadratic polynomial, "cube" for cubic polynomial, "sqrt" for squareroot, "log" for logarithm, "abs" for the absolute value or "id" for no basis expansion at all are implemented in this package.
@@ -233,27 +254,6 @@ do.call(grid.arrange, liste3) ##Plotting the PDA Error
 ```
 
 The data we use here is not correlated at all so PDA does worse than LDA and QDA but there are examples where PDA outperforms LDA. This is the case when the input is highly correlated. For example reading in trying to read in analog image data where each pixel obviously is highly correlated to his neighbouring (for more info see Hastie et al. "The Elements of Statistical Learning" (2009) p. 447).
-
-## RDA
-
-When we have both LDA and QDA there is always the question "Why not combine them?". Regularized Discriminant Analysis (RDA) is an approach to do exactly this. Instead of using a completely pooled covariance matrix or different covariance matrices for every class RDA takes a convex conjugation of both and fine-tunes the paramter of the conjugation to get the best result. If alpha is 0 RDA is the same as LDA while if alpha is 1 RDA is the same as QDA. **Pro**: with the right parameters RDA should always be better that both LDA and QDA. **Contra**: The cross-validation takes some time so the improved performance comes with an increased runtime.
-
-```{r RDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with PDA. The data is the same again but this time, there is no clear structure in the seperating lines because the Classification is done in the expanded 5-dimensional space."}
-func_name4 <-  RDA(set, alpha = 0.5, gamma = 0)[['name']] ##Setting the Classifier function as RDA
-testplot4 <- make_2D_plot(set, ##Creating a plot object for the classification plot
-               func_name4,
-               ppu = 5,
-               project  = FALSE)
-
-testplot4 ##Plotting the image
-```
-
-```{r RDA Error, warning=FALSE, results='hide', fig.keep='last', fig.cap="\\label{fig:figs} Error in the PDA function. For further explanations of the barplots see LDA Error"}
-liste3 <- plot_error(set, func_name4) ##Saving the RDA Errorplot into an object
-do.call(grid.arrange, liste3) ##Plotting the RDA Error
-```
-
-We can see that in this example the classification is worse as with QDA for the reason that alpha and gamma were randomly set.
 
 ## Support Vector Machines (SVM)
 
