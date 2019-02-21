@@ -6,7 +6,7 @@
 #'alpha_gamma_crossFit
 #'
 #'cross validates for the best alpha and gamma
-#'@param set data_set to be trained on for cross validation
+#'@param data_set data_set to be trained on for cross validation
 #'@param K number of validation sets. Note that though K = 10 is common, it is impractical for RDA
 #'@param N number of parameters to choose. Note that Omega(crossFit) = N^2
 #'@return alpha, gamma
@@ -22,12 +22,12 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
   
   chunk <-
     function(x, n){
-      split(x, cut(seq_along(x), n, labels = FALSE)) #TODO hier ist ein
+      split(x, cut(seq_along(x), n, labels = FALSE)) 
     }
 
   random <- sample.int(n)
   partition <-
-    chunk(random, K) #TODO  Error in 1:n : argument of length 0
+    chunk(random, K) 
   
   #splits results and data according to chosen partition with corresponding rows
   results <- lapply(

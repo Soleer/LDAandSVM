@@ -25,7 +25,6 @@ class_by_targets <- function(classes, delta) {
 classify <- function(classes, delta) {
   classfunction <- function(x) {
     pos_max <- which.max(delta(x))
-    #print(classes[pos_max])
     return(classes[pos_max])
   }
   return(classfunction)
@@ -354,7 +353,7 @@ RDA <- function(set, alpha, gamma) {
       
     })
     
-    if (length(slot) > 0) { #TODO korrigieren
+    if (length(slot) > 0) { 
       return(list(name = slot, func = set$func[[slot]]))
     }
   }
@@ -377,8 +376,6 @@ RDA <- function(set, alpha, gamma) {
   allSigmas <- set$sigma
   
   if (any(sapply(data_set$data, anyNA))) {
-    #TODO
-    #browser()
     warning("data_set$dat contains Na (RDA)")
     
   }
@@ -415,14 +412,7 @@ RDA <- function(set, alpha, gamma) {
   })
   
   delta <- function(x) {
-    # if(!((nrow(x) == 1) && (ncol(x) == n))){ TODO
-    #   warning("cant classify such data:")
-    #   warning(x)
-    # }
-   # print(sigma_inv)
     result <- sapply(1:K, function(k) {
-     #browser()
-      # print(sigma_inv[[k]])
       -1 / 2 * log(detSigma[[k]]) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
     }) + p
     return(result)
@@ -457,6 +447,7 @@ RDA <- function(set, alpha, gamma) {
 #' @examples
 #' test <- make_testset()
 #' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
+#' @export
 RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
   
   alpha_gamma <-
@@ -464,24 +455,24 @@ RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5)
   alpha <- alpha_gamma$alpha
   gamma <- alpha_gamma$gamma
 
-  #print(paste("classifying with RDA, gamma =", gamma, "and alpha =", alpha))
-  print(alpha_gamma)
+  print(paste("classifying with RDA, gamma =", gamma, "and alpha =", alpha))
+  #print(alpha_gamma)
   
   result <- RDA(set, alpha = alpha, gamma = gamma)
   return(result)
 }
-
-test_RDA2 <- function() {
-  #attributes of each test
-  nobservations <- 10 #number of observations per class
-  nclass <- 3 #number of classes
-  dimParameters <- 2 #number of parameters
-
-  test_data <-
-    make_testset(N = nobservations, K = nclass, P = dimParameters)
-
-  RDA_crossFit(test_data)
-
-  print(results)
-}
+# 
+# test_RDA2 <- function() {
+#   #attributes of each test
+#   nobservations <- 10 #number of observations per class
+#   nclass <- 3 #number of classes
+#   dimParameters <- 2 #number of parameters
+# 
+#   test_data <-
+#     make_testset(N = nobservations, K = nclass, P = dimParameters)
+# 
+#   RDA_crossFit(test_data)
+# 
+#   print(results)
+# }
 
