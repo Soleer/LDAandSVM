@@ -9,7 +9,7 @@ alpha_gamma_crossFit(set, K = 3, N = 5)
 \arguments{
 \item{set}{data_set to be trained on for cross validation}
 
-\item{K}{number of validation sets. Note that though K = 10 is common, it does take far too long in this code}
+\item{K}{number of validation sets. Note that though K = 10 is common, it is impractical for RDA}
 
 \item{N}{number of parameters to choose. Note that Omega(crossFit) = N^2}
 }

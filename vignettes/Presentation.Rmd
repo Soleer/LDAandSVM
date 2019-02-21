@@ -50,7 +50,7 @@ Rockets_data <- data.frame(decibel = decibel, height = height, class = class)
 Rockets_data[] <- Rockets_data[sample.int(nrow(Rockets_data)), ]
 validation <- Rockets_data[1:20,1:2]
 goals <- Rockets_data[1:20,'class']
-Rockets <- Rockets_data[21:nrow(Rockets_data),]
+Rockets <- Rockets_data
 set.seed(2)
 ```
 
@@ -75,7 +75,7 @@ head(Rockets, 10)
 
 ```{r plot Example, echo = TRUE, results='hide'}
 
-Rocket_set <- make_set(Rockets, by = 'class', title = "Rockets")
+Rocket_set <- make_set(Rockets, by = "class", title = "Rockets")
 make_2D_plot(Rocket_set)
 ```
 
@@ -96,7 +96,6 @@ testplot1 <- make_2D_plot(Rocket_set, ##Creating a ggplot
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
 
-#calc_miss_plot(validation,goals,func[['func']])
 testplot1 ##Actual plotting
 ```
 
@@ -116,7 +115,6 @@ testplot2 <-make_2D_plot(Rocket_set, ##Creating a ggplot object where the classi
                           func2[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-#calc_miss_plot(validation,goals,func2[['func']])
 testplot2 ##Actual plotting
 ```
 
@@ -137,7 +135,6 @@ testplot3 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the class
                           func3[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-#calc_miss_plot(validation,goals,func3[['func']])
 testplot3 ##Actual plotting
 ```
 
@@ -159,7 +156,6 @@ testplot4 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the class
                           func4[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-#calc_miss_plot(validation,goals,func4[['func']])
 testplot4 ##Actual plotting
 ```
 
@@ -179,7 +175,6 @@ testplot5 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the class
                           func5[['name']], ##Function by which should be classified
                           ppu = 1,
                           project = FALSE) ##Resolution of the background
-#calc_miss_plot(validation,goals,func5[['func']])
 testplot5 ##Actual plotting
 ```
 

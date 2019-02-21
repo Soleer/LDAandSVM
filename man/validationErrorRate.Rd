@@ -2,7 +2,8 @@
 % Please edit documentation in R/RDA_crossvalidation.R
 \name{validationErrorRate}
 \alias{validationErrorRate}
-\title{validationErrorRate}
+\title{calculates the mean total error rate of RDA for given alpha, gamma to determin
+ best selection in the cross fitting}
 \usage{
 validationErrorRate(data, results, alpha, gamma)
 }
@@ -19,6 +20,6 @@ validationErrorRate(data, results, alpha, gamma)
 total mean error rate of all validations
 }
 \description{
-calculates the mean total error rate of RDA for given alpha, gamma to determin 
+calculates the mean total error rate of RDA for given alpha, gamma to determin
  best selection in the cross fitting
 }

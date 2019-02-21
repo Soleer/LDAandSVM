@@ -4,12 +4,14 @@
 \alias{plot_summary}
 \title{plot_summary}
 \usage{
-plot_summary(set, name, background = TRUE, project = TRUE)
+plot_summary(set, name, ppu = 1, background = TRUE, project = TRUE)
 }
 \arguments{
 \item{set}{a data_set}
 
 \item{name}{the name of the function to summarize}
+
+\item{ppu}{background points per unit}
 
 \item{background}{logical, decides if the data plot should have a background grid}
 

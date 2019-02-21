@@ -10,15 +10,16 @@ SVM(set, C = 1, kernel = "id", d = 1, g = 1)
 \item{set}{A R6 data_set object initialized with make_set. @seealso make_set}
 
 \item{C}{A positive double used to decide how large the margin should be, hence the sensitivity of the
-SVM function to misclassification. Large values encourage an overfit wiggly boundary, while a 
+SVM function to misclassification. Large values encourage an overfit wiggly boundary, while a
 small value of C causes a smoother boundary}
 
 \item{kernel}{One of the following strings \itemize{\item "id"; \item "poly"; \item "radial"; \item "neural"}
-The feature space gets enlarged using basis expansions such as polynomials('poly') or
-Neural networks('neural').The kernel functions are:
-dth-Degree polynomial: K(x,x') = (1+ <x,x'>)^d
-         Radial basis: K(x,x') = exp(-g ||x - x'||^2)
-       Neural network: K(x,x') = tanh(d* <x,x'> + g)}
+ The feature space gets enlarged using basis expansions such as polynomials('poly') or
+ Neural networks('neural').The kernel functions are:
+ dth-Degree polynomial: K(x,x') = (1+ <x,x'>)^d
+          Radial basis: K(x,x') = exp(-g ||x - x'||^2)
+        Neural network: K(x,x') = tanh(d* <x,x'> + g)
+Use "id" for no kernel.}
 
 \item{d}{A positive double used in dth-Degree polynomial and Neural network kernel. See parameter 'kernel'}
 
