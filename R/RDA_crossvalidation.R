@@ -15,7 +15,6 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   results <- data_set$results
   #splits data in K equal sized training/validation samples
   n <- nrow(data)
-  
   K <-
     min(K, floor(n / 2)) #so in each subpart are at least two elements in order for the the calculation of variances to work properly
   
@@ -23,8 +22,9 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
     function(x, n)
       split(x, cut(seq_along(x), n, labels = FALSE))
   
-  partition <- chunk(sample(1:n), K) #TODO  Error in 1:n : argument of length 0 
-
+  partition <-
+    chunk(sample(1:n), K) #TODO  Error in 1:n : argument of length 0
+  
   #splits results and data according to chosen partition with corresponding rows
   results <- lapply(
     partition,
@@ -36,26 +36,37 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   data <- lapply(
     partition,
     FUN = function(x) {
-      data[x,]
+      data[x, ]
     }
   )
   
+  N <- 5
   #creates parameters to choose from in cross fitting
   #how many parameters shall be considered
   v <- seq(from = 0,
            to = 1,
-           length.out = N) 
+           length.out = N)
   
   #array of all parameters for alpha and gwaramma
   alpha_gamma <-
-    array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
-  
+    array(
+      data = NA,
+      dim = c(2, N, N),
+      dimnames = list(c("alpha", "gamma"), 1:N, 1:N)
+    )
+  for (i in 1:N) {
+    for (j in 1:N) {
+      alpha_gamma["alpha", i, j] <- v[i]
+      alpha_gamma["gamma",i, j] <- v[j]
+    }
+  }
+   
   #iterates thrue all possible parameters and saves there error rate in a matrix (to choose the minimum later)
   alpha_gamma_error <- matrix(nrow = N, ncol = N)
   for (i in 1:N) {
     for (j in 1:N) {
-      alpha <- alpha_gamma[i, j, "alpha"]
-      gamma <- alpha_gamma[i, j, "gamma"]
+      alpha <- alpha_gamma["alpha", i, j]
+      gamma <- alpha_gamma["gamma", i, j]
       
       alpha_gamma_error[i, j] <-
         validationErrorRate(data, results, alpha, gamma)
@@ -73,11 +84,11 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   #finds best option of alpha and gamma. picks random, if equal do exist
   X <-
     which(alpha_gamma_error == min(alpha_gamma_error), arr.ind = TRUE)
-  coordinates <- X[sample(nrow(X), size = 1, replace = TRUE), ]
+  coordinates <- X[sample(nrow(X), size = 1, replace = TRUE),]
   
   
-  alpha <- alpha_gamma[coordinates[1], coordinates[2], "alpha"]
-  gamma <- alpha_gamma[coordinates[1], coordinates[2], "gamma"]
+  alpha <- alpha_gamma["alpha", coordinates[1], coordinates[2]]
+  gamma <- alpha_gamma["gamma",coordinates[1], coordinates[2]]
   
   return(list(alpha, gamma))
   }
@@ -102,12 +113,15 @@ validationErrorRate <- function(data, results, alpha, gamma) {
       training_dataframe <- cbind(training_results, training_data)
       
       #tryCatch()
-      tryCatch(data_set <-
-                 make_set(data = training_dataframe, by = "training_results") #TODO try catch, because singalarites
-               , error = function(e){
-                 #data_set <-  TODO
-               } )
-            #in order to generate a RDA object for it
+      tryCatch(
+        data_set <-
+          make_set(data = training_dataframe, by = "training_results") #TODO try catch, because singalarites
+        ,
+        error = function(e) {
+          #data_set <-  TODO
+        }
+      )
+      #in order to generate a RDA object for it
       classifier_obj <-
         RDA(set = data_set,
             alpha = alpha,
@@ -121,7 +135,6 @@ validationErrorRate <- function(data, results, alpha, gamma) {
       
       #validation on block i
       validation_data_set <- data[[i]]
-      
       validation_results <- results[[i]]
       
       current_error <-
@@ -135,7 +148,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 }
 
 test_cross <- function() {
-  numberOfTest <- 2
+  numberOfTest <- 3
   
   #attributes of each test
   nobservations <- 10#number of observations per class
