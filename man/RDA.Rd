@@ -21,6 +21,4 @@ function in the second entry and saves the classification function in the R6 obj
 The regular Discriminant analysis from 4.3.1 as described in Hastie et al. "The Elements Statistical Learning" (2009)
 }
 \examples{
-test <- make_testset()
-func_name <- RDA(test, alpha = 0, gamma = 1)
-}
+
