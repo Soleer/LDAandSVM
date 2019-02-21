@@ -334,6 +334,7 @@ RDA <- function(set, alpha, gamma) {
   }
   #alpha and gamma in between 0 and 1
   if(!(is.numeric(alpha) && is.numeric(gamma))){
+
     stop("alpha and gamma must be numeric")
   }else if(!((alpha <= 1) && (gamma <= 1) && (alpha >= 0) && (gamma >= 0))){
     stop("alpha and gamma must be between 0 and 1")
@@ -388,6 +389,7 @@ RDA <- function(set, alpha, gamma) {
         sigma_est * gamma + (1 - gamma) * diag(n) * (kleinesSigma ** 2)
       sigma_classAlphaGamma <-
         sigma_class * alpha + (1 - alpha) * sigma_estGamma
+
       return(sigma_classAlphaGamma)
     }
   )
@@ -455,14 +457,17 @@ RDA <- function(set, alpha, gamma) {
 #' test <- make_testset()
 #' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
 RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
-
+  
   alpha_gamma <-
     alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations)
   alpha <- alpha_gamma$alpha
   gamma <- alpha_gamma$gamma
 
+  #print(paste("classifying with RDA, gamma =", gamma, "and alpha =", alpha))
   print(alpha_gamma)
-  return(RDA(set, alpha = alpha, gamma = gamma))
+  
+  result <- RDA(set, alpha = alpha, gamma = gamma)
+  return(result)
 }
 
 test_RDA2 <- function() {
@@ -478,3 +483,4 @@ test_RDA2 <- function() {
 
   print(results)
 }
+
