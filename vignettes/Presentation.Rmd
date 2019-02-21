@@ -3,8 +3,8 @@ title: "LDA und SVM"
 author: "Daniel Fridljand, Benedikt Lauer, Henning Stein, Niklas Wünstel"
 date: "February 22, 2019"
 output:
-  ioslides_presentation: default
   beamer_presentation: default
+  ioslides_presentation: default
 ---
 
 ```{r setup, include=FALSE}
