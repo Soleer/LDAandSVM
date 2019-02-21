@@ -43,7 +43,9 @@ initialize = function(data,
       if(ncol(data)==1){
         stop("Data must have at least one parametercolumn", call. = FALSE)
       }
-      
+      if(is.na(title)){
+        stop("Title can't be a NA",call. = FALSE)
+      }
       self$description <- description
       self$title <- title
       
@@ -63,23 +65,32 @@ initialize = function(data,
       
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+
       
-      if(anyNA(data)){#TODO
-        warning("data contains Na (initialize)") 
-      }
       private$.data_expansion[['id']] <- private$.data
+<<<<<<< HEAD
       #save classvalues of parameters under '.results'
+=======
+      
+>>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       private$.results <- data[, by]
       
       private$.count <- table(private$.results)
       if(any(private$.count == 1)){
         stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
       }
+<<<<<<< HEAD
+=======
+      
+>>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
       u_classes <- as.vector(unique(private$.results))
+<<<<<<< HEAD
     
+=======
+>>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       #Numbers
       
       #save
@@ -104,6 +115,10 @@ initialize = function(data,
       private$.pi <- sapply(private$.classnames, function(class) {
         private$.count[class] / private$.n_obs
       })
+<<<<<<< HEAD
+=======
+    
+>>>>>>> ac0c206937ddeac4be9685801875811fec0dd9da
       private$.pi <- as.list(private$.pi)
       names(private$.pi) <- private$.classnames
       
@@ -119,11 +134,12 @@ initialize = function(data,
       
       #sigma calculate later if needed
       
-      sigma_list <- as.list(rep(NA, times = private$.n_classes)) #TODO
+      sigma_list <- as.list(rep(NA, times = private$.n_classes))
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
 },
+
 #######################################################################################################
     #custom print function
     
@@ -196,7 +212,7 @@ expansion = function(base) {
 ####################################################################################################### 
     #get observations of one class
 get_data_by_class = function(class){
-      return(data[private$.results == self$classes[class],]) #TODO funzt nicht, ruft anderen datensatz ab
+      return(self$data[private$.results == self$classes[class],])
 }
 #######################################################################################################
 ),
@@ -260,15 +276,6 @@ get_data_by_class = function(class){
         stop("n_classes is read only", call. = FALSE)
       }
     },
-    data_by_classes = function(Value) {
-      #TODO access at k 
-      if (missing(Value)) {
-        return(private$.data_by_classes)
-      }
-      else{
-        stop("results is read only", call. = FALSE)
-      }
-    },
     
     count = function(Value) {
       if (missing(Value)) {
@@ -299,7 +306,7 @@ get_data_by_class = function(class){
         return(private$.title)
       }
       else{
-        if (is.character(Value)) {
+        if (is.character(Value) && !is.na(Value)) {
           if (length(Value) == 1) {
             private$.title <- Value
           }
