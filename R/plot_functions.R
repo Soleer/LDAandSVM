@@ -1,5 +1,6 @@
 #Plot functions
-
+library(ggplot2)
+library(gridExtra)
 #'maincomponent_analysis
 #'
 #'@param set a data_set

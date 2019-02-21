@@ -14,9 +14,9 @@ make_test(ninputs = 100, nparam = 2, nclasses = 2, sigma = 0.8,
 
 \item{nclasses}{Number of Classes to create.}
 
-\item{cube}{Vector of length 2 with lower and upper boundaries for the parameter centers}
+\item{sigma}{Numeric Vector of sigma Values for the gaussian distribution togenerate the Observations. Will be recycled if shorter than nclasses.}
 
-\item{simga}{Numeric Vector of sigma Values for the gaussian distribution togenerate the Observations. Will be recycled if shorter than nclasses.}
+\item{cube}{Vector of length 2 with lower and upper boundaries for the parameter centers}
 }
 \value{
 A Dataframe with nparam many columns with gaussian data and a columns 'class'

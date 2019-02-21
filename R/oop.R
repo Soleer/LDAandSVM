@@ -1,5 +1,5 @@
 #Basic R6-Object "data_set":
-
+library(R6)
 
 data_set <- R6Class(
   "data_set",
@@ -497,23 +497,15 @@ is.data_set <- function(set) {
 #'@param P number of parameters of each observation
 #'@return a data_set
 #'@examples
-#'set <- make_testset(N = 50, K= 2)
+#'make_testset(N = 50, K= 2)
 #'@export
-make_testset <- function(N = 3, K = 3, P = 2) { 
+make_testset <- function(N = 10, K = 3, P = 2) { 
   test <- make_test(ninputs = N, nclasses = K, nparam = P)
-  if(anyNA(test)){ #TODO
-   warning("Test contains Na (make_testset)") 
-  }
   set <-
     make_set(test,
              by = "class",
              title = "TEST",
              description = "Testset")
-  
-  if(anyNA(set$data)){
-    warning("Testset contains Na (make_testset)") 
-    #print(set$data) 
-  }
   return(set)
 }
 

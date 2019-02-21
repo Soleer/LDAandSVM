@@ -1,33 +1,7 @@
-#library(testthat)
+library(testthat)
 #source("../R/Calc_error.R")
 
 #RDA test 
-#TODO delete 
-
-library(ggplot2)
-library(gridExtra)
-library(quadprog)
-library(R6)
-library(MASS)
-library(NlcOptim)
-library(e1071)
-library(shiny)
-library(NlcOptim)
-library(shiny)
-library(rlang)
-source("R/Basis_expansion.R")
-source("R/Calc_error.R")
-source("R/Estimators.R")
-source("R/oop.R")
-source("R/plot_functions.R")
-source("R/RDA_crossvalidation.R")
-source("R/shinyplot.R")
-source("R/svm.R")
-source("R/Test.R")
-source("R/testthat.R")
-
-testRDA()
-
 testRDA <- function() {
   N <- 2
   G<- 3

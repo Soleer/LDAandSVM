@@ -5,11 +5,11 @@
 #'alpha_gamma_crossFit
 #'
 #'cross validates for the best alpha and gamma
-#'#'@param data_set to be trained on for cross validation
+#'@param set data_set to be trained on for cross validation
 #'@param K number of validation sets. Note that though K = 10 is common, it does take far too long in this code
 #'@param N number of parameters to choose. Note that Omega(crossFit) = N^2
 #'@return alpha, gamma
-alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K 
+alpha_gamma_crossFit <- function(set, K = 3, N = 5) { #TODO adjust K 
   data <- data_set$data
   results <- data_set$results
   #splits data in K equal sized training/validation samples
@@ -83,7 +83,7 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K
 #'
 #'calculates the mean total error rate of RDA for given alpha, gamma to determin 
 #'  best selection in the cross fitting
-#'#'@param data Dataframe of Parameters for all Observations
+#'@param data Dataframe of Parameters for all Observations
 #'@param results correct classes
 #'@param alpha alpha to be evaluated
 #'@param gamma gamma to be evaluated
@@ -145,4 +145,3 @@ test_cross<- function(){
 
   print(alpha_gammas)
 }
-test_cross()
