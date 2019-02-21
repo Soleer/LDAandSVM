@@ -158,6 +158,9 @@ PDA <-
       ##check for omega
       omega <- diag(0, nrow = d, ncol = d) # set 0
     }
+    if(!is.matrix(omega) | ncol(omega) != nrow(omega) | ncol(omega) != d){
+      stop(paste("Omega must be a quadratic matrix of size", d))
+    }
     if (length(set$func) > 0) {
       ##check if already calculated
       slot <- character(0)
@@ -343,15 +346,22 @@ RDA <- function(set, alpha, gamma) {
     }
   }
   
+  #alpha and gamma in between 0 and 1
+  if(!(is.numeric(alpha) && is.numeric(gamma))){
+    stop("alpha and gamma must be numeric")
+  }else if(!((alpha <= 1) && (gamma <= 1) && (alpha >= 0) && (gamma >= 0))){
+    stop("alpha and gamma must be between 0 and 1")
+  }
+  
   G <- set$classes
   K <- set$n_classes
   p <- log(unlist(set$pi))
   N <- set$n_obs
   mu <- set$mean
   
-  if (missing(alpha) || missing(gamma)) {
-    return(RDA_crossFit(set))
-  }
+  # if (missing(alpha) || missing(gamma)) { 
+  #   return(RDA_crossFit(set))
+  # }
   
   kleinesSigma <- small_sigma_est(set)
   sigma_est <- sigma_est(set)
@@ -367,6 +377,7 @@ RDA <- function(set, alpha, gamma) {
   sigmaAlphaGamma <- lapply(
     allSigmas,
     FUN = function(sigma_class) {
+      #browser()
       sigma_estGamma <-
         sigma_est * gamma + (1 - gamma) * diag(n) * (kleinesSigma ** 2)
       sigma_classAlphaGamma <-
@@ -434,15 +445,15 @@ RDA <- function(set, alpha, gamma) {
 #' @examples
 #' test <- make_testset()
 #' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
-RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
-  
-  alpha_gamma <-
-    alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) 
-  alpha <<- alpha_gamma$alpha
-  gamma <<- alpha_gamma$gamma
-  
-  return(RDA(set, alpha = alpha, gamma = gamma))
-}
+# RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
+#   
+#   alpha_gamma <-
+#     alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) 
+#   alpha <<- alpha_gamma$alpha
+#   gamma <<- alpha_gamma$gamma
+#   
+#   return(RDA(set, alpha = alpha, gamma = gamma))
+# }
 
 test_RDA <- function() {
   #attributes of each test
@@ -452,6 +463,6 @@ test_RDA <- function() {
   
   test_data <-
     make_testset(N = nobservations, K = nclass, P = dimParameters)
-  RDA(test_data)
+  RDA(test_data, alpha = 0.7, gamma = 0.4)
   
 }
