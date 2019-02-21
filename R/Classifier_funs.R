@@ -254,16 +254,16 @@ SVM <- function(set,
   if (!is.data_set(set)) {
     stop("Input must be of class 'data_set' (?make_set)", call. = FALSE)
   }
-  if ((!is.double(C) && C <= 0 && length(C) != 1) ||is.na(C)) {
+  if ((!is.double(C) && C <= 0 && length(C) != 1)) {
     stop("Input 'C' must be a positive double", call. = FALSE)
   }
   if (!is.character(kernel) && length(kernel) != 1) {
     stop("Input 'kernel' must be a string with length one.")
   }
-  if ((!is.double(d) && d <= 0 && length(d) != 1) || is.na(d)) {
+  if ((!is.double(d) && d <= 0 && length(d) != 1)) {
     stop("Input 'd' must be a positive double", call. = FALSE)
   }
-  if ((!is.double(g) && g <= 0 && length(d) != 1) || is.na(g)) {
+  if ((!is.double(g) && g <= 0 && length(d) != 1)) {
     stop("Input 'g' must be a positive double", call. = FALSE)
   }
   # Test if SVM-classification-function was already calculated using the same parameters.
