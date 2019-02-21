@@ -20,7 +20,7 @@ Authors@R:
            email = "niklas@soleer.de")
 Description:  This package conains many functions for classification problems as described in 
               Hastie et al. "The Elements of Statistical Learning" (2009).
-License: Best License In History, Maybe Ever
+License: Best License In History, Maybe Ever.
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1

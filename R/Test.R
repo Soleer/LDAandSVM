@@ -7,7 +7,7 @@
 #' @param ninputs Number of generated Observations per Class
 #' @param nparam Number of generated parameter columns 
 #' @param nclasses Number of Classes to create.
-#' @param simga Numeric Vector of sigma Values for the gaussian distribution togenerate the Observations. Will be recycled if shorter than nclasses.
+#' @param sigma Numeric Vector of sigma Values for the gaussian distribution togenerate the Observations. Will be recycled if shorter than nclasses.
 #' @param cube Vector of length 2 with lower and upper boundaries for the parameter centers
 #' @return A Dataframe with nparam many columns with gaussian data and a columns 'class'
 #' @examples

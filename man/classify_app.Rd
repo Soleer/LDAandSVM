@@ -17,6 +17,3 @@ and chose the classifier and potentially and further parameters. To view the cla
 plot go to the second tab and to see the error plot go to the thrid tab. In both these the
 image can be saved with the options  at the bottom. The images will be saved as .png
 }
-\examples{
-
-}

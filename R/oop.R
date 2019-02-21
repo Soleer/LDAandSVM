@@ -1,6 +1,5 @@
 #Basic R6-Object "data_set":
 
-
 data_set <- R6Class(
   "data_set",
   private = list(
@@ -41,6 +40,9 @@ initialize = function(data,
       #Check if the 'by' Value is a Column of 'data'
       stopifnot(any(private$.col_names == by))
       #title and decription
+      if(ncol(data)==1){
+        stop("Data must have at least one parametercolumn", call. = FALSE)
+      }
       
       self$description <- description
       self$title <- title
@@ -58,14 +60,28 @@ initialize = function(data,
       if (any(sapply(data[, private$.col_names != by], is.infinite))) {
         stop("Parametercolumns contain NA Values!", call. = FALSE)
       }
+      
       #save Parameters seperated from their classes
       private$.data <- data[, private$.col_names != by]
+      
+      if(anyNA(data)){#TODO
+        warning("data contains Na (initialize)") 
+      }
       private$.data_expansion[['id']] <- private$.data
       #Print progress
+      cat("\nData:\n")
       print(private$.data[1:5,])
       cat("...\n")
       #save classvalues of parameters under '.results'
       private$.results <- data[, by]
+      
+      private$.count <- table(private$.results)
+      if(any(private$.count == 1)){
+        stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
+      }
+      cat("\nObservations per Class:\n")
+      print(private$.count)
+      
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
@@ -73,7 +89,7 @@ initialize = function(data,
       #print progress
       cat("\nClasses:\n")
       print(u_classes)
-      
+    
       #Numbers
       
       #save
@@ -90,13 +106,11 @@ initialize = function(data,
       #save number of unique classes
       private$.n_classes <- length(private$.classes)
       #print progress
+    
       cat(sprintf("\nNumber of Classes: %s \n", private$.n_classes))
       
       private$.n_obs <- nrow(data)
       cat(sprintf("\nNumber of Observations: %s \n", private$.n_obs))
-      private$.count <- table(private$.results)
-      cat("\nObservations per Class:\n")
-      print(private$.count)
       
       #Estimators
       # All as lists
@@ -125,7 +139,7 @@ initialize = function(data,
       
       #sigma calculate later if needed
       
-      sigma_list <- as.list(rep(NA, times = private$.n_classes))
+      sigma_list <- as.list(rep(NA, times = private$.n_classes)) #TODO
       names(sigma_list) <- private$.classnames
       private$.sigma <- sigma_list
       
@@ -455,7 +469,10 @@ make_set <- function(data,
                      by,
                      title="",
                      description="") {
-  
+  if(anyNA(data)){
+    stop("data contains Na (oop/make_set)") 
+    #print(set$data) 
+  }
   data_set$new(data, by, title, description)
 }
 #'is.data_set
@@ -479,9 +496,9 @@ is.data_set <- function(set) {
 #'@param P number of parameters of each observation
 #'@return a data_set
 #'@examples
-#'set <- make_testset(N = 50, K= 2)
+#'make_testset(N = 50, K= 2)
 #'@export
-make_testset <- function(N = 10, K = 3, P = 2) {
+make_testset <- function(N = 10, K = 3, P = 2) { 
   test <- make_test(ninputs = N, nclasses = K, nparam = P)
   set <-
     make_set(test,
@@ -490,3 +507,5 @@ make_testset <- function(N = 10, K = 3, P = 2) {
              description = "Testset")
   return(set)
 }
+
+

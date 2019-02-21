@@ -1,5 +1,6 @@
 #Plot functions
-
+library(ggplot2)
+library(gridExtra)
 #'maincomponent_analysis
 #'
 #'@param set a data_set
@@ -182,7 +183,7 @@ plot_error <- function(set, name) {
         ) +
         labs(title = paste0('f(x=', class, ')'))             #
       
-      probs_Results[paste0(class, 'label')] <- paste0(round(probs_Results[, class],2)*100,'%')#Labels in percent
+      probs_Results[paste0(class, 'label')] <- paste0(round(probs_Results[, class],2)*100,'% ')#Labels in percent
       
       right <-                                        #if function classifys to class ... then it is actually class ... by percent
         ggplot(data = probs_Results[1:n, ]) +         #make plot with aesthetics 
@@ -195,6 +196,7 @@ plot_error <- function(set, name) {
           stat = "identity",
           width = 1
         ) + theme(
+          legend.position = "none",
           axis.text.y = element_blank(),
           axis.title.y = element_blank(),
           axis.title.x = element_blank()
@@ -254,7 +256,7 @@ plot_summary <- function(set, name, background=TRUE, project=TRUE){
                  project,
                  background
                  )
-    plot_list[[length(plot_list)+1]] <-  plot
+    plot_list <- list(plot_list, plot)
   }
   niceplot <- do.call("grid.arrange", c(plot_list, ncol = 2, top = sprintf("%s %s",set$title,name)))
   return(niceplot)
