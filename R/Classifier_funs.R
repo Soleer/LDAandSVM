@@ -307,8 +307,11 @@ RDA <- function(set, alpha, gamma){
   mu <- set$mean
   
   if(missing(alpha) || missing(gamma)){
+    #attributes of alpha Gamma cross fit
+    numberOfValidations <- 3
+    accuracyOfParameters <- 20
     
-    alpha_gamma <- alpha_gamma_crossFit(set) #TODO perhaps identical copy of set
+    alpha_gamma <- alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations) #TODO perhaps identical copy of set
     alpha <<- alpha_gamma$alpha
     gamma <<- alpha_gamma$gamma
   }
@@ -405,12 +408,18 @@ RDA <- function(set, alpha, gamma){
   ))
 }
 
-# test_RDA<- function(){
-#   test_data <- make_testset()
-#   RDA(test_data)
-#   
-# }
-# test_RDA()
+test_RDA<- function(){
+  
+  #attributes of each test
+  nobservations <- 10#number of observations per class
+  nclass <- 3 #number of classes
+  dimParameters <- 2 #number of parameters
+  
+  test_data <- make_testset(N = nobservations, K = nclass, P = dimParameters)
+  RDA(test_data)
+
+}
+
 
 
 

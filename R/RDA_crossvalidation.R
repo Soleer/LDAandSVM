@@ -1,5 +1,6 @@
 #Regular Discriminant analysis from 4.3.1
 
+
 ####cross validation/ tuning parameters
 
 #'alpha_gamma_crossFit
@@ -131,18 +132,27 @@ validationErrorRate <- function(data, results, alpha, gamma) {
 }
 
 test_cross<- function(){
-  numberOfTest <- 3
+  numberOfTest <- 2
+  
+  #attributes of each test
+  nobservations <- 10#number of observations per class
+  nclass <- 3 #number of classes
+  dimParameters <- 2 #number of parameters 
+    
+  #attributes of alpha Gamma cross fit
+  numberOfValidations <- 3
+  accuracyOfParameters <- 20
   
   sets <- lapply(1:numberOfTest, FUN= function(i){
-    make_testset(N = 30, K = 3, P = 2)
+
+    make_testset(N = nobservations, K = nclass, P = dimParameters)
   })
 
   alpha_gammas <- lapply(sets, FUN = function(set){
-    alpha_gamma <- alpha_gamma_crossFit(set, K = 2, N = 2)
+    alpha_gamma <- alpha_gamma_crossFit(set, K = numberOfValidations, N = accuracyOfParameters)
     print(alpha_gamma)
     return(alpha_gamma)
   })
 
   print(alpha_gammas)
 }
-test_cross()
