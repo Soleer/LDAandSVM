@@ -403,16 +403,13 @@ RDA <- function(set, alpha, gamma) {
       return(diag(n))# TODO
     })
     out
-  }) 
+  })
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
-      loga <- (-1 / 2 * log(detSigma[[k]]))
-      skala <-
-        (-1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
-      return(loga + skala)
+     # browser()
+      -1 / 2 * log(detSigma[[k]]) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
     }) + p
-    
     return(result)
   }
   
@@ -465,4 +462,51 @@ test_RDA <- function() {
     make_testset(N = nobservations, K = nclass, P = dimParameters)
   RDA(test_data, alpha = 0.7, gamma = 0.4)
   
+  N <- 5
+  
+  #creates parameters to choose from in cross fitting
+  #how many parameters shall be considered
+  v <- seq(from = 0, 
+           to = 1,
+           length.out = N) 
+  
+  #array of all parameters for alpha and gwaramma
+  alpha_gamma <- #TODO so sollte das nicht
+    array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
+
+  print(alpha_gamma)
+  alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){
+    print(x)
+    alpha <- x[alpha]
+    gamma <- x[gamma]
+    return(alpha + gamma)
+  })
+  
+  print(alpha_gamma_error)
 }
+
+test_RDA2 <- function() {
+  #attributes of each test
+  nobservations <- 50 #number of observations per class
+  nclass <- 4 #number of classes
+  dimParameters <- 2 #number of parameters
+  
+  test_data <-
+    make_testset(N = nobservations, K = nclass, P = dimParameters)
+  
+  # result<-function(alpha_gamma){
+  #   alpha <- alpha_gamma[1]
+  #   gamma <- alpha_gamma[2]
+  #   func<- RDA(test_data, alpha, gamma)$func
+  #   return(func(test_data))
+  # }
+  # 
+  # alpha_gammas <- list(c(0,0) , c(1,1), c(0.5,0.5))
+  # results <- lapply(alpha_gammas, result)
+  
+    func<- RDA(test_data, alpha= 1, gamma = 0)$func
+    results <- lapply(test_data$data, func)
+  
+  print(results)
+}
+test_RDA2()
