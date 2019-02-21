@@ -300,8 +300,14 @@ RDA <- function(set, alpha, gamma){
     }
   }
   
-  if(any(sapply(set$sigma, anyNA))){ #TODO
-    warning("set$sigma contains Na RDA") 
+  # if(any(sapply(set$sigma, anyNA))){ #TODO
+  #   browser()
+  #   warning("set$sigma contains Na RDA") 
+  # }
+  
+  if(any(sapply(data_set$data, anyNA))){ #TODO
+    browser()
+    warning("data_set$dat contains Na (RDA)") 
   }
   G <- set$classes
   K <- set$n_classes
@@ -320,10 +326,6 @@ RDA <- function(set, alpha, gamma){
   sigma_est <- sigma_est(set)
   n <- ncol(sigma_est)
 
-  if(anyNA(set$sigma)){ #TODO
-    warning("set$sigma contains Na (RDA)") 
-  }
-  
   sigmaAlphaGamma <- lapply(set$sigma, FUN = function(sigma_class){
     
     # if(anyNA(sigma_class)){ #TODO
@@ -345,6 +347,8 @@ RDA <- function(set, alpha, gamma){
   if(anyNA(sigmaAlphaGamma)){ #TODO
     warning("sigmaAlphaGamma contains Na (RDA)") 
   }
+  
+  
   
   detSigma <- lapply(sigmaAlphaGamma, det)
   # if(anyNA(detSigma)){ #TODO

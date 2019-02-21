@@ -67,6 +67,7 @@ initialize = function(data,
       }
       private$.data_expansion[['id']] <- private$.data
       #Print progress
+      cat("\nData:\n")
       print(private$.data[1:5,])
       cat("...\n")
       #save classvalues of parameters under '.results'

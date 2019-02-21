@@ -37,7 +37,7 @@ alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) { #TODO adjust K
            to = 1,
            length.out = N) #TODO aequidistant?
   
-  #array of all parameters for alpha and gamma
+  #array of all parameters for alpha and gwaramma
   alpha_gamma <- array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
 
   #iterates thrue all possible parameters and saves there error rate in a matrix (to choose the minimum later)
@@ -95,7 +95,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
       warning("training_dataframe contains Na (alpha_gamma_crossFit/validationErrorRate)") 
     }
     data_set <- make_set(data = training_dataframe, by = "training_results") 
-    if(anyNA(data_set$data)){ #TODO
+    if(any(sapply(data_set$data, anyNA))){ #TODO
       warning("training_dataframe contains Na (alpha_gamma_crossFit/validationErrorRate)") 
     }
       #in order to generate a RDA object for it
