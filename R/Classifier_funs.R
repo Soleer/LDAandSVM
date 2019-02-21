@@ -362,18 +362,8 @@ RDA <- function(set, alpha, gamma) {
     #TODO
     #browser()
     warning("data_set$dat contains Na (RDA)")
+    
   }
-  
-  if (any(sapply(allSigmas, anyNA))) {
-    #TODO
-    browser()
-    print(set)
-    print(set$results)
-    print(allSigmas)
-    print(set$data)
-    warning("set$sigma contains Na RDA")
-  }
-  
   sigmaAlphaGamma <- lapply(
     allSigmas,
     FUN = function(sigma_class) {
@@ -384,8 +374,13 @@ RDA <- function(set, alpha, gamma) {
       return(sigma_classAlphaGamma)
     }
   )
+  
   detSigma <- lapply(sigmaAlphaGamma, det)
 
+  if(0 %in% detSigma){
+    #Singularities may occur
+    return(null)
+  }
   
   sigma_inv <- lapply(sigmaAlphaGamma, function(X) {
     out <- tryCatch({
@@ -397,21 +392,16 @@ RDA <- function(set, alpha, gamma) {
       return(diag(n))# TODO
     })
     out
-  }) # TODO immer invertierbar?
+  }) 
   
   delta <- function(x) {
     result <- sapply(1:K, function(k) {
       loga <- (-1 / 2 * log(detSigma[[k]]))
-      if (is.nan(loga)) {
-        #TODO
-        print(detSigma[[k]])
-      }
       skala <-
         (-1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]]))
       return(loga + skala)
     }) + p
     
-    print(result)
     return(result)
   }
   

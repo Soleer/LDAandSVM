@@ -1,7 +1,7 @@
 library(shiny)
 library(rlang)
 
-Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA", "RDA", "SVM"))                                  ##Dropdown menu where the classifier functions can be selected
+Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA", "RDA", "RDA with Crossfit", "SVM"))                                  ##Dropdown menu where the classifier functions can be selected
 Base <- selectInput("Base", "Select Basis Expansion", choices = c("id", "quad", "cube", "sqrt", "log", "abs"))                              ##Dropdown menu where the basis expansion for PDA can be selected
 Background <- radioButtons("Background", "Plot classification Grid", c("TRUE", "FALSE"))                                                    ##Radio buttons with the option to print the background or not
 Project <- radioButtons("Project", "Project the data onto the main components", c("FALSE", "TRUE"))                                         ##Selection if the plot shoul be projected
@@ -17,13 +17,14 @@ Radial_neu <- sliderInput("Radial_neu", "Select the summand for the neural Kerne
 Alpha <- sliderInput("Alpha", "Select the Alpha value", value = 0, min = 0, max = 1, step = 0.01)                                           ##slider input for the Alpha value in RDA
 Gamma <- sliderInput("Gamma", "Select the Gamma value", value = 0, min = 0, max = 1, step = 0.01)                                           ##slider input for the Gamma value in RDA
 #RDA_crossFit
+CrossVal <- 
 numberOfValidations <- sliderInput("numberOfValidations", "Select the Number of Validations", value = 3, min = 3, max = 10, step = 1)
 accuracyOfParameters <- sliderInput("accuracyOfParameters", "Select the accuracy of alpha and gamma value", value = 3, min = 2, max = 10, step = 1)
 
 Classify <- wellPanel(Classifier, Background, PPU, Project, Calc_button)                                       ##Merging the Objects above into one for every group
 PDA_pan <- conditionalPanel(condition = "input.Classifier == 'PDA'", Base)                                     ##Panel that appears if PDA is selected
 RDA_pan <- conditionalPanel(condition = "input.Classifier == 'RDA'", Alpha, Gamma)                             ##Panel that appears if RDA is selected
-RDA_cross_pan <- conditionalPanel(condition = "input.Classifier == 'RDA_crossFit'", numberOfValidations, accuracyOfParameters)                             ##Panel that appears if RDA is selected
+RDA_cross_pan <- conditionalPanel(condition = "input.Classifier == 'RDA with Crossfit'", numberOfValidations, accuracyOfParameters)                             ##Panel that appears if RDA is selected
 SVM_pan <-  conditionalPanel(condition = "input.Classifier == 'SVM'", Kernel, Margin,                          ##Panel that appears if SVM is selected with subpanels for the different Kernels
                              conditionalPanel(condition = "input.Kernel == 'poly'", Var_Pol) ,
                              conditionalPanel(condition = "input.Kernel == 'radial'", Radial),
@@ -156,7 +157,7 @@ server_LDA_SVM <- function(input, output){
       Error_plot_shiny <- do.call(grid.arrange, Error_plot_shiny)
     }
     
-    if(Classfun == "RDA_crossFit"){
+    if(Classfun == "RDA with Crossfit"){
       numberOfValidations <- input$numberOfValidations                                                                ##Reading the numberOfValidations value
       accuracyOfParameters <- input$accuracyOfParameters                                                                ##Reading the accuracyOfParameters value
       print(paste("classifying with RDA_crossFit, accuracyOfParameters =", accuracyOfParameters, "and numberOfValidations =", numberOfValidations))          ##Console output for transparency
@@ -235,7 +236,7 @@ ui_LDA_SVM <- fluidPage(                                                        
     tabPanel("Options",                                                           ##First  page with all options
              fluidRow(column(width=4, titlePanel("Dataset"), Load, Create),       ##Splitting the first page into 3 columns,  1st for reading creating/reading in tests
                       column(width=4, titlePanel("Test Variables"), Sigma),       ##                                          2nd for changing the paramters of a randomly generated test
-                      column(width=4, titlePanel("Classification"), Classify, PDA_pan, RDA_pan, SVM_pan))),##                 3rd for the classification options
+                      column(width=4, titlePanel("Classification"), Classify, PDA_pan, RDA_pan, RDA_cross_pan, SVM_pan))),##  3rd for the classification options
     tabPanel("Classification", Plot1, Save1),                                     ##Second page with the classification plot output
     tabPanel("Error", Plot2, Save2)                                               ##Third page with the error plot output
   ) 
