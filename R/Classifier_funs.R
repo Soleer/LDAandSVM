@@ -334,18 +334,26 @@ RDA <- function(set, alpha, gamma) {
   
   if (length(set$func) > 0) {
     slot <- character(0)
-    sapply(set$func_info, function(l) {
-      if (!is.null(l[["type"]])) {
-        if (l[["type"]] == "RDA") {
-          slot <<- l[["name"]]
+    sapply(set$func_info, function(lis) {
+      
+      if (!is.null(lis[["type"]])) {
+        if (lis[["type"]] == "RDA") {
+          slot <<- lis[["name"]]
         }
       }
+      l <- lis[['parameter']]
+      if (!is.null(l[["alpha"]]) && !is.null(l[["gamma"]])) {
+        if (l[["alpha"]] == alpha && l[["gamma"]] == gamma) {
+          slot <<- lis[["name"]]
+        }
+      }
+      
     })
+    
     if (length(slot) > 0) {
       return(list(name = slot, func = set$func[[slot]]))
     }
   }
-  
   #alpha and gamma in between 0 and 1
   if(!(is.numeric(alpha) && is.numeric(gamma))){
     stop("alpha and gamma must be numeric")
@@ -406,8 +414,14 @@ RDA <- function(set, alpha, gamma) {
   })
   
   delta <- function(x) {
+    # if(!((nrow(x) == 1) && (ncol(x) == n))){ TODO
+    #   warning("cant classify such data:")
+    #   warning(x)
+    # }
+   # print(sigma_inv)
     result <- sapply(1:K, function(k) {
-     # browser()
+     #browser()
+      # print(sigma_inv[[k]])
       -1 / 2 * log(detSigma[[k]]) - 1 / 2 * t(x - mu[[k]]) %*% sigma_inv[[k]] %*% (x - mu[[k]])
     }) + p
     return(result)
@@ -452,61 +466,62 @@ RDA <- function(set, alpha, gamma) {
 #   return(RDA(set, alpha = alpha, gamma = gamma))
 # }
 
-test_RDA <- function() {
-  #attributes of each test
-  nobservations <- 10#number of observations per class
-  nclass <- 3 #number of classes
-  dimParameters <- 2 #number of parameters
-  
-  test_data <-
-    make_testset(N = nobservations, K = nclass, P = dimParameters)
-  RDA(test_data, alpha = 0.7, gamma = 0.4)
-  
-  N <- 5
-  
-  #creates parameters to choose from in cross fitting
-  #how many parameters shall be considered
-  v <- seq(from = 0, 
-           to = 1,
-           length.out = N) 
-  
-  #array of all parameters for alpha and gwaramma
-  alpha_gamma <- #TODO so sollte das nicht
-    array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
-
-  print(alpha_gamma)
-  alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){
-    print(x)
-    alpha <- x[alpha]
-    gamma <- x[gamma]
-    return(alpha + gamma)
-  })
-  
-  print(alpha_gamma_error)
-}
-
-test_RDA2 <- function() {
-  #attributes of each test
-  nobservations <- 50 #number of observations per class
-  nclass <- 4 #number of classes
-  dimParameters <- 2 #number of parameters
-  
-  test_data <-
-    make_testset(N = nobservations, K = nclass, P = dimParameters)
-  
-  # result<-function(alpha_gamma){
-  #   alpha <- alpha_gamma[1]
-  #   gamma <- alpha_gamma[2]
-  #   func<- RDA(test_data, alpha, gamma)$func
-  #   return(func(test_data))
-  # }
-  # 
-  # alpha_gammas <- list(c(0,0) , c(1,1), c(0.5,0.5))
-  # results <- lapply(alpha_gammas, result)
-  
-    func<- RDA(test_data, alpha= 1, gamma = 0)$func
-    results <- lapply(test_data$data, func)
-  
-  print(results)
-}
-test_RDA2()
+# test_RDA <- function() {
+#   #attributes of each test
+#   nobservations <- 10#number of observations per class
+#   nclass <- 3 #number of classes
+#   dimParameters <- 2 #number of parameters
+#   
+#   test_data <-
+#     make_testset(N = nobservations, K = nclass, P = dimParameters)
+#   RDA(test_data, alpha = 0.7, gamma = 0.4)
+#   
+#   N <- 5
+#   
+#   #creates parameters to choose from in cross fitting
+#   #how many parameters shall be considered
+#   v <- seq(from = 0, 
+#            to = 1,
+#            length.out = N) 
+#   
+#   #array of all parameters for alpha and gwaramma
+#   alpha_gamma <- #TODO so sollte das nicht
+#     array(v, dim = c(N, N, 2), dimnames = list(1:N, 1:N, c("alpha", "gamma")))
+# 
+#   print(alpha_gamma)
+#   alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){
+#     print(x)
+#     alpha <- x[alpha]
+#     gamma <- x[gamma]
+#     return(alpha + gamma)
+#   })
+#   
+#   print(alpha_gamma_error)
+# }
+# 
+# test_RDA2 <- function() {
+#   #attributes of each test
+#   nobservations <- 5 #number of observations per class
+#   nclass <- 3 #number of classes
+#   dimParameters <- 2 #number of parameters
+#   
+#   test_data <-
+#     make_testset(N = nobservations, K = nclass, P = dimParameters)
+#   
+#   # result<-function(alpha_gamma){
+#   #   alpha <- alpha_gamma[1]
+#   #   gamma <- alpha_gamma[2]
+#   #   func<- RDA(test_data, alpha, gamma)$func
+#   #   return(func(test_data))
+#   # }
+#   # 
+#   # alpha_gammas <- list(c(0,0) , c(1,1), c(0.5,0.5))
+#   # results <- lapply(alpha_gammas, result)
+#   
+#     func<- RDA(test_data, alpha= 1, gamma = 0)$func
+#     data<-test_data$data
+#     results <- lapply(c(4,4), func)
+#   
+#   print(results)
+# }
+# test_RDA2()
