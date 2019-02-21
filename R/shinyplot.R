@@ -1,3 +1,6 @@
+library(shiny)
+library(rlang)
+
 Classifier <- selectInput("Classifier", "Select classifier", choices=c("LDA", "QDA", "PDA", "RDA", "SVM"))                                  ##Dropdown menu where the classifier functions can be selected
 Base <- selectInput("Base", "Select Basis Expansion", choices = c("id", "quad", "cube", "sqrt", "log", "abs"))                              ##Dropdown menu where the basis expansion for PDA can be selected
 Background <- radioButtons("Background", "Plot classification Grid", c("TRUE", "FALSE"))                                                    ##Radio buttons with the option to print the background or not
@@ -229,8 +232,6 @@ ui_LDA_SVM <- fluidPage(                                                        
 #' plot go to the second tab and to see the error plot go to the thrid tab. In both these the
 #' image can be saved with the options  at the bottom. The images will be saved as .png
 #' @return Nothing
-#' @examples
-#'
 #' @export
 classify_app <- function(){
   shinyApp(ui_LDA_SVM, server_LDA_SVM)

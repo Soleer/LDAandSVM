@@ -1,5 +1,4 @@
 #Basic R6-Object "data_set":
-source("R/Test.R") #TODO Loeschen
 
 data_set <- R6Class(
   "data_set",
@@ -41,6 +40,9 @@ initialize = function(data,
       #Check if the 'by' Value is a Column of 'data'
       stopifnot(any(private$.col_names == by))
       #title and decription
+      if(ncol(data)==1){
+        stop("Data must have at least one parametercolumn", call. = FALSE)
+      }
       
       self$description <- description
       self$title <- title
@@ -72,6 +74,14 @@ initialize = function(data,
       cat("...\n")
       #save classvalues of parameters under '.results'
       private$.results <- data[, by]
+      
+      private$.count <- table(private$.results)
+      if(any(private$.count == 1)){
+        stop("Every class must have at least two observations! Enter more data.", call. = FALSE)
+      }
+      cat("\nObservations per Class:\n")
+      print(private$.count)
+      
       #save parameternames
       private$.parnames <- colnames(private$.data)
       #get vector of unique classes
@@ -101,9 +111,6 @@ initialize = function(data,
       
       private$.n_obs <- nrow(data)
       cat(sprintf("\nNumber of Observations: %s \n", private$.n_obs))
-      private$.count <- table(private$.results)
-      cat("\nObservations per Class:\n")
-      print(private$.count)
       
       #Estimators
       # All as lists
@@ -489,23 +496,15 @@ is.data_set <- function(set) {
 #'@param P number of parameters of each observation
 #'@return a data_set
 #'@examples
-#'set <- make_testset(N = 50, K= 2)
+#'make_testset(N = 50, K= 2)
 #'@export
-make_testset <- function(N = 3, K = 3, P = 2) { 
+make_testset <- function(N = 10, K = 3, P = 2) { 
   test <- make_test(ninputs = N, nclasses = K, nparam = P)
-  if(anyNA(test)){ #TODO
-   warning("Test contains Na (make_testset)") 
-  }
   set <-
     make_set(test,
              by = "class",
              title = "TEST",
              description = "Testset")
-  
-  if(anyNA(set$data)){
-    warning("Testset contains Na (make_testset)") 
-    #print(set$data) 
-  }
   return(set)
 }
 
