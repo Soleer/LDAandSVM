@@ -6,11 +6,11 @@
 #'alpha_gamma_crossFit
 #'
 #'cross validates for the best alpha and gamma
-#'@param set data_set to be trained on for cross validation
+#'@param data_set data_set to be trained on for cross validation
 #'@param K number of validation sets. Note that though K = 10 is common, it is impractical for RDA
 #'@param N number of parameters to choose. Note that Omega(crossFit) = N^2
 #'@return alpha, gamma
-alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
+alpha_gamma_crossFit <- function(data_set, K = 3, N = 5) {
   data <- data_set$data
   results <- data_set$results
   #splits data in K equal sized training/validation samples
@@ -19,11 +19,13 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
     min(K, floor(n / 2)) #so in each subpart are at least two elements in order for the the calculation of variances to work properly
   
   chunk <-
-    function(x, n)
+    function(x, n) {
       split(x, cut(seq_along(x), n, labels = FALSE))
+    }
   
+  random <- sample.int(n)
   partition <-
-    chunk(sample(1:n), K) #TODO  Error in 1:n : argument of length 0
+    chunk(random, K)
   
   #splits results and data according to chosen partition with corresponding rows
   results <- lapply(
@@ -39,10 +41,9 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
       data[x, ]
     }
   )
-  
-  N <- 5
   #creates parameters to choose from in cross fitting
   #how many parameters shall be considered
+  
   v <- seq(from = 0,
            to = 1,
            length.out = N)
@@ -57,10 +58,11 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   for (i in 1:N) {
     for (j in 1:N) {
       alpha_gamma["alpha", i, j] <- v[i]
-      alpha_gamma["gamma",i, j] <- v[j]
+      alpha_gamma["gamma", i, j] <- v[j]
     }
   }
-   
+  
+  
   #iterates thrue all possible parameters and saves there error rate in a matrix (to choose the minimum later)
   alpha_gamma_error <- matrix(nrow = N, ncol = N)
   for (i in 1:N) {
@@ -73,6 +75,7 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
       
     }
   }
+  #print(alpha_gamma_error)
   
   #alternative implementation with apply
   "alpha_gamma_error <- apply(alpha_gamma, c(1,2), FUN = function(x){
@@ -88,9 +91,9 @@ alpha_gamma_crossFit <- function(set, K = 3, N = 5) {
   
   
   alpha <- alpha_gamma["alpha", coordinates[1], coordinates[2]]
-  gamma <- alpha_gamma["gamma",coordinates[1], coordinates[2]]
+  gamma <- alpha_gamma["gamma", coordinates[1], coordinates[2]]
   
-  return(list(alpha, gamma))
+  return(list(alpha = alpha, gamma = gamma))
   }
 
 #validationErrorRate
@@ -107,6 +110,7 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   errors <- sapply(
     seq_along(data) ,
     FUN = function(i) {
+      #browser()
       #training on all data parts except the validation slot
       training_data <- do.call(rbind, data[-i])
       training_results <- unlist(results[-i])
@@ -115,13 +119,17 @@ validationErrorRate <- function(data, results, alpha, gamma) {
       #tryCatch()
       tryCatch(
         data_set <-
-          make_set(data = training_dataframe, by = "training_results") #TODO try catch, because singalarites
+          make_set(data = training_dataframe, by = "training_results")
         ,
         error = function(e) {
-          #data_set <-  TODO
+          #singularities may occur
+          warning("data_set creation unsuccesfull (probably not enough observations per class")
+          return(Inf)
         }
       )
       #in order to generate a RDA object for it
+      #browser()
+      
       classifier_obj <-
         RDA(set = data_set,
             alpha = alpha,
@@ -146,35 +154,35 @@ validationErrorRate <- function(data, results, alpha, gamma) {
   
   return(mean(errors))
 }
-
-test_cross <- function() {
-  numberOfTest <- 3
-  
-  #attributes of each test
-  nobservations <- 10#number of observations per class
-  nclass <- 3 #number of classes
-  dimParameters <- 2 #number of parameters
-  
-  #attributes of alpha Gamma cross fit
-  numberOfValidations <- 3
-  accuracyOfParameters <- 20
-  
-  sets <- lapply(
-    1:numberOfTest,
-    FUN = function(i) {
-      make_testset(N = nobservations, K = nclass, P = dimParameters)
-    }
-  )
-  
-  alpha_gammas <- lapply(
-    sets,
-    FUN = function(set) {
-      alpha_gamma <-
-        alpha_gamma_crossFit(set, K = numberOfValidations, N = accuracyOfParameters)
-      print(alpha_gamma)
-      return(alpha_gamma)
-    }
-  )
-  
-  print(alpha_gammas)
-}
+#
+# test_cross <- function() {
+#   numberOfTest <- 1
+#
+#   #attributes of each test
+#   nobservations <- 7#number of observations per class
+#   nclass <- 3 #number of classes
+#   dimParameters <- 2 #number of parameters
+#
+#   #attributes of alpha Gamma cross fit
+#   numberOfValidations <- 3
+#   accuracyOfParameters <- 13
+#
+#   sets <- lapply(
+#     1:numberOfTest,
+#     FUN = function(i) {
+#       make_testset(N = nobservations, K = nclass, P = dimParameters)
+#     }
+#   )
+#
+#   alpha_gammas <- lapply(
+#     sets,
+#     FUN = function(set) {
+#       alpha_gamma <-
+#         alpha_gamma_crossFit(set, K = numberOfValidations, N = accuracyOfParameters)
+#       print(alpha_gamma)
+#       return(alpha_gamma)
+#     }
+#   )
+#
+#   print(alpha_gammas)
+# }
