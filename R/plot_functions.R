@@ -153,11 +153,11 @@ plot_error <- function(set, name) {
   }
   G <- set$classnames
   n <- set$n_classes
-  get_list <- calc_error(set, name)
-  probs_Data <- get_list[[1]]
+  get_list <- calc_error(set, name)              #calculate Errors
+  probs_Data <- get_list[[1]]                    #Get results
   probs_Results <- get_list[[2]]
   miss <- get_list[[3]]
-  
+                                                 #Create Plots:
   charts <-
     lapply(G, function(class) {
       # Create mistake plots for each Class
@@ -165,7 +165,7 @@ plot_error <- function(set, name) {
       probs_Data[paste0(class, 'label')] <-         #Labels in percent
         paste0(round(probs_Data[, class],2)*100,'%')
       
-      left <-                                         #class ... is classified to class ... by percent
+      left <-                                         #class ... is classified to class ... in percent
         ggplot(data = probs_Data[1:n, ]) +            #make plot with aesthetics
         geom_bar(
           aes_string(
@@ -185,7 +185,7 @@ plot_error <- function(set, name) {
       
       probs_Results[paste0(class, 'label')] <- paste0(round(probs_Results[, class],2)*100,'% ')#Labels in percent
       
-      right <-                                        #if function classifys to class ... then it is actually class ... by percent
+      right <-                                        #if function classifys to class ... then it is actually class ... in percent
         ggplot(data = probs_Results[1:n, ]) +         #make plot with aesthetics 
         geom_bar(                    
           aes_string(

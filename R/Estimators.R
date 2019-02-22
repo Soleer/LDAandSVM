@@ -1,4 +1,4 @@
-#Estimators for expanded data only
+#Estimators for expanded data (PDA) only
 #not for users
 
 mu_exp <- function(data, set) {

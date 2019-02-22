@@ -1,25 +1,26 @@
-#helpfunction
-targets <- function(vector) {
-  n <- length(vector)
-  En <- diag(1, n, n)
-  V <- matrix(vector,
-              nrow = n,
-              ncol = n,
-              byrow = TRUE)
-  D <- En - V
-  results <- sapply(1:n, function(i) {
-    D[i, ] %*% D[i, ]
-  })
-  return(results)
-}
-
-#return closest target
-class_by_targets <- function(classes, delta) {
-  classfunction <- function(x) {
-    return(classes[which.min(targets(delta(x)))])
-  }
-  return(classfunction)
-}
+# #helpfunctions 
+# 
+# targets <- function(vector) {
+#   n <- length(vector)
+#   En <- diag(1, n, n)
+#   V <- matrix(vector,
+#               nrow = n,
+#               ncol = n,
+#               byrow = TRUE)
+#   D <- En - V
+#   results <- sapply(1:n, function(i) {
+#     D[i, ] %*% D[i, ]
+#   })
+#   return(results)
+# }
+# 
+# #return closest target
+# class_by_targets <- function(classes, delta) {
+#   classfunction <- function(x) {
+#     return(classes[which.min(targets(delta(x)))])
+#   }
+#   return(classfunction)
+# }
 
 #return max
 classify <- function(classes, delta) {
