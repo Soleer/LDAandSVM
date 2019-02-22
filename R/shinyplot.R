@@ -18,8 +18,8 @@ Alpha <- sliderInput("Alpha", "Select the Alpha value", value = 0, min = 0, max 
 Gamma <- sliderInput("Gamma", "Select the Gamma value", value = 0, min = 0, max = 1, step = 0.01)                                           ##slider input for the Gamma value in RDA
 #RDA_crossFit
 CrossVal <- 
-numberOfValidations <- sliderInput("numberOfValidations", "Select the Number of Validations", value = 3, min = 3, max = 10, step = 1)
-accuracyOfParameters <- sliderInput("accuracyOfParameters", "Select the accuracy of alpha and gamma value", value = 3, min = 2, max = 10, step = 1)
+numberOfValidations <- sliderInput("numberOfValidations", "Select the Number of Validations", value = 3, min = 3, max = 20, step = 1)
+accuracyOfParameters <- sliderInput("accuracyOfParameters", "Select the accuracy of alpha and gamma value", value = 3, min = 2, max = 50, step = 1)
 
 Classify <- wellPanel(Classifier, Background, PPU, Project, Calc_button)                                       ##Merging the Objects above into one for every group
 PDA_pan <- conditionalPanel(condition = "input.Classifier == 'PDA'", Base)                                     ##Panel that appears if PDA is selected
@@ -161,8 +161,8 @@ server_LDA_SVM <- function(input, output){
       numberOfValidations <- input$numberOfValidations                                                                ##Reading the numberOfValidations value
       accuracyOfParameters <- input$accuracyOfParameters                                                                ##Reading the accuracyOfParameters value
       print(paste("classifying with RDA_crossFit, accuracyOfParameters =", accuracyOfParameters, "and numberOfValidations =", numberOfValidations))          ##Console output for transparency
-      
       func_shiny <- RDA_crossFit(shiny_set, numberOfValidations = numberOfValidations, accuracyOfParameters = accuracyOfParameters)[['name']]                ##Classifying the set with RDA and the given Alpha and Gamma values
+      
       Error_plot_shiny <- plot_error(shiny_set, func_shiny)
       Class_plot_shiny <- make_2D_plot(shiny_set,
                                        func_shiny,

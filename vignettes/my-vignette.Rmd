@@ -137,9 +137,92 @@ exampleplot2
 
 and find out it classifies the point to "Barock". We are now very unsure whether or not he is using the type "Renaissance" and decide to not confront him because we don't want to disgrace ourselves.
 
+## The R6 data_set Object
+
+The backbone of this package is the R6 data_set object. It is initialized by calling ```make_set()```. It then saves everything than can and needs to be saved:
+
+- Title
+- the data
+- the classes
+- number of classes
+- class centroids
+- number of observatios
+- ...
+
+and once a calculation is done, instead of redoing all calculations valuable data get saved into the object to be read in at any moment
+
+The public functions are:
+
+- ```initialize(data, by, title = "", description = "") ``` 
+    - initializing the object
+    - use ```make_set``` insted
+- ```print(...)``` 
+    - custom print function
+    - gives information about the object
+- ```set_function(func, type, parameter) ``` 
+    - sets a classifier function
+- ```change_func_name(from, to) ```
+    - changing the name of a function 
+- ```expansion(type) ```
+    - Expands the data with a basis expansion and adds it to a slot
+- ```get_data_by_class(class) ``` 
+    - returns the observation of a certain class
+    
+The active functions are:
+
+- ```data(Value) ``` 
+    - read only function to get the data
+- ```results(Value) ```
+    - read only function to get the class columns
+- ```col_names(Value) ``` 
+    - read only function to get the column names
+- ```parnames(Value) ``` 
+    - read only function to get the vector of parameter names
+- ```classes(Value)``` 
+    - read only function to get the classes
+- ```classnames(Value)``` 
+    - read only function to get the classnames
+- ```n_classes(Value)``` 
+    - read only function to get the names of the classes
+- ```count(Value)``` 
+    - read only function to get number of observations per class
+- ```dim(Value)``` 
+    - read only function to get the number of parameters
+- ```n_obs(Value)``` 
+    - read only function to get the number of total observations
+- ```title(Value)```
+    - function to read or change the name of the data_set
+- ```description(Value)``` 
+    - function to read or change the description of the data_set
+- ```pi(Value)``` 
+    - read only function to get the probabilities of the classes
+- ```mean(Value)``` 
+    - read only to get the mean points of each class
+- ```meantotal(Value)``` 
+    - read only function to get the total mean of the data
+- ```sigma(Value)``` 
+    - calculating the Covariance matrix of each class
+    - if the matrix already exists only reads it
+- ```sigma_bet(value)``` 
+    - calculating the between class Covariance matrix
+    - if the matrix already exists only reads it
+- ```func(value)``` 
+    - read only function to read the classification functions already in the set
+- ```func_info(Value)``` 
+    - read only function to get the parameters of the classification functions already in the set
+- ```func_names(Value)``` 
+    - read only functions to get the names of the classification functions already in the set
+
+Useful extra functions are:
+
+- ```make_set(data, by, title = "", description = "")``` 
+    - create a data_set object
+- ```make_testset(N = 10, K = 3, P = 2)``` 
+    - creates a random testset with N observations, K classes and p parameters
+    
 ## Shiny
 
-This package comes with a shiny app to make it easier for the user to navigate. We can open it the following way. See **?classify_app** for more information.
+This package comes with a shiny app to make it easier for the user to navigate. We can open it the following way. See ```?classify_app``` for more information.
 
 ```{shinyapp, results='hide', fig.keep='none'}
 classify_app()
@@ -216,8 +299,8 @@ For now we have only looked at uncorrelated data which is where LDA and QDA shin
 
 When we have both LDA and QDA there is always the question "Why not combine them?". Regularized Discriminant Analysis (RDA) is an approach to do exactly this. Instead of using a completely pooled covariance matrix or different covariance matrices for every class RDA takes a convex conjugation of both and fine-tunes the paramter of the conjugation to get the best result. If alpha is 0 RDA is the same as LDA while if alpha is 1 RDA is the same as QDA. **Pro**: with the right parameters RDA should always be better that both LDA and QDA. **Contra**: The cross-validation takes some time so the improved performance comes with an increased runtime.
 
-```{r RDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with PDA. The data is the same again but this time, there is no clear structure in the seperating lines because the Classification is done in the expanded 5-dimensional space."}
-func_name4 <-  RDA(set, alpha = 0.5, gamma = 0)[['name']] ##Setting the Classifier function as RDA
+```{r RDA, warning = FALSE, results='hide', fig.cap="\\label{fig:figs}Classification of randomly generated data with RDA. It is not fully linear butfar from beeing the same as QDA."}
+func_name4 <-  RDA(set, alpha = 0.5, gamma = 0.5)[['name']] ##Setting the Classifier function as RDA
 testplot4 <- make_2D_plot(set, ##Creating a plot object for the classification plot
                func_name4,
                ppu = 5,
@@ -226,7 +309,7 @@ testplot4 <- make_2D_plot(set, ##Creating a plot object for the classification p
 testplot4 ##Plotting the image
 ```
 
-```{r RDA Error, warning=FALSE, results='hide', fig.keep='last', fig.cap="\\label{fig:figs} Error in the PDA function. For further explanations of the barplots see LDA Error"}
+```{r RDA Error, warning=FALSE, results='hide', fig.keep='last', fig.cap="\\label{fig:figs} Error in the RDA function. For further explanations of the barplots see LDA Error"}
 liste3 <- plot_error(set, func_name4) ##Saving the RDA Errorplot into an object
 do.call(grid.arrange, liste3) ##Plotting the RDA Error
 ```
