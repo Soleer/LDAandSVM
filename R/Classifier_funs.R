@@ -446,7 +446,11 @@ RDA <- function(set, alpha, gamma) {
 #' func_name <- RDA_crossFit(test, numberOfValidations = 3, accuracyOfParameters = 5)
 #' @export
 RDA_crossFit <- function(set, numberOfValidations = 3, accuracyOfParameters = 5) {
-  
+  #accuracyOfParameters and numberOfValidations in between 0 and 1
+  if(!(is.integer(numberOfValidations) && is.integer(accuracyOfParameters))){
+    
+    stop("accuracyOfParameters and numberOfValidations must be integer")
+  }
   
   alpha_gamma <-
     alpha_gamma_crossFit(set, N = accuracyOfParameters, K = numberOfValidations)
