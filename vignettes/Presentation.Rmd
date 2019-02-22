@@ -125,7 +125,6 @@ testplot2 ##Actual plotting
     - unterschiedliche Varianzen für unterschiedliche Klassen
     
 - Kombination aus LDA und QDA <!-- alpha -->
-- Kombination aus mehr- und eindimensionaler Verteilung <!-- gamma -->
 
 ## RDA Klassifizierung
 
@@ -164,8 +163,9 @@ testplot4 ##Actual plotting
 - Annahmen
     - keine
     
-- Nur Randpunkte für Klassifikation relevant (Support Vectors) <!-- C = Angabe über Genauigkeit der Klassifikation (je größer desto genauer) -->
 - Kernels <!-- klügere Art der Basisexpansion, betrachte Daten in Höherdimensionalen Raum, wo Trennungen einfacher sind -->  
+- Nur Randpunkte für Klassifikation relevant (Support Vectors) <!-- C = Angabe über Genauigkeit der Klassifikation (je größer desto genauer) -->
+
 
 ## SVM Klassifizierung
 
@@ -178,16 +178,6 @@ testplot5 <- make_2D_plot(Rocket_set, ##Creating a ggplot object where the class
 testplot5 ##Actual plotting
 ```
 
-## Vergleich
-
-```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='hide'}
-#library(kableExtra)
-# Vergleich <- data.frame(Methode = c("LDA", "QDA", "RDA", "PDA", "SVM"),
-#                         Pro = c("schnell und einfach", "relativ einfach mit wenigen Annahmen", "bestes aus LDA und QDA", "gut für korrellierte   Daten", "keine Ahnnahmen und sehr genau"),
-#                         Contra = c("nur lineare Trennung", "langsamer als LDA bei marginaler Verbesserung", "aufwendiges Parametertuning", "viel Wissen über Daten notwendig", "Overfitting und lange Berechnung"))
-# column_spec(kable_styling(kable(Vergleich), bootstrap_options = "striped", position = "left"), 1:3, border_right = TRUE, border_left = TRUE)
-```
-![](Pro_con.png)
 
 ## Ende
 <center>
